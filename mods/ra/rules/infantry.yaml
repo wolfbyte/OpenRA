@@ -39,11 +39,15 @@ DOG:
 	WithInfantryBody:
 		AttackSequence: shoot
 		StandSequences: stand
+	WithDeathAnimation:
+		DeathTypes:
+			ZombieDeath: 1
 	IgnoresDisguise:
 	DetectCloaked:
 		CloakTypes: Cloak, Hijacker
 	Voiced:
 		VoiceSet: DogVoice
+	-SpawnActorOnDeath:
 	-TakeCover:
 
 E1:
@@ -580,10 +584,14 @@ Zombie:
 	WithInfantryBody:
 		AttackSequence: bite
 		IdleSequences: idle1
+	WithDeathAnimation:
+		DeathTypes:
+			ZombieDeath: 1
 	Armament:
 		Weapon: claw
 	Voiced:
 		VoiceSet: AntVoice
+	-SpawnActorOnDeath:
 	-TakeCover:
 
 Ant:
@@ -611,6 +619,7 @@ Ant:
 		TurnSpeed: 12
 		SharesCell: no
 	-Crushable:
+	-SpawnActorOnDeath:
 	AutoTarget:
 		ScanRadius: 5
 	AttackFrontal:

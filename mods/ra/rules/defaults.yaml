@@ -215,6 +215,10 @@
 		CargoType: Infantry
 	HiddenUnderFog:
 	ActorLostNotification:
+	SpawnActorOnDeath:
+		Actor: zombie
+		OwnerType: Killer
+		DeathType: ZombieDeath
 	GivesBounty:
 	GpsDot:
 		String: Infantry
@@ -235,7 +239,7 @@
 		Upgrades: hospitalheal
 		Prerequisites: hosp
 	DeathSounds@NORMAL:
-		DeathTypes: DefaultDeath, BulletDeath, SmallExplosionDeath, ExplosionDeath
+		DeathTypes: DefaultDeath, BulletDeath, SmallExplosionDeath, ExplosionDeath, ZombieDeath
 	DeathSounds@BURNED:
 		Voice: Burned
 		DeathTypes: FireDeath
