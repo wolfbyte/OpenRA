@@ -56,6 +56,7 @@ namespace OpenRA.Mods.Common.AI
 			public readonly HashSet<string> Production = new HashSet<string>();
 			public readonly HashSet<string> NavalProduction = new HashSet<string>();
 			public readonly HashSet<string> Silo = new HashSet<string>();
+			public readonly HashSet<string> Wall = new HashSet<string>();
 		}
 
 		[Desc("Ingame name this bot uses.")]
@@ -172,6 +173,8 @@ namespace OpenRA.Mods.Common.AI
 
 		[Desc("What buildings to the AI should build.", "What % of the total base must be this type of building.")]
 		public readonly Dictionary<string, float> BuildingFractions = null;
+				
+		public readonly Dictionary<string, float> BuildingsToWall = null;
 
 		[Desc("Tells the AI what unit types fall under the same common name. Supported entries are Mcv and ExcludeFromSquads.")]
 		[FieldLoader.LoadUsing("LoadUnitCategories", true)]
@@ -236,10 +239,11 @@ namespace OpenRA.Mods.Common.AI
 		public object Create(ActorInitializer init) { return new HackyAI(this, init); }
 	}
 
-	public enum BuildingType { Building, Defense, Refinery }
+	public enum BuildingType { Building, Defense, Refinery, Wall }
 
 	public sealed class HackyAI : ITick, IBot, INotifyDamage
 	{
+		
 		public MersenneTwister Random { get; private set; }
 		public readonly HackyAIInfo Info;
 
@@ -572,6 +576,24 @@ namespace OpenRA.Mods.Common.AI
 
 				case BuildingType.Building:
 					return findPos(baseCenter, baseCenter, Info.MinBaseRadius, distanceToBaseIsImportant ? Info.MaxBaseRadius : Map.Grid.MaximumTileSearchRange);
+					
+				case BuildingType.Wall:
+					var buildingToWall = Info.BuildingsToWall.Shuffle(Random);
+					var topLeft = findPos(location.buildingToWall - 1, location.buildingToWall - 1);
+					var topRight = findPos(location.buildingToWall - 1, location.buildingToWall + foundationX.buildingToWall);
+					var bottomLeft = findPos(location.buildingToWall + foundationY.buildingToWall, location.buildingToWall - 1);
+					var bottomRight = findPos(location.buildingToWall + foundationY.buildingToWall, location.buildingToWall + foundationX.buildingToWall);
+					if (topLeft != null)
+						return topLeft;
+					else if (topRight != null)
+						return topRight;
+					else if (bottomLeft != null)
+						return bottomLeft;
+					else if (bottomRight != null)
+						return bottomRight;
+					else
+						return null;
+
 			}
 
 			// Can't find a build location
@@ -964,8 +986,12 @@ namespace OpenRA.Mods.Common.AI
 				if (!mcv.IsIdle)
 					continue;
 
+				// If we lack a base, we need to make sure we don't restrict deployment of the MCV to the base!
+				var restrictToBase =
+					Info.RestrictMCVDeploymentFallbackToBase &&
+					CountBuildingByCommonName(Info.BuildingCommonNames.ConstructionYard, Player) > 0;
 				var factType = mcv.Info.TraitInfo<TransformsInfo>().IntoActor;
-				var desiredLocation = ChooseBuildLocation(factType, Info.RestrictMCVDeploymentFallbackToBase, BuildingType.Building);
+				var desiredLocation = ChooseBuildLocation(factType, restrictToBase, BuildingType.Building);
 				if (desiredLocation == null)
 					continue;
 

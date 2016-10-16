@@ -138,6 +138,8 @@ namespace OpenRA.Mods.Common.AI
 					type = BuildingType.Defense;
 				else if (world.Map.Rules.Actors[currentBuilding.Item].HasTraitInfo<RefineryInfo>())
 					type = BuildingType.Refinery;
+				else if (world.Map.Rules.Actors[currentBuilding.Item].HasTraitInfo<BlocksProjectilesInfo>())
+					type = BuildingType.Wall;
 
 				var location = ai.ChooseBuildLocation(currentBuilding.Item, true, type);
 				if (location == null)
@@ -282,6 +284,30 @@ namespace OpenRA.Mods.Common.AI
 				{
 					HackyAI.BotDebug("{0} decided to build {1}: Priority override (would be low power)", queue.Actor.Owner, power.Name);
 					return power;
+				}
+			}
+			
+			// Build walls
+			
+			foreach (var frac in ai.Info.BuildingsToWall.Shuffle(ai.Random))
+			{
+				var name = frac.Key;
+				
+				var count = playerBuildings.Count(a => a.Info.Name == name);
+				if (ai.Info.BuildingsToWall.ContainsKey(name) && ai.Info.BuildingsToWall[name] <= count)
+				{
+					var wall = GetProducibleBuilding(ai.Info.BuildingCommonNames.Wall, buildableThings);
+					if (wall != null && HasSufficientPowerForActor(wall))
+					{
+						HackyAI.BotDebug("AI: {0} decided to build {1}: Priority override (wall)", queue.Actor.Owner, wall.Name);
+						return wall;
+					}
+					
+					if (power != null && wall != null && !HasSufficientPowerForActor(wall))
+					{
+						HackyAI.BotDebug("{0} decided to build {1}: Priority override (would be low power)", queue.Actor.Owner, power.Name);
+						return power;
+					}
 				}
 			}
 

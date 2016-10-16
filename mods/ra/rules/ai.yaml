@@ -10,6 +10,7 @@ Player:
 			VehiclesFactory: weap
 			Production: barr,tent,weap,afld,hpad
 			Silo: silo
+			Wall: brik
 		UnitsCommonNames:
 			Mcv: mcv
 		BuildingLimits:
@@ -19,8 +20,6 @@ Player:
 			kenn: 1
 			dome: 1
 			weap: 1
-			hpad: 4
-			afld: 4
 			atek: 1
 			stek: 1
 			fix: 1
@@ -35,6 +34,7 @@ Player:
 			pbox: 7%
 			gun: 7%
 			tsla: 5%
+			gap: 2%
 			ftur: 10%
 			agun: 5%
 			sam: 5%
@@ -42,6 +42,11 @@ Player:
 			stek: 1%
 			fix: 0.1%
 			dome: 10%
+		BuildingsToWall: 
+			fact: 5%
+			dome: 1%
+			atek: 2%
+			stek: 2%
 		CapturingActorTypes: e6
 		CapturableActorTypes: mslo, gap, iron, pdox, atek, weap, fact, proc, silo, hpad, afld, powr, apwr, stek, barr, kenn, tent, fix, oilb
 		CheckCaptureTargetsForVisibility: false
@@ -163,6 +168,7 @@ Player:
 			gun: 7%
 			ftur: 10%
 			tsla: 5%
+			gap: 2%
 			fix: 1%
 			agun: 5%
 			sam: 1%
@@ -296,6 +302,7 @@ Player:
 			gun: 10%
 			ftur: 10%
 			tsla: 7%
+			gap: 3%
 			fix: 0.1%
 			dome: 10%
 			agun: 5%
@@ -403,6 +410,8 @@ Player:
 		BuildingLimits:
 			proc: 4
 			dome: 1
+			barr: 1
+			tent: 1
 			spen: 1
 			syrd: 1
 			hpad: 8
