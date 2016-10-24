@@ -1,4 +1,4 @@
-Debris:
+debris:
 	ReloadDelay: 60
 	Range: 2c768
 	Projectile: Bullet
@@ -27,10 +27,10 @@ Debris:
 		SmudgeType: SandCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: small_explosion
+		Explosions: ex_bazooka
 		ImpactSounds: EXPLLG5.WAV
 
-Debris2:
+debris2:
 	ReloadDelay: 60
 	Range: 2c768
 	Projectile: Bullet
@@ -39,7 +39,7 @@ Debris2:
 		Angle: 30, 90
 		Inaccuracy: 1c256
 		Image: shrapnel2
-		TrailImage: bazooka_trail
+		TrailImage: ex_smoke4
 		TrailPalette: effect75alpha
 		TrailInterval: 2
 	Warhead@1Dam: SpreadDamage
@@ -62,10 +62,10 @@ Debris2:
 		SmudgeType: SandCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: med_explosion
+		Explosions: ex_tankgun
 		ImpactSounds: EXPLLG5.WAV
 
-Debris3:
+debris3:
 	ReloadDelay: 60
 	Range: 2c768
 	Projectile: Bullet
@@ -74,7 +74,7 @@ Debris3:
 		Angle: 30, 90
 		Inaccuracy: 1c256
 		Image: shrapnel3
-		TrailImage: large_trail
+		TrailImage: ex_smoke4
 		TrailPalette: effect75alpha
 		TrailInterval: 1
 	Warhead@1Dam: SpreadDamage
@@ -97,10 +97,10 @@ Debris3:
 		SmudgeType: SandCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: med_explosion
+		Explosions: ex_bazooka
 		ImpactSounds: EXPLLG5.WAV
 
-Debris4:
+debris4:
 	ReloadDelay: 60
 	Range: 2c768
 	Projectile: Bullet
@@ -109,7 +109,7 @@ Debris4:
 		Angle: 30, 90
 		Inaccuracy: 1c256
 		Image: shrapnel4
-		TrailImage: large_trail
+		TrailImage: ex_trail
 		TrailPalette: effect75alpha
 		TrailInterval: 1
 	Warhead@1Dam: SpreadDamage
@@ -132,5 +132,5 @@ Debris4:
 		SmudgeType: SandCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: large_explosion
+		Explosions: ex_bazooka
 		ImpactSounds: EXPLLG5.WAV

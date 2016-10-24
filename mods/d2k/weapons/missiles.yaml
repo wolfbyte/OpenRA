@@ -1,4 +1,4 @@
-Bazooka:
+bazooka:
 	ReloadDelay: 40
 	Range: 3c0
 	Report: ROCKET1.WAV
@@ -7,7 +7,7 @@ Bazooka:
 		Inaccuracy: 256
 		Image: RPG
 		HorizontalRateOfTurn: 1
-		TrailImage: bazooka_trail2
+		TrailImage: ex_trail3
 		TrailPalette: effect75alpha
 		TrailInterval: 1
 		RangeLimit: 3c614
@@ -29,10 +29,10 @@ Bazooka:
 		SmudgeType: SandCrater, RockCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: tiny_explosion
+		Explosions: ex_bazooka
 		ImpactSounds: EXPLSML1.WAV
 
-Rocket:
+rocket:
 	ReloadDelay: 30
 	Range: 3c512
 	Report: ROCKET1.WAV
@@ -40,7 +40,7 @@ Rocket:
 		Inaccuracy: 256
 		Image: RPG
 		HorizontalRateOfTurn: 0
-		TrailImage: bazooka_trail2
+		TrailImage: ex_trail3
 		TrailPalette: effect75alpha
 		TrailInterval: 1
 		Speed: 343
@@ -62,11 +62,11 @@ Rocket:
 		SmudgeType: SandCrater, RockCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: rocket_explosion
+		Explosions: ex_rocket
 		ExplosionPalette: effect75alpha
 		ImpactSounds: EXPLSML1.WAV
 
-TowerMissile:
+new_rocket:
 	ReloadDelay: 60
 	Burst: 2
 	BurstDelay: 60
@@ -84,7 +84,7 @@ TowerMissile:
 		MinimumLaunchAngle: 64
 		VerticalRateOfTurn: 10
 		Image: MISSILE2
-		TrailImage: large_trail
+		TrailImage: Ex_Trail
 		TrailInterval: 1
 		Speed: 320
 	Warhead@1Dam: SpreadDamage
@@ -106,7 +106,7 @@ TowerMissile:
 		SmudgeType: SandCrater, RockCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: small_explosion
+		Explosions: ex_new_rocket
 		ImpactSounds: EXPLSML1.WAV
 
 mtank_pri:
@@ -127,7 +127,7 @@ mtank_pri:
 		VerticalRateOfTurn: 10
 		Inaccuracy: 96
 		Image: MISSILE2
-		TrailImage: large_trail
+		TrailImage: ex_trail
 		TrailInterval: 1
 	Warhead@1Dam: SpreadDamage
 		Spread: 256
@@ -148,10 +148,10 @@ mtank_pri:
 		SmudgeType: SandCrater, RockCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: small_explosion
+		Explosions: ex_new_rocket
 		ImpactSounds: EXPLSML1.WAV
 
-DeviatorMissile:
+deviator:
 	ReloadDelay: 160
 	Range: 5c0
 	Report: MISSLE1.WAV
@@ -166,7 +166,7 @@ DeviatorMissile:
 		MinimumLaunchAngle: 64
 		VerticalRateOfTurn: 10
 		Image: MISSILE
-		TrailImage: deviator_trail
+		TrailImage: ex_greenexp
 		TrailPalette: deviatorgas
 		TrailUsePlayerPalette: true
 		TrailInterval: 1
@@ -186,7 +186,7 @@ DeviatorMissile:
 			harvester: 20
 		DamageTypes: Prone50Percent, TriggerProne, SmallExplosionDeath
 	Warhead@3Eff: CreateEffect
-		Explosions: deviator
+		Explosions: ex_deviate
 		ExplosionPalette: deviatorgas
 		UsePlayerPalette: true
 		ImpactSounds: EXPLSML1.WAV

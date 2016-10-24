@@ -1,4 +1,4 @@
-110mm_Gun:
+110mm_gun:
 	ReloadDelay: 35
 	Range: 5c0
 	Report: TURRET1.WAV
@@ -26,10 +26,10 @@
 		SmudgeType: SandCrater, RockCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: small_napalm
+		Explosions: ex_tankgun
 		ImpactSounds: EXPLSML4.WAV
 
-80mm_A:
+80mm_gun_a:
 	ReloadDelay: 50
 	Range: 4c0
 	Report: MEDTANK1.WAV
@@ -55,17 +55,17 @@
 		SmudgeType: SandCrater, RockCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: small_napalm
+		Explosions: ex_tankgun
 
-80mm_H:
-	Inherits: 80mm_A
+80mm_gun_h:
+	Inherits: 80mm_Gun_A
 	ReloadDelay: 55
 
-80mm_O:
-	Inherits: 80mm_A
+80mm_gun_o:
+	Inherits: 80mm_Gun_A
 	ReloadDelay: 45
 
-DevBullet:
+devbullet:
 	ReloadDelay: 75
 	Range: 4c0
 	Report: TANKHVY1.WAV
@@ -88,10 +88,10 @@ DevBullet:
 		SmudgeType: SandCrater, RockCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: shockwave
+		Explosions: ex_devastator
 		ImpactSounds: EXPLMD1.WAV
 
-155mm:
+155mm_howitzer:
 	ReloadDelay: 80
 	Range: 5c512
 	Report: MORTAR1.WAV
@@ -120,5 +120,5 @@ DevBullet:
 		SmudgeType: SandCrater, RockCrater
 		InvalidTargets: Vehicle, Structure
 	Warhead@3Eff: CreateEffect
-		Explosions: med_explosion
+		Explosions: ex_155mmgun
 		ImpactSounds: EXPLMD2.WAV

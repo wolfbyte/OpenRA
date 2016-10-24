@@ -931,8 +931,8 @@ palace:
 			mercenary: palace.ordos
 	Power:
 		Amount: -200
-	ProvidesPrerequisite@nuke:
-		Prerequisite: palace.nuke
+	ProvidesPrerequisite@death_hand:
+		Prerequisite: palace.death_hand
 		Factions: harkonnen
 	ProvidesPrerequisite@fremen:
 		Prerequisite: palace.fremen
@@ -943,14 +943,14 @@ palace:
 	NukePower:
 		Cursor: nuke
 		Icon: deathhand
-		Prerequisites: ~techlevel.superweapons, ~palace.nuke
+		Prerequisites: ~techlevel.superweapons, ~palace.death_hand
 		ChargeTime: 300
 		Description: Death Hand
 		LongDesc: Launches an atomic missile at a target location
 		BeginChargeSpeechNotification: DeathHandMissilePrepping
 		EndChargeSpeechNotification: DeathHandMissileReady
 		MissileLaunchDetected: MissileLaunchDetected
-		MissileWeapon: atomic
+		MissileWeapon: dhbomb
 		SpawnOffset: -512,1c171,0
 		DisplayBeacon: True
 		DisplayRadarPing: True
