@@ -162,6 +162,7 @@
     <Compile Include="Primitives\SegmentStream.cs" />
     <Compile Include="Primitives\SpatiallyPartitioned.cs" />
     <Compile Include="Primitives\ConcurrentCache.cs" />
+    <Compile Include="Scripting\AIScriptContext.cs" />
     <Compile Include="Primitives\ZipFileHelper.cs" />
     <Compile Include="SelectableExts.cs" />
     <Compile Include="Selection.cs" />
@@ -179,6 +180,7 @@
     <Compile Include="Sync.cs" />
     <Compile Include="TraitDictionary.cs" />
     <Compile Include="Traits\LintAttributes.cs" />
+    <Compile Include="Traits\Player\DeveloperMode.cs" />
     <Compile Include="Traits\Player\PlayerResources.cs" />
     <Compile Include="Traits\Player\Shroud.cs" />
     <Compile Include="Traits\Selectable.cs" />
@@ -188,6 +190,7 @@
     <Compile Include="Traits\World\ResourceType.cs" />
     <Compile Include="Traits\World\ScreenShaker.cs" />
     <Compile Include="Traits\World\DebugVisualizations.cs" />
+    <Compile Include="Traits\World\Shroud.cs" />
     <Compile Include="World.cs" />
     <Compile Include="WorldUtils.cs" />
     <Compile Include="VoiceExts.cs" />
