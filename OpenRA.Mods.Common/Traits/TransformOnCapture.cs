@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Mods.Common.Activities;
@@ -63,7 +64,6 @@ namespace OpenRA.Mods.Common.Traits
 
 			var externalCapturesInfo = captor.Info.TraitInfoOrDefault<ExternalCapturesInfo>();
 			if (externalCapturesInfo != null && info.CaptureTypes.Overlaps(externalCapturesInfo.CaptureTypes))
-				return true;
 
 			return false;
 		}
