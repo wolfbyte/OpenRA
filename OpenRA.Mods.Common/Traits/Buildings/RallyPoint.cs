@@ -9,8 +9,10 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Effects;
 using OpenRA.Traits;
 
@@ -44,10 +46,16 @@ namespace OpenRA.Mods.Common.Traits
 		public RallyPointInfo Info;
 		public string PaletteName { get; private set; }
 
+		// Keep track of rally pointed acceptor actors
+		bool dirty = true;
+
 		const uint ForceSet = 1;
+
+		Actor cachedResult = null;
 
 		public void ResetLocation(Actor self)
 		{
+			dirty = true;
 			Location = self.Location + Info.Offset;
 		}
 
@@ -61,6 +69,7 @@ namespace OpenRA.Mods.Common.Traits
 		void INotifyCreated.Created(Actor self)
 		{
 			self.World.Add(new RallyPointIndicator(self, this, self.Info.TraitInfos<ExitInfo>().ToArray()));
+			dirty = true;
 		}
 
 		public void OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)
@@ -88,7 +97,64 @@ namespace OpenRA.Mods.Common.Traits
 		public void ResolveOrder(Actor self, Order order)
 		{
 			if (order.OrderString == OrderID)
+			{
 				Location = order.TargetLocation;
+				dirty = true;
+			}
+		}
+
+		Actor GetRallyAcceptor(Actor self, CPos location)
+		{
+			if (!dirty)
+			{
+				if (cachedResult == null)
+					return null;
+
+				if (!cachedResult.IsDead && !cachedResult.Disposed)
+					return cachedResult;
+			}
+
+			var actors = self.World.ActorMap.GetActorsAt(Location).Where(
+				a => a.TraitsImplementing<IAcceptsRallyPoint>().Count() > 0);
+
+			dirty = false;
+
+			if (!actors.Any())
+			{
+				cachedResult = null;
+				return null;
+			}
+
+			// If we have multiple of them, let's just go for first.
+			cachedResult = actors.First();
+			return cachedResult;
+		}
+
+		// self isn't the rally point but the one that has rally point trait.
+		// unit is the one that is to follow the rally point.
+		public void QueueRallyOrder(Actor self, Actor unit)
+		{
+			if (unit.TraitOrDefault<IMove>() == null)
+				throw new InvalidOperationException("How come rally point mover not have IMove trait? Actor: " + unit.ToString());
+
+			var rallyAcceptor = GetRallyAcceptor(self, Location);
+
+			if (rallyAcceptor == null)
+			{
+				unit.QueueActivity(new AttackMoveActivity(unit, unit.Trait<IMove>().MoveTo(Location, 1)));
+				return;
+			}
+
+			var ars = rallyAcceptor.TraitsImplementing<IAcceptsRallyPoint>();
+			if (ars.Count() > 1)
+				throw new InvalidOperationException(
+					"Actor {0} has multiple traits implementing IAcceptsRallyPoint!".F(rallyAcceptor.ToString()));
+
+			var ar = ars.First();
+			if (ar.IsAcceptableActor(unit, rallyAcceptor))
+				unit.QueueActivity(ar.RallyActivities(unit, rallyAcceptor));
+			else
+				unit.QueueActivity(new AttackMoveActivity(unit, unit.Trait<IMove>().MoveTo(Location, 1)));
 		}
 
 		public static bool IsForceSet(Order order)

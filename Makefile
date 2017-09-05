@@ -157,6 +157,17 @@ mod_d2k_LIBS = $(COMMON_LIBS) $(STD_MOD_LIBS) $(mod_common_TARGET)
 PROGRAMS += mod_d2k
 mod_d2k: $(mod_d2k_TARGET)
 
+# Generals Alpha
+mod_gen_SRCS := $(shell find OpenRA.Mods.gen/ -iname '*.cs')
+mod_gen_TARGET = mods/common/OpenRA.Mods.gen.dll
+mod_gen_KIND = library
+mod_gen_DEPS = $(STD_MOD_DEPS) $(mod_common_TARGET)
+mod_gen_LIBS = $(COMMON_LIBS) $(STD_MOD_LIBS) $(mod_cnc_TARGET) $(mod_common_TARGET)
+PROGRAMS += mod_gen
+mods/gen:
+	mkdir -p mods/gen
+mod_gen: mods/gen $(mod_gen_TARGET)
+
 check-scripts:
 	@echo
 	@echo "Checking for Lua syntax errors..."
@@ -213,17 +224,8 @@ nunit: test_dll
 
 test: utility mods
 	@echo
-	@echo "Testing Tiberian Sun mod MiniYAML..."
-	@mono --debug OpenRA.Utility.exe ts --check-yaml
-	@echo
-	@echo "Testing Dune 2000 mod MiniYAML..."
-	@mono --debug OpenRA.Utility.exe d2k --check-yaml
-	@echo
-	@echo "Testing Tiberian Dawn mod MiniYAML..."
-	@mono --debug OpenRA.Utility.exe cnc --check-yaml
-	@echo
-	@echo "Testing Red Alert mod MiniYAML..."
-	@mono --debug OpenRA.Utility.exe ra --check-yaml
+	@echo "Generals Alpha MiniYAML..."
+	@mono --debug OpenRA.Utility.exe gen --check-yaml
 
 
 ##### Launchers / Utilities #####
@@ -284,7 +286,7 @@ default: core
 
 core: dependencies game platforms mods utility server
 
-mods: mod_common mod_cnc mod_d2k
+mods: mod_common mod_cnc mod_d2k mod_gen
 
 all: dependencies core stylecheck
 

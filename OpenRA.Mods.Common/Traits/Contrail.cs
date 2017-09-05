@@ -35,6 +35,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("RGB color of the contrail.")]
 		public readonly Color Color = Color.White;
 
+		[Desc("RGB color of the faded contrail.")]
+		public readonly Color FadeColor = Color.Transparent;
+
 		[Desc("Use player remap color instead of a custom color?")]
 		public readonly bool UsePlayerColor = true;
 
@@ -55,7 +58,7 @@ namespace OpenRA.Mods.Common.Traits
 			this.info = info;
 
 			color = info.UsePlayerColor ? ContrailRenderable.ChooseColor(self) : info.Color;
-			trail = new ContrailRenderable(self.World, color, info.TrailWidth, info.TrailLength, 0, info.ZOffset);
+			trail = new ContrailRenderable(self.World, color, info.FadeColor, info.TrailWidth, info.TrailLength, 0, info.ZOffset);
 
 			body = self.Trait<BodyOrientation>();
 		}
@@ -79,7 +82,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		void INotifyAddedToWorld.AddedToWorld(Actor self)
 		{
-			trail = new ContrailRenderable(self.World, color, info.TrailWidth, info.TrailLength, 0, info.ZOffset);
+			trail = new ContrailRenderable(self.World, color, info.FadeColor, info.TrailWidth, info.TrailLength, 0, info.ZOffset);
 		}
 	}
 }
