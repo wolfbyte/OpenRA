@@ -7,46 +7,40 @@
    information, see COPYING.
 ]]
 
-HarkonnenReinforcements =
+HarkonnenReinforcements = { }
+HarkonnenReinforcements["easy"] =
 {
-	easy =
-	{
-		{ "light_inf", "light_inf" }
-	},
+	{ "light_inf", "light_inf" }
+}
 
-	normal =
-	{
-		{ "light_inf", "light_inf" },
-		{ "light_inf", "light_inf", "light_inf" },
-		{ "light_inf", "trike" }
-	},
+HarkonnenReinforcements["normal"] =
+{
+	{ "light_inf", "light_inf" },
+	{ "light_inf", "light_inf", "light_inf" },
+	{ "light_inf", "trike" },
+}
 
-	hard =
-	{
-		{ "light_inf", "light_inf" },
-		{ "trike", "trike" },
-		{ "light_inf", "light_inf", "light_inf" },
-		{ "light_inf", "trike" },
-		{ "trike", "trike" }
-	}
+HarkonnenReinforcements["hard"] =
+{
+	{ "light_inf", "light_inf" },
+	{ "trike", "trike" },
+	{ "light_inf", "light_inf", "light_inf" },
+	{ "light_inf", "trike" },
+	{ "trike", "trike" }
 }
 
 HarkonnenEntryWaypoints = { HarkonnenWaypoint1.Location, HarkonnenWaypoint2.Location, HarkonnenWaypoint3.Location }
 HarkonnenAttackDelay = DateTime.Seconds(30)
 
-HarkonnenAttackWaves =
-{
-	easy = 1,
-	normal = 5,
-	hard = 12
-}
+HarkonnenAttackWaves = { }
+HarkonnenAttackWaves["easy"] = 1
+HarkonnenAttackWaves["normal"] = 5
+HarkonnenAttackWaves["hard"] = 12
 
-ToHarvest =
-{
-	easy = 2500,
-	normal = 3000,
-	hard = 3500
-}
+ToHarvest = { }
+ToHarvest["easy"] = 2500
+ToHarvest["normal"] = 3000
+ToHarvest["hard"] = 3500
 
 OrdosReinforcements = { "light_inf", "light_inf", "light_inf", "light_inf", "raider" }
 OrdosEntryPath = { OrdosWaypoint.Location, OrdosRally.Location }
@@ -59,12 +53,19 @@ Messages =
 	"Build a Silo to store additional Spice."
 }
 
+
+IdleHunt = function(actor)
+	if not actor.IsDead then
+		Trigger.OnIdle(actor, actor.Hunt)
+	end
+end
+
 Tick = function()
 	if HarkonnenArrived and harkonnen.HasNoRequiredUnits() then
 		player.MarkCompletedObjective(KillHarkonnen)
 	end
 
-	if player.Resources > SpiceToHarvest - 1 then
+	if player.Resources > ToHarvest[Map.LobbyOption("difficulty")] - 1 then
 		player.MarkCompletedObjective(GatherSpice)
 	end
 
@@ -85,41 +86,17 @@ Tick = function()
 		Media.DisplayMessage(Messages[4], "Mentat")
 	end
 
-	UserInterface.SetMissionText("Harvested resources: " .. player.Resources .. "/" .. SpiceToHarvest, player.Color)
+	UserInterface.SetMissionText("Harvested resources: " .. player.Resources .. "/" .. ToHarvest[Map.LobbyOption("difficulty")], player.Color)
 end
 
 WorldLoaded = function()
 	player = Player.GetPlayer("Ordos")
 	harkonnen = Player.GetPlayer("Harkonnen")
 
-	SpiceToHarvest = ToHarvest[Difficulty]
-
-	InitObjectives(player)
-	KillOrdos = harkonnen.AddPrimaryObjective("Kill all Ordos units.")
-	GatherSpice = player.AddPrimaryObjective("Harvest " .. tostring(SpiceToHarvest) .. " Solaris worth of Spice.")
-	KillHarkonnen = player.AddSecondaryObjective("Eliminate all Harkonnen units and reinforcements\nin the area.")
-
-	local checkResourceCapacity = function()
-		Trigger.AfterDelay(0, function()
-			if player.ResourceCapacity < SpiceToHarvest then
-				Media.DisplayMessage("We don't have enough silo space to store the required amount of Spice!", "Mentat")
-				Trigger.AfterDelay(DateTime.Seconds(3), function()
-					harkonnen.MarkCompletedObjective(KillAtreides)
-				end)
-
-				return true
-			end
-		end)
-	end
+	InitObjectives()
 
 	Trigger.OnRemovedFromWorld(OrdosConyard, function()
-
-		-- Mission already failed, no need to check the other conditions as well
-		if checkResourceCapacity() then
-			return
-		end
-
-		local refs = Utils.Where(Map.ActorsInWorld, function(actor) return actor.Type == "refinery" and actor.Owner == player end)
+		local refs = Utils.Where(Map.ActorsInWorld, function(actor) return actor.Type == "refinery" end)
 
 		if #refs == 0 then
 			harkonnen.MarkCompletedObjective(KillOrdos)
@@ -127,10 +104,6 @@ WorldLoaded = function()
 			Trigger.OnAllRemovedFromWorld(refs, function()
 				harkonnen.MarkCompletedObjective(KillOrdos)
 			end)
-
-			local silos = Utils.Where(Map.ActorsInWorld, function(actor) return actor.Type == "silo" and actor.Owner == player end)
-			Utils.Do(refs, function(actor) Trigger.OnRemovedFromWorld(actor, checkResourceCapacity) end)
-			Utils.Do(silos, function(actor) Trigger.OnRemovedFromWorld(actor, checkResourceCapacity) end)
 		end
 	end)
 
@@ -141,12 +114,12 @@ WorldLoaded = function()
 		Reinforcements.Reinforce(player, OrdosReinforcements, OrdosEntryPath)
 	end)
 
-	WavesLeft = HarkonnenAttackWaves[Difficulty]
+	WavesLeft = HarkonnenAttackWaves[Map.LobbyOption("difficulty")]
 	SendReinforcements()
 end
 
 SendReinforcements = function()
-	local units = HarkonnenReinforcements[Difficulty]
+	local units = HarkonnenReinforcements[Map.LobbyOption("difficulty")]
 	local delay = Utils.RandomInteger(HarkonnenAttackDelay - DateTime.Seconds(2), HarkonnenAttackDelay)
 	HarkonnenAttackDelay = HarkonnenAttackDelay - (#units * 3 - 3 - WavesLeft) * DateTime.Seconds(1)
 	if HarkonnenAttackDelay < 0 then HarkonnenAttackDelay = 0 end
@@ -160,5 +133,33 @@ SendReinforcements = function()
 		else
 			SendReinforcements()
 		end
+	end)
+end
+
+InitObjectives = function()
+	Trigger.OnObjectiveAdded(player, function(p, id)
+		Media.DisplayMessage(p.GetObjectiveDescription(id), "New " .. string.lower(p.GetObjectiveType(id)) .. " objective")
+	end)
+
+	KillOrdos = harkonnen.AddPrimaryObjective("Kill all Ordos units.")
+	GatherSpice = player.AddPrimaryObjective("Harvest " .. tostring(ToHarvest[Map.LobbyOption("difficulty")]) .. " Solaris worth of Spice.")
+	KillHarkonnen = player.AddSecondaryObjective("Eliminate all Harkonnen units and reinforcements\nin the area.")
+
+	Trigger.OnObjectiveCompleted(player, function(p, id)
+		Media.DisplayMessage(p.GetObjectiveDescription(id), "Objective completed")
+	end)
+	Trigger.OnObjectiveFailed(player, function(p, id)
+		Media.DisplayMessage(p.GetObjectiveDescription(id), "Objective failed")
+	end)
+
+	Trigger.OnPlayerLost(player, function()
+		Trigger.AfterDelay(DateTime.Seconds(1), function()
+			Media.PlaySpeechNotification(player, "Lose")
+		end)
+	end)
+	Trigger.OnPlayerWon(player, function()
+		Trigger.AfterDelay(DateTime.Seconds(1), function()
+			Media.PlaySpeechNotification(player, "Win")
+		end)
 	end)
 end

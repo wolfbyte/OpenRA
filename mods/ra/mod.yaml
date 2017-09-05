@@ -1,6 +1,6 @@
 Metadata:
 	Title: Red Alert
-	Version: {DEV_VERSION}
+	Version: playtest-20170902
 
 PackageFormats: Mix
 
@@ -34,7 +34,7 @@ Packages:
 
 MapFolders:
 	ra|maps: System
-	~^maps/ra/{DEV_VERSION}: User
+	~^maps/ra/playtest-20170902: User
 
 Rules:
 	ra|rules/misc.yaml
@@ -93,7 +93,6 @@ ChromeLayout:
 	ra|chrome/ingame-player.yaml
 	common|chrome/ingame-perf.yaml
 	common|chrome/ingame-debug.yaml
-	common|chrome/ingame-infochat.yaml
 	common|chrome/mainmenu.yaml
 	common|chrome/settings.yaml
 	common|chrome/credits.yaml

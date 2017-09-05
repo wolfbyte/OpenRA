@@ -1,10 +1,9 @@
 ABAN01:
 	Inherits: ^CivBuilding
-	Inherits@SHAPE: ^2x6Shape
 	Tooltip:
 		Name: WS Logging Company
 	Building:
-		Footprint: xx xx xx xx xx XX
+		Footprint: xx xx xx xx xx xx
 		Dimensions: 2, 6
 	Armor:
 		Type: wood
@@ -19,11 +18,10 @@ ABAN01:
 
 ABAN02:
 	Inherits: ^CivBuilding
-	Inherits@SHAPE: ^5x3Shape
 	Tooltip:
 		Name: Panullo Hacienda
 	Building:
-		Footprint: xxxxx xxxxx XXXxX
+		Footprint: xxxxx xxxxx xxxxx
 		Dimensions: 5, 3
 	Armor:
 		Type: heavy
@@ -38,11 +36,10 @@ ABAN02:
 
 ABAN03:
 	Inherits: ^CivBuilding
-	Inherits@SHAPE: ^2x5Shape
 	Tooltip:
 		Name: Abandoned Factory
 	Building:
-		Footprint: xx xx xx xx XX
+		Footprint: xx xx xx xx xx
 		Dimensions: 2, 5
 	Armor:
 		Type: wood
@@ -57,11 +54,10 @@ ABAN03:
 
 ABAN04:
 	Inherits: ^CivBuilding
-	Inherits@SHAPE: ^4x2Shape
 	Tooltip:
 		Name: City Hall
 	Building:
-		Footprint: xxxX xxxX
+		Footprint: xxxx xxxx
 		Dimensions: 4, 2
 	Armor:
 		Type: heavy
@@ -76,15 +72,10 @@ ABAN04:
 
 ABAN05:
 	Inherits: ^CivBuilding
-	Inherits@SHAPE: ^3x2Shape
-	HitShape:
-		Type: Rectangle
-			TopLeft: -1536, -1024
-			BottomRight: 768, 1024
 	Tooltip:
 		Name: Hunting Lodge
 	Building:
-		Footprint: xxX xxX
+		Footprint: xxx xxx
 		Dimensions: 3, 2
 	Armor:
 		Type: wood
@@ -95,7 +86,6 @@ ABAN05:
 
 ABAN06:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Local Inn & Lodging
 	Building:
@@ -110,7 +100,6 @@ ABAN06:
 
 ABAN07:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Church
 	Building:
@@ -125,7 +114,6 @@ ABAN07:
 
 ABAN08:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Abandoned Warehouse
 	Building:
@@ -140,7 +128,6 @@ ABAN08:
 
 ABAN09:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Tall's Residence
 	Building:
@@ -155,7 +142,6 @@ ABAN09:
 
 ABAN10:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Denzil's Last Chance Motel
 	Building:
@@ -170,7 +156,6 @@ ABAN10:
 
 ABAN11:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Miele Manor
 	Building:
@@ -185,7 +170,6 @@ ABAN11:
 
 ABAN12:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Kettler's Place
 	Building:
@@ -242,11 +226,10 @@ ABAN15:
 
 ABAN16:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Gas Station
 	Building:
-		Footprint: xx xX
+		Footprint: xx xx
 		Dimensions: 2, 2
 	Armor:
 		Type: wood
@@ -324,10 +307,6 @@ BBOARD05:
 
 BBOARD06:
 	Inherits: ^CivBillboard
-	Inherits@shape: ^1x2Shape
-	HitShape:
-		UseTargetableCellsOffsets: false
-		TargetableOffsets: -128,-192,0, 128,192,0
 	Tooltip:
 		Name: Kaspm's Tiberium Warhouse
 	Building:
@@ -336,10 +315,6 @@ BBOARD06:
 
 BBOARD07:
 	Inherits: ^CivBillboard
-	Inherits@shape: ^1x2Shape
-	HitShape:
-		UseTargetableCellsOffsets: false
-		TargetableOffsets: -128,-192,0, 128,192,0
 	Tooltip:
 		Name: Alkaline's Battery Superstore
 	Building:
@@ -348,10 +323,6 @@ BBOARD07:
 
 BBOARD08:
 	Inherits: ^CivBillboard
-	Inherits@shape: ^1x2Shape
-	HitShape:
-		UseTargetableCellsOffsets: false
-		TargetableOffsets: -128,-192,0, 128,192,0
 	Tooltip:
 		Name: Alex-gators petshop just ahead!
 	Building:
@@ -385,10 +356,6 @@ BBOARD13:
 
 BBOARD14:
 	Inherits: ^CivBillboard
-	Inherits@shape: ^2x1Shape
-	HitShape:
-		UseTargetableCellsOffsets: false
-		TargetableOffsets: -128,192,0, 128,-192,0
 	Tooltip:
 		Name: Billy Bob's Harvester school
 	Building:
@@ -397,10 +364,6 @@ BBOARD14:
 
 BBOARD15:
 	Inherits: ^CivBillboard
-	Inherits@shape: ^2x1Shape
-	HitShape:
-		UseTargetableCellsOffsets: false
-		TargetableOffsets: -128,192,0, 128,-192,0
 	Tooltip:
 		Name: Pannullo's hacienda es bueno
 	Building:
@@ -409,10 +372,6 @@ BBOARD15:
 
 BBOARD16:
 	Inherits: ^CivBillboard
-	Inherits@shape: ^2x1Shape
-	HitShape:
-		UseTargetableCellsOffsets: false
-		TargetableOffsets: -128,192,0, 128,-192,0
 	Tooltip:
 		Name: Join GDI: We save lives.
 	Building:
@@ -421,11 +380,10 @@ BBOARD16:
 
 CA0001:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^3x3Shape
 	Tooltip:
 		Name: Rade's Roadhouse
 	Building:
-		Footprint: xxX xxX XXX
+		Footprint: xxx xxx xxx
 		Dimensions: 3, 3
 	Armor:
 		Type: heavy
@@ -438,11 +396,10 @@ CA0001:
 
 CA0002:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^3x3Shape
 	Tooltip:
 		Name: Sandberg and Son's
 	Building:
-		Footprint: xxX xxx Xxx
+		Footprint: xxx xxx xxx
 		Dimensions: 3, 3
 	Armor:
 		Type: heavy
@@ -455,7 +412,6 @@ CA0002:
 
 CA0003:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Temp Housing
 	Building:
@@ -468,11 +424,10 @@ CA0003:
 
 CA0004:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Waystation
 	Building:
-		Footprint: xx xX
+		Footprint: xx xx
 		Dimensions: 2, 2
 	Armor:
 		Type: light
@@ -481,7 +436,6 @@ CA0004:
 
 CA0005:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^1x2Shape
 	Tooltip:
 		Name: Ferbie's 4 Sale
 	Building:
@@ -494,7 +448,6 @@ CA0005:
 
 CA0006:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^1x2Shape
 	Tooltip:
 		Name: Deluxe Accomodations
 	Building:
@@ -507,7 +460,6 @@ CA0006:
 
 CA0007:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^1x2Shape
 	Tooltip:
 		Name: Field Generator
 	Building:
@@ -520,11 +472,10 @@ CA0007:
 
 CA0008:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x3Shape
 	Tooltip:
 		Name: Subterranean Dwelling
 	Building:
-		Footprint: xX xX xx
+		Footprint: xx xx xx
 		Dimensions: 2, 3
 	Armor:
 		Type: heavy
@@ -533,11 +484,10 @@ CA0008:
 
 CA0009:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x3Shape
 	Tooltip:
 		Name: Subterranean Dwelling
 	Building:
-		Footprint: xX xx xX
+		Footprint: xx xx xx
 		Dimensions: 2, 3
 	Armor:
 		Type: heavy
@@ -546,7 +496,6 @@ CA0009:
 
 CA0010:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Leary Traveller Inn
 	Building:
@@ -559,7 +508,6 @@ CA0010:
 
 CA0011:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^1x2Shape
 	Tooltip:
 		Name: Water Tank
 	Building:
@@ -572,7 +520,6 @@ CA0011:
 
 CA0012:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^1x2Shape
 	Tooltip:
 		Name: Greenhouse
 	Building:
@@ -585,7 +532,6 @@ CA0012:
 
 CA0013:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x1Shape
 	Tooltip:
 		Name: Water Purifier
 	Building:
@@ -646,10 +592,6 @@ CA0017:
 
 CA0018:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^1x2Shape
-	HitShape:
-		UseTargetableCellsOffsets: false
-		TargetableOffsets: 0,0,0, -512,-512,0
 	Tooltip:
 		Name: Solar Panel
 	Building:
@@ -662,10 +604,6 @@ CA0018:
 
 CA0019:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^1x2Shape
-	HitShape:
-		UseTargetableCellsOffsets: false
-		TargetableOffsets: 0,0,0, -512,-512,0
 	Tooltip:
 		Name: Solar Panel
 	Building:
@@ -678,10 +616,6 @@ CA0019:
 
 CA0020:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^1x2Shape
-	HitShape:
-		UseTargetableCellsOffsets: false
-		TargetableOffsets: 0,0,0, 512,512,0
 	Tooltip:
 		Name: Solar Panel
 	Building:
@@ -694,10 +628,6 @@ CA0020:
 
 CA0021:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^1x2Shape
-	HitShape:
-		UseTargetableCellsOffsets: false
-		TargetableOffsets: 0,0,0, 512,512,0
 	Tooltip:
 		Name: Solar Panel
 	Building:
@@ -710,7 +640,6 @@ CA0021:
 
 CAARAY:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Civilian Array
 	Building:
@@ -729,7 +658,6 @@ CAARAY:
 
 CAARMR:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x4Shape
 	Tooltip:
 		Name: Civilian Armory
 	Building:
@@ -768,11 +696,10 @@ CACRSH05:
 
 CAHOSP:
 	Inherits: ^BasicBuilding
-	Inherits@shape: ^3x4Shape
 	Tooltip:
 		Name: Civilian Hospital
 	Building:
-		Footprint: XxX xxx xxx xxx
+		Footprint: xxx xxx xxx xxx
 		Dimensions: 3, 4
 	Armor:
 		Type: concrete
@@ -792,7 +719,6 @@ CAHOSP:
 
 CAPYR01:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Pyramid
 	Building:
@@ -807,7 +733,6 @@ CAPYR01:
 
 CAPYR02:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x4Shape
 	Tooltip:
 		Name: Pyramid
 	Building:
@@ -826,7 +751,6 @@ CAPYR02:
 
 CAPYR03:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x4Shape
 	Tooltip:
 		Name: Pyramid
 	Building:
@@ -845,11 +769,10 @@ CAPYR03:
 
 CITY01:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x2Shape
 	Tooltip:
 		Name: Connelly Court Apts.
 	Building:
-		Footprint: xxxX XxxX
+		Footprint: xxxx xxxx
 		Dimensions: 4, 2
 	Armor:
 		Type: wood
@@ -864,7 +787,6 @@ CITY01:
 
 CITY02:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x3Shape
 	Tooltip:
 		Name: Lightner's Luxury Suites
 	Building:
@@ -883,7 +805,6 @@ CITY02:
 
 CITY03:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^3x2Shape
 	Tooltip:
 		Name: Office Building
 	Building:
@@ -902,7 +823,6 @@ CITY03:
 
 CITY04:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^3x2Shape
 	Tooltip:
 		Name: Westwood Stock Exchange
 	Building:
@@ -921,7 +841,6 @@ CITY04:
 
 CITY05:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^3x2Shape
 	Tooltip:
 		Name: Daily Sun Times
 	Building:
@@ -940,11 +859,10 @@ CITY05:
 
 CITY06:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x2Shape
 	Tooltip:
 		Name: YEO-CA Cola Corp.
 	Building:
-		Footprint: xxxx XxxX
+		Footprint: xxxx xxxx
 		Dimensions: 4, 2
 	Armor:
 		Type: concrete
@@ -959,7 +877,6 @@ CITY06:
 
 CITY07:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x2Shape
 	Tooltip:
 		Name: Urban Housing
 	Building:
@@ -978,7 +895,6 @@ CITY07:
 
 CITY08:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Yee's Discount Liquor
 	Building:
@@ -993,7 +909,6 @@ CITY08:
 
 CITY09:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Abandoned Warehouse
 	Building:
@@ -1008,7 +923,6 @@ CITY09:
 
 CITY10:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Urban Storefront
 	Building:
@@ -1023,7 +937,6 @@ CITY10:
 
 CITY11:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Ambrose Lounge
 	Building:
@@ -1038,11 +951,10 @@ CITY11:
 
 CITY12:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Bostic Tower
 	Building:
-		Footprint: xX xx
+		Footprint: xx xx
 		Dimensions: 2, 2
 	Armor:
 		Type: concrete
@@ -1053,11 +965,10 @@ CITY12:
 
 CITY13:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Hewitt Hair Salon
 	Building:
-		Footprint: xX Xx
+		Footprint: xx xx
 		Dimensions: 2, 2
 	Armor:
 		Type: wood
@@ -1082,11 +993,10 @@ CITY14:
 
 CITY15:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x2Shape
 	Tooltip:
 		Name: 2nd National Bank
 	Building:
-		Footprint: xxxX xxxX
+		Footprint: xxxx xxxx
 		Dimensions: 4, 2
 	Armor:
 		Type: heavy
@@ -1101,7 +1011,6 @@ CITY15:
 
 CITY16:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x2Shape
 	Tooltip:
 		Name: Highrise Hotel
 	Building:
@@ -1120,11 +1029,10 @@ CITY16:
 
 CITY17:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x3Shape
 	Tooltip:
 		Name: The Projects
 	Building:
-		Footprint: XxxX xxxx xxxX
+		Footprint: xxxx xxxx xxxx
 		Dimensions: 4, 3
 	Armor:
 		Type: wood
@@ -1139,11 +1047,10 @@ CITY17:
 
 CITY18:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^3x5Shape
 	Tooltip:
 		Name: Archer Asylum
 	Building:
-		Footprint: xxx xxx xxx xxx xxX
+		Footprint: xxx xxx xxx xxx xxx
 		Dimensions: 3, 5
 	Armor:
 		Type: concrete
@@ -1158,11 +1065,10 @@ CITY18:
 
 CITY19:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Fill'er Up-Pump'N'Go
 	Building:
-		Footprint: xx xX
+		Footprint: xx xx
 		Dimensions: 2, 2
 	Armor:
 		Type: wood
@@ -1201,7 +1107,6 @@ CITY21:
 
 CITY22:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x2Shape
 	Tooltip:
 		Name: Church
 	Building:
@@ -1216,7 +1121,6 @@ CITY22:
 
 CTDAM:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^2x5Shape
 	Tooltip:
 		Name: Hydroelectric Dam
 	Building:
@@ -1244,7 +1148,6 @@ CTDAM:
 
 CTVEGA:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x4Shape
 	Tooltip:
 		Name: Vega's Pyramid
 	Building:
@@ -1263,13 +1166,10 @@ CTVEGA:
 
 GAKODK:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x2Shape
-	HitShape:
-		TargetableOffsets: 0,0,0, -512,512,0, -950,1024,0
 	Tooltip:
 		Name: GDI Kodiak
 	Building:
-		Footprint: xxXX xxXX
+		Footprint: xxxx xxxx
 		Dimensions: 4, 2
 	Armor:
 		Type: heavy
@@ -1293,8 +1193,6 @@ GAOLDCC2:
 	Inherits: ^OldBase
 	Tooltip:
 		Name: Old Temple
-	Building:
-		Footprint: xx xX
 
 GAOLDCC3:
 	Inherits: ^OldBase
@@ -1315,8 +1213,6 @@ GAOLDCC6:
 	Inherits: ^OldBase
 	Tooltip:
 		Name: Old Silos
-	Building:
-		Footprint: xX Xx
 
 GASAND:
 	Inherits: ^Wall
@@ -1437,7 +1333,6 @@ GAICBM:
 
 NAMNTK:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^1x3Shape
 	Tooltip:
 		Name: NOD Montauk
 	Building:
@@ -1454,7 +1349,6 @@ NAMNTK:
 
 NTPYRA:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^4x4Shape
 	Tooltip:
 		Name: Nod Pyramid
 	Building:
@@ -1477,7 +1371,6 @@ NTPYRA:
 
 UFO:
 	Inherits: ^CivBuilding
-	Inherits@shape: ^6x4Shape
 	Building:
 		Dimensions: 6, 4
 		Footprint: xxxxxx xxxxxx xxxxxx xxxxxx

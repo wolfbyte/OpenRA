@@ -1,14 +1,8 @@
---[[
-   Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
-   This file is part of OpenRA, which is free software. It is made
-   available to you under the terms of the GNU General Public License
-   as published by the Free Software Foundation, either version 3 of
-   the License, or (at your option) any later version. For more
-   information, see COPYING.
-]]
-
-AtreidesBase = { AConyard, AOutpost, ARefinery, AHeavyFactory, ALightFactory, AGunt1, AGunt2, ABarracks, ASilo, APower1, APower2, APower3, APower4, APower5, APower6 }
-FremenBase = { FGunt1, FGunt2 }
+Base = 
+{
+	Atreides = { AConyard, AOutpost, ARefinery, AHeavyFactory, ALightFactory, AGunt1, AGunt2, ABarracks, ASilo, APower1, APower2, APower3, APower4, APower5, APower6 },
+	Fremen = { FGunt1, FGunt2 }
+}
 
 BaseAreaTriggers =
 {
@@ -116,14 +110,55 @@ FremenInterval =
 	hard = { DateTime.Minutes(3) + DateTime.Seconds(40), DateTime.Minutes(4) }
 }
 
+wave = 0
+SendFremen = function()
+	Trigger.AfterDelay(FremenAttackDelay[Difficulty], function()
+		if player.IsObjectiveCompleted(KillFremen) then
+			return
+		end
+
+		wave = wave + 1
+		if wave > FremenAttackWaves[Difficulty] then
+			return
+		end
+
+		local entryPath = Utils.Random(FremenPaths)
+		local units = Reinforcements.ReinforceWithTransport(fremen, "carryall.reinforce", FremenReinforcements[Difficulty][wave], entryPath, { entryPath[1] })[2]
+		Utils.Do(units, function(unit)
+			unit.AttackMove(FremenAttackLocation)
+			IdleHunt(unit)
+		end)
+
+		SendFremen()
+	end)
+end
+
+SendHunters = function(areaTrigger, unit, path, house, objective, check)
+	Trigger.OnEnteredFootprint(areaTrigger, function(a, id)
+		if player.IsObjectiveCompleted(objective) then
+			return
+		end
+
+		if not check and a.Owner == player then
+			local units = Reinforcements.ReinforceWithTransport(house, "carryall.reinforce", unit, path, { path[1] })[2]
+			Utils.Do(units, IdleHunt)
+			check = true
+		end
+	end)
+end
+
 FremenProduction = function()
+	Trigger.OnAllKilled(Sietches, function()
+		SietchesAreDestroyed = true
+	end)
+	
 	if SietchesAreDestroyed then
 		return
 	end
 
 	local delay = Utils.RandomInteger(FremenInterval[Difficulty][1], FremenInterval[Difficulty][2] + 1)
 	fremen.Build({ "nsfremen" }, function()
-		Trigger.AfterDelay(delay, FremenProduction)
+		Trigger.AfterDelay(delay, ProduceInfantry)
 	end)
 end
 
@@ -142,12 +177,12 @@ Tick = function()
 		player.MarkCompletedObjective(KillFremen)
 	end
 
-	if DateTime.GameTime % DateTime.Seconds(10) == 0 and LastHarvesterEaten[atreides] then
+	if DateTime.GameTime % DateTime.Seconds(30) and HarvesterKilled then
 		local units = atreides.GetActorsByType("harvester")
 
 		if #units > 0 then
-			LastHarvesterEaten[atreides] = false
-			ProtectHarvester(units[1], atreides, AttackGroupSize[Difficulty])
+			HarvesterKilled = false
+			ProtectHarvester(units[1])
 		end
 	end
 end
@@ -157,30 +192,18 @@ WorldLoaded = function()
 	fremen = Player.GetPlayer("Fremen")
 	player = Player.GetPlayer("Harkonnen")
 
-	InitObjectives(player)
-	KillAtreides = player.AddPrimaryObjective("Destroy the Atreiedes.")
-	KillFremen = player.AddPrimaryObjective("Destroy the Fremen.")
-	KillHarkonnen = atreides.AddPrimaryObjective("Kill all Harkonnen units.")
+	Difficulty = Map.LobbyOption("difficulty")
+
+	InitObjectives()
 
 	Camera.Position = HConyard.CenterPosition
 	FremenAttackLocation = HConyard.Location
 
-	Trigger.OnAllKilledOrCaptured(AtreidesBase, function()
+	Trigger.OnAllKilledOrCaptured(Base[atreides.Name], function()
 		Utils.Do(atreides.GetGroundAttackers(), IdleHunt)
 	end)
 
-	Trigger.OnAllKilled(Sietches, function()
-		SietchesAreDestroyed = true
-	end)
-
-	local path = function() return Utils.Random(FremenPaths) end
-	local waveCondition = function() return player.IsObjectiveCompleted(KillFremen) end
-	local huntFunction = function(unit)
-		unit.AttackMove(FremenAttackLocation)
-		IdleHunt(unit)
-	end
-	SendCarryallReinforcements(fremen, 0, FremenAttackWaves[Difficulty], FremenAttackDelay[Difficulty], path, FremenReinforcements[Difficulty], waveCondition, huntFunction)
-
+	SendFremen()
 	Actor.Create("upgrade.barracks", true, { Owner = atreides })
 	Actor.Create("upgrade.light", true, { Owner = atreides })
 	Trigger.AfterDelay(0, ActivateAI)
@@ -194,11 +217,36 @@ WorldLoaded = function()
 		Media.DisplayMessage("Fremen concentrations spotted to the North and Southwest.", "Mentat")
 	end)
 
-	local atreidesCondition = function() return player.IsObjectiveCompleted(KillAtreides) end
-	TriggerCarryallReinforcements(player, atreides, BaseAreaTriggers[1], AtreidesHunters,  AtreidesPaths[1], atreidesCondition)
+	SendHunters(BaseAreaTriggers[1], AtreidesHunters, AtreidesPaths[1], atreides, KillAtreides, HuntersSent1)
+	SendHunters(BaseAreaTriggers[1], FremenHunters[1], FremenHunterPaths[3], fremen, KillFremen, HuntersSent2)
+	SendHunters(BaseAreaTriggers[2], FremenHunters[2], FremenHunterPaths[2], fremen, KillFremen, HuntersSent3)
+	SendHunters(BaseAreaTriggers[3], FremenHunters[3], FremenHunterPaths[1], fremen, KillFremen, HuntersSent4)
+end
 
-	local fremenCondition = function() return player.IsObjectiveCompleted(KillFremen) end
-	TriggerCarryallReinforcements(player, fremen, BaseAreaTriggers[1], FremenHunters[1],  FremenHunterPaths[3], fremenCondition)
-	TriggerCarryallReinforcements(player, fremen, BaseAreaTriggers[2], FremenHunters[2],  FremenHunterPaths[2], fremenCondition)
-	TriggerCarryallReinforcements(player, fremen, BaseAreaTriggers[3], FremenHunters[3],  FremenHunterPaths[1], fremenCondition)
+InitObjectives = function()
+	Trigger.OnObjectiveAdded(player, function(p, id)
+		Media.DisplayMessage(p.GetObjectiveDescription(id), "New " .. string.lower(p.GetObjectiveType(id)) .. " objective")
+	end)
+
+	KillAtreides = player.AddPrimaryObjective("Destroy the Atreiedes.")
+	KillFremen = player.AddPrimaryObjective("Destroy the Fremen.")
+	KillHarkonnen = atreides.AddPrimaryObjective("Kill all Harkonnen units.")
+
+	Trigger.OnObjectiveCompleted(player, function(p, id)
+		Media.DisplayMessage(p.GetObjectiveDescription(id), "Objective completed")
+	end)
+	Trigger.OnObjectiveFailed(player, function(p, id)
+		Media.DisplayMessage(p.GetObjectiveDescription(id), "Objective failed")
+	end)
+
+	Trigger.OnPlayerLost(player, function()
+		Trigger.AfterDelay(DateTime.Seconds(1), function()
+			Media.PlaySpeechNotification(player, "Lose")
+		end)
+	end)
+	Trigger.OnPlayerWon(player, function()
+		Trigger.AfterDelay(DateTime.Seconds(1), function()
+			Media.PlaySpeechNotification(player, "Win")
+		end)
+	end)
 end

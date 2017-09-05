@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using OpenRA.Activities;
@@ -58,7 +59,10 @@ namespace OpenRA.Mods.Common.Activities
 			var deliver = new DeliverResources(self);
 
 			if (harv.IsFull)
-				return ActivityUtils.SequenceActivities(deliver, NextActivity);
+			{
+				Queue(deliver);
+				return NextActivity;
+			}
 
 			var closestHarvestablePosition = ClosestHarvestablePos(self);
 
@@ -67,7 +71,10 @@ namespace OpenRA.Mods.Common.Activities
 			if (!closestHarvestablePosition.HasValue)
 			{
 				if (!harv.IsEmpty)
-					return deliver;
+				{
+					Queue(deliver);
+					return NextActivity;
+				}
 
 				var unblockCell = harv.LastHarvestedCell ?? (self.Location + harvInfo.UnblockCell);
 				var moveTo = mobile.NearestMoveableCell(unblockCell, 2, 5);
@@ -98,12 +105,29 @@ namespace OpenRA.Mods.Common.Activities
 
 				self.SetTargetLine(Target.FromCell(self.World, closestHarvestablePosition.Value), Color.Red, false);
 
-				// TODO: The harvest-deliver-return sequence is a horrible mess of duplicated code and edge-cases
+				var move = mobile.MoveTo(closestHarvestablePosition.Value, 2);
+
+				Activity extraActivities = null;
 				var notify = self.TraitsImplementing<INotifyHarvesterAction>();
 				foreach (var n in notify)
-					n.MovingToResources(self, closestHarvestablePosition.Value, this);
+				{
+					var extra = n.MovingToResources(self, closestHarvestablePosition.Value, move);
+					if (extra != null)
+					{
+						if (extraActivities != null)
+							throw new InvalidOperationException("Actor {0} has conflicting activities to perform for INotifyHarvesterAction.".F(self.ToString()));
 
-				return ActivityUtils.SequenceActivities(mobile.MoveTo(closestHarvestablePosition.Value, 1), new HarvestResource(self), this);
+						extraActivities = extra;
+					}
+				}
+
+				if (extraActivities != null)
+					Queue(extraActivities);
+				else
+					Queue(move);
+
+				Queue(new HarvestResource(self));
+				return NextActivity;
 			}
 		}
 

@@ -57,10 +57,9 @@ namespace OpenRA.Mods.Common.Orders
 		static IEnumerable<Actor> FriendlyGuardableUnits(World world, MouseInput mi)
 		{
 			return world.ScreenMap.ActorsAt(mi)
-				.Where(a => !a.IsDead &&
+				.Where(a => !world.FogObscures(a) && !a.IsDead &&
 					a.AppearsFriendlyTo(world.LocalPlayer.PlayerActor) &&
-					a.Info.HasTraitInfo<GuardableInfo>() &&
-					!world.FogObscures(a));
+					a.Info.HasTraitInfo<GuardableInfo>());
 		}
 	}
 }

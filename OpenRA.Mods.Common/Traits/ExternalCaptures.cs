@@ -18,7 +18,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("This actor can capture other actors which have the ExternalCapturable: trait.")]
-	class ExternalCapturesInfo : ITraitInfo
+	class ExternalCapturesInfo : ConditionalTraitInfo
 	{
 		[Desc("Types of actors that it can capture, as long as the type also exists in the ExternalCapturable Type: trait.")]
 		public readonly HashSet<string> CaptureTypes = new HashSet<string> { "building" };
@@ -37,22 +37,21 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly string CaptureCursor = "ability";
 		public readonly string CaptureBlockedCursor = "move-blocked";
 
-		public object Create(ActorInitializer init) { return new ExternalCaptures(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new ExternalCaptures(init.Self, this); }
 	}
 
-	class ExternalCaptures : IIssueOrder, IResolveOrder, IOrderVoice
+	class ExternalCaptures : ConditionalTrait<ExternalCapturesInfo>, IIssueOrder, IResolveOrder, IOrderVoice
 	{
-		public readonly ExternalCapturesInfo Info;
-
 		public ExternalCaptures(Actor self, ExternalCapturesInfo info)
-		{
-			Info = info;
-		}
+			: base(info) { }
 
 		public IEnumerable<IOrderTargeter> Orders
 		{
 			get
 			{
+				if (IsTraitDisabled)
+					yield break;
+
 				yield return new ExternalCaptureOrderTargeter();
 			}
 		}
@@ -86,11 +85,11 @@ namespace OpenRA.Mods.Common.Traits
 					return false;
 
 				var ci = frozen.Info.TraitInfoOrDefault<ExternalCapturableInfo>();
-				return ci != null && ci.CanBeTargetedBy(self, frozen.Owner);
+				return ci != null && ci.FrozenCanBeTargetedBy(self, frozen.Owner);
 			}
 
 			var c = order.TargetActor.TraitOrDefault<ExternalCapturable>();
-			return c != null && !c.CaptureInProgress && c.Info.CanBeTargetedBy(self, order.TargetActor.Owner);
+			return c != null && !c.CaptureInProgress && c.CanBeTargetedBy(self, order.TargetActor.Owner);
 		}
 
 		public string VoicePhraseForOrder(Actor self, Order order)
@@ -101,7 +100,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void ResolveOrder(Actor self, Order order)
 		{
-			if (order.OrderString != "ExternalCaptureActor" || !IsValidOrder(self, order))
+			if (order.OrderString != "ExternalCaptureActor" || !IsValidOrder(self, order) || IsTraitDisabled)
 				return;
 
 			var target = self.ResolveFrozenActorOrder(order, Color.Red);
@@ -124,7 +123,7 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			var c = target.TraitOrDefault<ExternalCapturable>();
 
-			var canTargetActor = c != null && !c.CaptureInProgress && c.Info.CanBeTargetedBy(self, target.Owner);
+			var canTargetActor = c != null && !c.CaptureInProgress && c.CanBeTargetedBy(self, target.Owner);
 			var capturesInfo = self.Trait<ExternalCaptures>().Info;
 			cursor = canTargetActor ? capturesInfo.CaptureCursor : capturesInfo.CaptureBlockedCursor;
 			return canTargetActor;
@@ -134,7 +133,7 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			var c = target.Info.TraitInfoOrDefault<ExternalCapturableInfo>();
 
-			var canTargetActor = c != null && c.CanBeTargetedBy(self, target.Owner);
+			var canTargetActor = c != null && c.FrozenCanBeTargetedBy(self, target.Owner);
 			var capturesInfo = self.Trait<ExternalCaptures>().Info;
 			cursor = canTargetActor ? capturesInfo.CaptureCursor : capturesInfo.CaptureBlockedCursor;
 			return canTargetActor;

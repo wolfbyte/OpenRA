@@ -20,23 +20,11 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
 {
-	public class RefineryInfo : IAcceptResourcesInfo, Requires<WithSpriteBodyInfo>
+	public class RefineryInfo : ITraitInfo, Requires<WithSpriteBodyInfo>, Requires<DockManagerInfo>
 	{
-		[Desc("Actual harvester facing when docking, 0-255 counter-clock-wise.")]
-		public readonly int DockAngle = 0;
-
-		[Desc("Docking cell relative to top-left cell.")]
-		public readonly CVec DockOffset = CVec.Zero;
-
-		[Desc("Does the refinery require the harvester to be dragged in?")]
-		public readonly bool IsDragRequired = false;
-
-		[Desc("Vector by which the harvester will be dragged when docking.")]
-		public readonly WVec DragOffset = WVec.Zero;
-
-		[Desc("In how many steps to perform the dragging?")]
-		public readonly int DragLength = 0;
-
+		[Desc("Store resources in silos. Adds cash directly without storing if set to false.")]
+		public readonly bool UseStorage = true;
+		
 		[Desc("Discard resources once silo capacity has been reached.")]
 		public readonly bool DiscardExcessResources = false;
 
@@ -48,10 +36,11 @@ namespace OpenRA.Mods.Common.Traits
 		public virtual object Create(ActorInitializer init) { return new Refinery(init.Self, this); }
 	}
 
-	public class Refinery : ITick, IAcceptResources, INotifySold, INotifyCapture, INotifyOwnerChanged, IExplodeModifier, ISync, INotifyActorDisposing
+	public class Refinery : ITick, IResourceExchange, INotifySold, INotifyCapture, INotifyOwnerChanged, IExplodeModifier, ISync, INotifyActorDisposing
 	{
 		readonly Actor self;
 		readonly RefineryInfo info;
+		readonly DockManager docks;
 		readonly WithSpriteBody wsb;
 		PlayerResources playerResources;
 
@@ -59,15 +48,9 @@ namespace OpenRA.Mods.Common.Traits
 		int currentDisplayValue = 0;
 
 		[Sync] public int Ore = 0;
-		[Sync] Actor dockedHarv = null;
 		[Sync] bool preventDock = false;
 
 		public bool AllowDocking { get { return !preventDock; } }
-		public CVec DeliveryOffset { get { return info.DockOffset; } }
-		public int DeliveryAngle { get { return info.DockAngle; } }
-		public bool IsDragRequired { get { return info.IsDragRequired; } }
-		public WVec DragOffset { get { return info.DragOffset; } }
-		public int DragLength { get { return info.DragLength; } }
 
 		public Refinery(Actor self, RefineryInfo info)
 		{
@@ -75,12 +58,14 @@ namespace OpenRA.Mods.Common.Traits
 			this.info = info;
 			playerResources = self.Owner.PlayerActor.Trait<PlayerResources>();
 			currentDisplayTick = info.TickRate;
-			wsb = self.Trait<WithSpriteBody>();
+			wsb = self.TraitsImplementing<WithSpriteBody>().First();
+			docks = self.Trait<DockManager>();
 		}
 
-		public virtual Activity DockSequence(Actor harv, Actor self)
+		public virtual Activity DockSequence(Actor harv, Actor self, Dock dock)
 		{
-			return new SpriteHarvesterDockSequence(harv, self, DeliveryAngle, IsDragRequired, DragOffset, DragLength);
+			return new SpriteHarvesterDockSequence(harv, self, dock.Location,
+				dock.Info.DockAngle, dock.Info.IsDragRequired, dock.Info.DragOffset, dock.Info.DragLength);
 		}
 
 		public IEnumerable<TraitPair<Harvester>> GetLinkedHarvesters()
@@ -89,13 +74,20 @@ namespace OpenRA.Mods.Common.Traits
 				.Where(a => a.Trait.LinkedProc == self);
 		}
 
-		public bool CanGiveResource(int amount) { return info.DiscardExcessResources || playerResources.CanGiveResources(amount); }
+		public bool CanGiveResource(int amount) { return !info.UseStorage || info.DiscardExcessResources || playerResources.CanGiveResources(amount); }
 
 		public void GiveResource(int amount)
 		{
-			if (info.DiscardExcessResources)
-				amount = Math.Min(amount, playerResources.ResourceCapacity - playerResources.Resources);
-			playerResources.GiveResources(amount);
+			if (info.UseStorage)
+			{
+				if (info.DiscardExcessResources)
+					amount = Math.Min(amount, playerResources.ResourceCapacity - playerResources.Resources);
+
+				playerResources.GiveResources(amount);
+			}
+			else
+				playerResources.GiveCash(amount);
+
 			if (info.ShowTicks)
 				currentDisplayValue += amount;
 		}
@@ -103,20 +95,16 @@ namespace OpenRA.Mods.Common.Traits
 		void CancelDock(Actor self)
 		{
 			preventDock = true;
-
-			// Cancel the dock sequence
-			if (dockedHarv != null && !dockedHarv.IsDead)
-				dockedHarv.CancelActivity();
 		}
 
 		void ITick.Tick(Actor self)
 		{
-			// Harvester was killed while unloading
-			if (dockedHarv != null && dockedHarv.IsDead)
-			{
+			// Refining animation cancelation.
+			// When everything docked all get killed in one shot then refining anim should be canceled.
+			// (Nukes...) Lets not care about chrono miners. Won't look too odd.
+			var dockedHarvs = docks.DockedUnits;
+			if (dockedHarvs.Count() > 0 && dockedHarvs.Count() == dockedHarvs.Where(a => a.IsDead).Count())
 				wsb.CancelCustomAnimation(self);
-				dockedHarv = null;
-			}
 
 			if (info.ShowTicks && currentDisplayValue > 0 && --currentDisplayTick <= 0)
 			{
@@ -135,18 +123,6 @@ namespace OpenRA.Mods.Common.Traits
 				harv.Trait.UnlinkProc(harv.Actor, self);
 		}
 
-		public void OnDock(Actor harv, DeliverResources dockOrder)
-		{
-			if (!preventDock)
-			{
-				dockOrder.Queue(new CallFunc(() => dockedHarv = harv, false));
-				dockOrder.Queue(DockSequence(harv, self));
-				dockOrder.Queue(new CallFunc(() => dockedHarv = null, false));
-			}
-
-			dockOrder.Queue(new CallFunc(() => harv.Trait<Harvester>().ContinueHarvesting(harv)));
-		}
-
 		void INotifyOwnerChanged.OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)
 		{
 			// Unlink any harvesters
@@ -159,7 +135,11 @@ namespace OpenRA.Mods.Common.Traits
 		void INotifyCapture.OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner)
 		{
 			// Steal any docked harv too
-			if (dockedHarv != null)
+			var harvs = docks.DockedUnits;
+			if (harvs.Count() == 0)
+				return;
+
+			foreach (var dockedHarv in harvs)
 			{
 				dockedHarv.ChangeOwner(newOwner);
 

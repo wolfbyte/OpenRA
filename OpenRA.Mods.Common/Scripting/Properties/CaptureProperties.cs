@@ -23,13 +23,13 @@ namespace OpenRA.Mods.Common.Scripting
 	public class CaptureProperties : ScriptActorProperties
 	{
 		readonly Captures[] captures;
-		readonly ExternalCapturesInfo externalInfo;
+		readonly ExternalCaptures[] externalCaptures;
 
 		public CaptureProperties(ScriptContext context, Actor self)
 			: base(context, self)
 		{
 			captures = Self.TraitsImplementing<Captures>().ToArray();
-			externalInfo = Self.Info.TraitInfoOrDefault<ExternalCapturesInfo>();
+			externalCaptures = Self.TraitsImplementing<ExternalCaptures>().ToArray();
 		}
 
 		[Desc("Captures the target actor.")]
@@ -48,8 +48,14 @@ namespace OpenRA.Mods.Common.Scripting
 
 			var externalCapturable = target.Info.TraitInfoOrDefault<ExternalCapturableInfo>();
 
-			if (externalInfo != null && externalCapturable != null && externalInfo.CaptureTypes.Contains(externalCapturable.Type))
-				Self.QueueActivity(new ExternalCaptureActor(Self, Target.FromActor(target)));
+			if (externalCapturable != null)
+			{
+				if (externalCaptures.Any(x => !x.IsTraitDisabled && x.Info.CaptureTypes.Contains(externalCapturable.Type)))
+				{
+					Self.QueueActivity(new ExternalCaptureActor(Self, Target.FromActor(target)));
+					return;
+				}
+			}
 			else
 				throw new LuaException("Actor '{0}' cannot capture actor '{1}'!".F(Self, target));
 		}

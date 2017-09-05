@@ -20,7 +20,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("This actor can transport Passenger actors.")]
-	public class CargoInfo : ITraitInfo, Requires<IOccupySpaceInfo>
+	public class CargoInfo : ConditionalTraitInfo, Requires<IOccupySpaceInfo>
 	{
 		[Desc("The maximum sum of Passenger.Weight that this actor can support.")]
 		public readonly int MaxWeight = 0;
@@ -71,13 +71,12 @@ namespace OpenRA.Mods.Common.Traits
 		[GrantedConditionReference]
 		public IEnumerable<string> LinterPassengerConditions { get { return PassengerConditions.Values; } }
 
-		public object Create(ActorInitializer init) { return new Cargo(init, this); }
+		public override object Create(ActorInitializer init) { return new Cargo(init, this); }
 	}
 
-	public class Cargo : IPips, IIssueOrder, IResolveOrder, IOrderVoice, INotifyCreated, INotifyKilled,
+	public class Cargo : ConditionalTrait<CargoInfo>, IPips, IIssueOrder, IResolveOrder, IOrderVoice, INotifyCreated, INotifyKilled,
 		INotifyOwnerChanged, INotifyAddedToWorld, ITick, INotifySold, INotifyActorDisposing, IIssueDeployOrder
 	{
-		public readonly CargoInfo Info;
 		readonly Actor self;
 		readonly Stack<Actor> cargo = new Stack<Actor>();
 		readonly HashSet<Actor> reserves = new HashSet<Actor>();
@@ -99,9 +98,9 @@ namespace OpenRA.Mods.Common.Traits
 		public int PassengerCount { get { return cargo.Count; } }
 
 		public Cargo(ActorInitializer init, CargoInfo info)
+			: base(info)
 		{
 			self = init.Self;
-			Info = info;
 			Unloading = false;
 			checkTerrainType = info.UnloadTerrainTypes.Count > 0;
 
@@ -195,13 +194,13 @@ namespace OpenRA.Mods.Common.Traits
 					return false;
 			}
 
-			return !IsEmpty(self) && (aircraft == null || aircraft.CanLand(self.Location))
+			return !IsEmpty(self) && (aircraft == null || aircraft.CanLand(self.Location)) && !IsTraitDisabled
 				&& CurrentAdjacentCells != null && CurrentAdjacentCells.Any(c => Passengers.Any(p => p.Trait<IPositionable>().CanEnterCell(c)));
 		}
 
 		public bool CanLoad(Actor self, Actor a)
 		{
-			return (reserves.Contains(a) || HasSpace(GetWeight(a))) && self.IsAtGroundLevel();
+			return (reserves.Contains(a) || HasSpace(GetWeight(a))) && self.IsAtGroundLevel() && !IsTraitDisabled;
 		}
 
 		internal bool ReserveSpace(Actor a)
@@ -294,6 +293,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		public IEnumerable<PipType> GetPips(Actor self)
 		{
+			if (IsTraitDisabled)
+				yield break;
+
 			var numPips = Info.PipCount;
 
 			for (var i = 0; i < numPips; i++)

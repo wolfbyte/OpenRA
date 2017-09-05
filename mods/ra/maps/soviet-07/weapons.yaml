@@ -20,7 +20,7 @@ FireballLauncherInterior:
 	ReloadDelay: 65
 	Range: 3c0
 	Burst: 2
-	BurstDelays: 20
+	BurstDelay: 20
 	Projectile: Bullet
 		Speed: 204
 		TrailImage: fb2

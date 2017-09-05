@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Effects;
 using OpenRA.Mods.Common.Traits;
@@ -19,16 +20,18 @@ namespace OpenRA.Mods.Common.Activities
 	class ExternalCaptureActor : Activity
 	{
 		readonly ExternalCapturable capturable;
-		readonly ExternalCapturesInfo capturesInfo;
+		readonly ExternalCaptures[] externalCaptures;
 		readonly Mobile mobile;
 		readonly Target target;
+		readonly INotifyExternalCapture[] notifiers;
 
 		public ExternalCaptureActor(Actor self, Target target)
 		{
 			this.target = target;
 			capturable = target.Actor.Trait<ExternalCapturable>();
-			capturesInfo = self.Info.TraitInfo<ExternalCapturesInfo>();
+			externalCaptures = self.TraitsImplementing<ExternalCaptures>().ToArray();
 			mobile = self.Trait<Mobile>();
+			notifiers = self.TraitsImplementing<INotifyExternalCapture>().ToArray();
 		}
 
 		public override Activity Tick(Actor self)
@@ -36,21 +39,25 @@ namespace OpenRA.Mods.Common.Activities
 			if (target.Type != TargetType.Actor)
 				return NextActivity;
 
-			if (IsCanceled || !self.IsInWorld || self.IsDead || !target.IsValidFor(self))
+			var activeExternalCaptures = externalCaptures.FirstOrDefault(c => !c.IsTraitDisabled);
+			if (IsCanceled || !self.IsInWorld || self.IsDead || !target.IsValidFor(self) || capturable.IsTraitDisabled || activeExternalCaptures == null || externalCaptures.All(c => c.IsTraitDisabled))
 			{
-				if (capturable.CaptureInProgress)
-					capturable.EndCapture();
+				CancelCapture(self);
 
 				return NextActivity;
 			}
 
+			var capturesInfo = activeExternalCaptures.Info;
 			var nearest = target.Actor.OccupiesSpace.NearestCellTo(mobile.ToCell);
 
 			if ((nearest - mobile.ToCell).LengthSquared > 2)
 				return ActivityUtils.SequenceActivities(new MoveAdjacentTo(self, target), this);
 
-			if (!capturable.CaptureInProgress)
+			if (!capturable.CaptureInProgress) {
 				capturable.BeginCapture(self);
+				foreach (var ini in notifiers)
+					ini.OnCapturing(target.Actor, self, target.Actor.Owner, self.Owner);
+			}
 			else
 			{
 				if (capturable.Captor != self) return NextActivity;
@@ -74,6 +81,8 @@ namespace OpenRA.Mods.Common.Activities
 
 						foreach (var t in target.Actor.TraitsImplementing<INotifyCapture>())
 							t.OnCapture(target.Actor, self, oldOwner, self.Owner);
+						foreach (var ini in notifiers)
+							ini.OnCaptured(target.Actor, self, target.Actor.Owner, self.Owner);
 
 						capturable.EndCapture();
 
@@ -91,6 +100,13 @@ namespace OpenRA.Mods.Common.Activities
 			}
 
 			return this;
+		}
+
+		void CancelCapture(Actor self) {
+			if (capturable.CaptureInProgress)
+				capturable.EndCapture();
+			foreach (var ini in notifiers)
+				ini.OnCaptureCancelled(self);
 		}
 	}
 }

@@ -36,19 +36,16 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
-			// Refuse to take off if it would land immediately again.
-			if (aircraft.ForceLanding)
-			{
-				Cancel(self);
-				return NextActivity;
-			}
-
 			if (!target.IsValidFor(self))
 				return NextActivity;
 
 			// TODO: This should check whether there is ammo left that is actually suitable for the target
 			if (ammoPools.All(x => !x.Info.SelfReloads && !x.HasAmmo()))
-				return ActivityUtils.SequenceActivities(new ReturnToBase(self, aircraft.Info.AbortOnResupply), this);
+			{
+				// return ActivityUtils.SequenceActivities(new ReturnToBase(self, aircraft.Info.AbortOnResupply), this);
+				Queue(new ReturnToBase(self, aircraft.Info.AbortOnResupply));
+				return NextActivity;
+			}
 
 			if (attackPlane != null)
 				attackPlane.DoAttack(self, target);
@@ -59,7 +56,7 @@ namespace OpenRA.Mods.Common.Activities
 					return NextActivity;
 
 				// TODO: This should fire each weapon at its maximum range
-				if (attackPlane != null && target.IsInRange(self.CenterPosition, attackPlane.Armaments.Select(a => a.Weapon.MinRange).Min()))
+				if (attackPlane != null && target.IsInRange(self.CenterPosition, attackPlane.Armaments.Where(Exts.IsTraitEnabled).Select(a => a.Weapon.MinRange).Min()))
 					ChildActivity = ActivityUtils.SequenceActivities(new FlyTimed(ticksUntilTurn, self), new Fly(self, target), new FlyTimed(ticksUntilTurn, self));
 				else
 					ChildActivity = ActivityUtils.SequenceActivities(new Fly(self, target), new FlyTimed(ticksUntilTurn, self));

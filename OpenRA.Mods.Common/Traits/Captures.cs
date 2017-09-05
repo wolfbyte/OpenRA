@@ -104,7 +104,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			public override bool CanTargetActor(Actor self, Actor target, TargetModifiers modifiers, ref string cursor)
 			{
-				var c = target.Info.TraitInfoOrDefault<CapturableInfo>();
+				var c = target.TraitOrDefault<Capturable>();
 				if (c == null || !c.CanBeTargetedBy(self, target.Owner))
 				{
 					cursor = capturesInfo.EnterBlockedCursor;
@@ -112,7 +112,7 @@ namespace OpenRA.Mods.Common.Traits
 				}
 
 				var health = target.Trait<Health>();
-				var lowEnoughHealth = health.HP <= c.CaptureThreshold * health.MaxHP / 100;
+				var lowEnoughHealth = health.HP <= c.Info.CaptureThreshold * health.MaxHP / 100;
 
 				cursor = !capturesInfo.Sabotage || lowEnoughHealth || target.Owner.NonCombatant
 					? capturesInfo.EnterCursor : capturesInfo.SabotageCursor;
@@ -121,7 +121,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			public override bool CanTargetFrozenActor(Actor self, FrozenActor target, TargetModifiers modifiers, ref string cursor)
 			{
-				var c = target.Info.TraitInfoOrDefault<CapturableInfo>();
+				var c = target.Actor.TraitOrDefault<Capturable>();
 				if (c == null || !c.CanBeTargetedBy(self, target.Owner))
 				{
 					cursor = capturesInfo.EnterCursor;
@@ -129,7 +129,7 @@ namespace OpenRA.Mods.Common.Traits
 				}
 
 				var health = target.Info.TraitInfoOrDefault<HealthInfo>();
-				var lowEnoughHealth = target.HP <= c.CaptureThreshold * health.HP / 100;
+				var lowEnoughHealth = target.HP <= c.Info.CaptureThreshold * health.HP / 100;
 
 				cursor = !capturesInfo.Sabotage || lowEnoughHealth || target.Owner.NonCombatant
 					? capturesInfo.EnterCursor : capturesInfo.SabotageCursor;

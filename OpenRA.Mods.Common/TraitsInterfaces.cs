@@ -89,12 +89,25 @@ namespace OpenRA.Mods.Common.Traits
 	public interface INotifyProduction { void UnitProduced(Actor self, Actor other, CPos exit); }
 	public interface INotifyOtherProduction { void UnitProducedByOther(Actor self, Actor producer, Actor produced); }
 	public interface INotifyDelivery { void IncomingDelivery(Actor self); void Delivered(Actor self); }
-	public interface INotifyDocking { void Docked(Actor self, Actor harvester); void Undocked(Actor self, Actor harvester); }
+	public interface INotifyDocking { void Docked(Actor self, Actor client); void Undocked(Actor self, Actor client); }
 	public interface INotifyParachute { void OnParachute(Actor self); void OnLanded(Actor self, Actor ignore); }
 	public interface INotifyCapture { void OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner); }
 	public interface INotifyDiscovered { void OnDiscovered(Actor self, Player discoverer, bool playNotification); }
 	public interface IRenderActorPreviewInfo : ITraitInfo { IEnumerable<IActorPreview> RenderPreview(ActorPreviewInitializer init); }
 	public interface ICruiseAltitudeInfo : ITraitInfo { WDist GetCruiseAltitude(); }
+
+	public interface IAcceptsRallyPoint
+	{
+		bool IsAcceptableActor(Actor produced, Actor dest);
+		Activity RallyActivities(Actor produced, Actor dest);
+	}
+
+	[RequireExplicitImplementation]
+	public interface INotifyExternalCapture {
+		void OnCapturing(Actor self, Actor captor, Player oldOwner, Player newOwner);
+		void OnCaptured(Actor self, Actor captor, Player oldOwner, Player newOwner);
+		void OnCaptureCancelled(Actor captor);
+	}
 
 	[RequireExplicitImplementation]
 	public interface INotifyInfiltrated { void Infiltrated(Actor self, Actor infiltrator); }
@@ -130,8 +143,8 @@ namespace OpenRA.Mods.Common.Traits
 
 	public interface INotifyHarvesterAction
 	{
-		void MovingToResources(Actor self, CPos targetCell, Activity next);
-		void MovingToRefinery(Actor self, CPos targetCell, Activity next);
+		Activity MovingToResources(Actor self, CPos targetCell, Activity next);
+		Activity MovingToRefinery(Actor self, CPos targetCell, Activity next);
 		void MovementCancelled(Actor self);
 		void Harvested(Actor self, ResourceType resource);
 		void Docked();
@@ -175,18 +188,14 @@ namespace OpenRA.Mods.Common.Traits
 
 	public interface INotifyDeployTriggered
 	{
-		void Deploy(Actor self, bool skipMakeAnim);
-		void Undeploy(Actor self, bool skipMakeAnim);
+		void Deploy(Actor self, string[] deployTypes);
+		void Undeploy(Actor self, string[] deployTypes);
 	}
 
-	public interface IAcceptResourcesInfo : ITraitInfo { }
-	public interface IAcceptResources
+	public interface IResourceExchange
 	{
-		void OnDock(Actor harv, DeliverResources dockOrder);
 		void GiveResource(int amount);
 		bool CanGiveResource(int amount);
-		CVec DeliveryOffset { get; }
-		bool AllowDocking { get; }
 	}
 
 	public interface IProvidesAssetBrowserPalettes
@@ -292,5 +301,11 @@ namespace OpenRA.Mods.Common.Traits
 	public interface IActorPreviewInitInfo : ITraitInfo
 	{
 		IEnumerable<object> ActorPreviewInits(ActorInfo ai, ActorPreviewType type);
+	}
+
+	public interface INotifyCashTransfer
+	{
+		void OnAcceptCash(Actor self, Actor donor);
+		void OnDeliverCash(Actor self, Actor acceptor);
 	}
 }

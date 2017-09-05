@@ -21,7 +21,6 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		public DebugMenuLogic(Widget widget, World world)
 		{
 			var devTrait = world.LocalPlayer.PlayerActor.Trait<DeveloperMode>();
-			var debugVis = world.WorldActor.TraitOrDefault<DebugVisualizations>();
 
 			var visibilityCheckbox = widget.GetOrNull<CheckboxWidget>("DISABLE_VISIBILITY_CHECKS");
 			if (visibilityCheckbox != null)
@@ -64,17 +63,15 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			var showCombatCheckbox = widget.GetOrNull<CheckboxWidget>("SHOW_COMBATOVERLAY");
 			if (showCombatCheckbox != null)
 			{
-				showCombatCheckbox.Disabled = debugVis == null;
-				showCombatCheckbox.IsChecked = () => debugVis != null && debugVis.CombatGeometry;
-				showCombatCheckbox.OnClick = () => debugVis.CombatGeometry ^= true;
+				showCombatCheckbox.IsChecked = () => devTrait.ShowCombatGeometry;
+				showCombatCheckbox.OnClick = () => devTrait.ShowCombatGeometry ^= true;
 			}
 
 			var showGeometryCheckbox = widget.GetOrNull<CheckboxWidget>("SHOW_GEOMETRY");
 			if (showGeometryCheckbox != null)
 			{
-				showGeometryCheckbox.Disabled = debugVis == null;
-				showGeometryCheckbox.IsChecked = () => debugVis != null && debugVis.RenderGeometry;
-				showGeometryCheckbox.OnClick = () => debugVis.RenderGeometry ^= true;
+				showGeometryCheckbox.IsChecked = () => devTrait.ShowDebugGeometry;
+				showGeometryCheckbox.OnClick = () => devTrait.ShowDebugGeometry ^= true;
 			}
 
 			var terrainGeometryTrait = world.WorldActor.Trait<TerrainGeometryOverlay>();
@@ -88,9 +85,8 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			var showDepthPreviewCheckbox = widget.GetOrNull<CheckboxWidget>("SHOW_DEPTH_PREVIEW");
 			if (showDepthPreviewCheckbox != null)
 			{
-				showDepthPreviewCheckbox.Disabled = debugVis == null;
-				showDepthPreviewCheckbox.IsChecked = () => debugVis != null && debugVis.DepthBuffer;
-				showDepthPreviewCheckbox.OnClick = () => debugVis.DepthBuffer ^= true;
+				showDepthPreviewCheckbox.IsChecked = () => devTrait.ShowDepthPreview;
+				showDepthPreviewCheckbox.OnClick = () => devTrait.ShowDepthPreview ^= true;
 			}
 
 			var allTechCheckbox = widget.GetOrNull<CheckboxWidget>("ENABLE_TECH");
@@ -127,9 +123,8 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			var showActorTagsCheckbox = widget.GetOrNull<CheckboxWidget>("SHOW_ACTOR_TAGS");
 			if (showActorTagsCheckbox != null)
 			{
-				showActorTagsCheckbox.Disabled = debugVis == null;
-				showActorTagsCheckbox.IsChecked = () => debugVis != null && debugVis.ActorTags;
-				showActorTagsCheckbox.OnClick = () => debugVis.ActorTags ^= true;
+				showActorTagsCheckbox.IsChecked = () => devTrait.ShowActorTags;
+				showActorTagsCheckbox.OnClick = () => devTrait.ShowActorTags ^= true;
 			}
 
 			var showCustomTerrainCheckbox = widget.GetOrNull<CheckboxWidget>("SHOW_CUSTOMTERRAIN_OVERLAY");

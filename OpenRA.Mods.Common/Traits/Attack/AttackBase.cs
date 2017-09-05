@@ -164,7 +164,8 @@ namespace OpenRA.Mods.Common.Traits
 				OnStopOrder(self);
 		}
 
-		protected virtual void OnStopOrder(Actor self)
+		// OP Mod: made public for Rage generator
+		public virtual void OnStopOrder(Actor self)
 		{
 			self.CancelActivity();
 		}
@@ -209,8 +210,11 @@ namespace OpenRA.Mods.Common.Traits
 			// PERF: Avoid LINQ.
 			foreach (var armament in Armaments)
 			{
+				if (armament.IsTraitDisabled)
+					continue;
+				
 				var checkIsValid = checkForCenterTargetingWeapons ? armament.Weapon.TargetActorCenter : !armament.OutOfAmmo;
-				if (checkIsValid && armament.Weapon.IsValidAgainst(t, self.World, self))
+				if (checkIsValid && !armament.IsTraitDisabled && armament.Weapon.IsValidAgainst(t, self.World, self))
 					return true;
 			}
 

@@ -31,7 +31,8 @@ namespace OpenRA.Mods.Common.Traits
 		Damage = 32,
 		Heal = 64,
 		SelfHeal = 128,
-		Dock = 256
+		Dock = 256,
+		Capturing = 512
 	}
 
 	[Desc("This unit can cloak and uncloak in specific situations.")]
@@ -43,9 +44,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Measured in game ticks.")]
 		public readonly int CloakDelay = 30;
 
-		[Desc("Events leading to the actor getting uncloaked. Possible values are: Attack, Move, Unload, Infiltrate, Demolish, Dock, Damage, Heal and SelfHeal.")]
+		[Desc("Events leading to the actor getting uncloaked. Possible values are: Attack, Move, Unload, Infiltrate, Demolish, Dock, Damage, Capturing, Heal and SelfHeal.")]
 		public readonly UncloakType UncloakOn = UncloakType.Attack
-			| UncloakType.Unload | UncloakType.Infiltrate | UncloakType.Demolish | UncloakType.Dock;
+			| UncloakType.Unload | UncloakType.Infiltrate | UncloakType.Demolish | UncloakType.Dock | UncloakType.Capturing;
 
 		public readonly string CloakSound = null;
 		public readonly string UncloakSound = null;
@@ -63,10 +64,11 @@ namespace OpenRA.Mods.Common.Traits
 	}
 
 	public class Cloak : ConditionalTrait<CloakInfo>, IRenderModifier, INotifyDamage,
-	INotifyAttack, ITick, IVisibilityModifier, IRadarColorModifier, INotifyCreated, INotifyHarvesterAction
+	INotifyAttack, ITick, IVisibilityModifier, IRadarColorModifier, INotifyCreated, INotifyHarvesterAction, INotifyExternalCapture
 	{
 		[Sync] int remainingTime;
 		bool isDocking;
+		bool isCapturing = false;
 		ConditionManager conditionManager;
 
 		CPos? lastPos;
@@ -137,7 +139,7 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			if (!IsTraitDisabled)
 			{
-				if (remainingTime > 0 && !isDocking)
+				if (remainingTime > 0 && !isDocking && !isCapturing)
 					remainingTime--;
 
 				if (self.IsDisabled())
@@ -191,9 +193,9 @@ namespace OpenRA.Mods.Common.Traits
 			return color;
 		}
 
-		void INotifyHarvesterAction.MovingToResources(Actor self, CPos targetCell, Activity next) { }
+		Activity INotifyHarvesterAction.MovingToResources(Actor self, CPos targetCell, Activity next) { return null; }
 
-		void INotifyHarvesterAction.MovingToRefinery(Actor self, CPos targetCell, Activity next) { }
+		Activity INotifyHarvesterAction.MovingToRefinery(Actor self, CPos targetCell, Activity next) { return null; }
 
 		void INotifyHarvesterAction.MovementCancelled(Actor self) { }
 
@@ -211,6 +213,23 @@ namespace OpenRA.Mods.Common.Traits
 		void INotifyHarvesterAction.Undocked()
 		{
 			isDocking = false;
+		}
+
+		void INotifyExternalCapture.OnCapturing(Actor self, Actor captor, Player oldOwner, Player newOwner)
+		{
+			if (Info.UncloakOn.HasFlag(UncloakType.Capturing))
+			{
+				isCapturing = true;
+				Uncloak();
+			}
+		}
+
+		void INotifyExternalCapture.OnCaptured(Actor self, Actor captor, Player oldOwner, Player newOwner) {
+			isCapturing = false;
+		}
+
+		void INotifyExternalCapture.OnCaptureCancelled(Actor self) {
+			isCapturing = false;
 		}
 	}
 }
