@@ -10,7 +10,13 @@
 #endregion
 
 using OpenRA.Activities;
+<<<<<<< HEAD
 using OpenRA.Mods.Common.Traits;
+=======
+using OpenRA.Mods.Common.Effects;
+using OpenRA.Mods.Common.Traits;
+using OpenRA.Traits;
+>>>>>>> Upload Engine for Generals Alpha
 
 namespace OpenRA.Mods.Common.Activities
 {

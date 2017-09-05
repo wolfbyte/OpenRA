@@ -54,9 +54,12 @@ namespace OpenRA.Mods.Common.Warheads
 		{
 			var world = firedBy.World;
 
-			var debugVis = world.WorldActor.TraitOrDefault<DebugVisualizations>();
-			if (debugVis != null && debugVis.CombatGeometry)
-				world.WorldActor.Trait<WarheadDebugOverlay>().AddImpact(pos, Range, DebugOverlayColor);
+			if (world.LocalPlayer != null)
+			{
+				var devMode = world.LocalPlayer.PlayerActor.TraitOrDefault<DeveloperMode>();
+				if (devMode != null && devMode.ShowCombatGeometry)
+					world.WorldActor.Trait<WarheadDebugOverlay>().AddImpact(pos, Range, DebugOverlayColor);
+			}
 
 			// This only finds actors where the center is within the search radius,
 			// so we need to search beyond the maximum spread to account for actors with large health radius
