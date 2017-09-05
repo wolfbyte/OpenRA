@@ -33,6 +33,12 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("Can a destroyed aircraft eject its pilot when it falls to ground level?")]
 		public readonly bool EjectOnGround = false;
+		
+		[Desc("Carry over dead actor's veterancy to pilot?")]
+		public readonly bool CarryVeterancy = true;
+
+		[Desc("Only spawn the pilot when there is a veterancy to carry over?")]
+		public readonly bool SpawnOnlyWhenPromoted = true;
 
 		[Desc("Risks stuck units when they don't have the Paratrooper trait.")]
 		public readonly bool AllowUnsuitableCell = false;
@@ -60,8 +66,21 @@ namespace OpenRA.Mods.Common.Traits
 			if ((inAir && !Info.EjectInAir) || (!inAir && !Info.EjectOnGround))
 				return;
 
+			var ge = self.TraitOrDefault<GainsExperience>();
+			if ((ge == null || ge.Level == 0) && Info.SpawnOnlyWhenPromoted)
+				return;
+
 			var pilot = self.World.CreateActor(false, Info.PilotActor.ToLowerInvariant(),
 				new TypeDictionary { new OwnerInit(self.Owner), new LocationInit(self.Location) });
+
+			if (ge != null && Info.CarryVeterancy == true)
+			{
+				var pge = pilot.TraitOrDefault<GainsExperience>();
+				if (pge != null)
+				{
+					pge.GiveLevels(ge.Level, true);
+				}
+			}
 
 			if (Info.AllowUnsuitableCell || IsSuitableCell(self, pilot))
 			{

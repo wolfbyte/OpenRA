@@ -17,6 +17,7 @@ using OpenRA.Activities;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Pathfinder;
 using OpenRA.Primitives;
+using OpenRA.Support;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -38,6 +39,15 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly bool AlwaysConsiderTurnAsMove = false;
 
 		public readonly int Speed = 1;
+
+		// OP Mod extension
+		[Desc("Occupy space? Units such as Mob spawners doesn't occupy space, letting others to enter.")]
+		public readonly bool OccupySpace = true;
+
+		[ConsumedConditionReference]
+		[Desc("Under this condition, this actor may turn even while this trait is disabled.",
+			"Useful for turretless units that deploy to become immobile, but still fires its weapon.")]
+		public readonly BooleanExpression TurnWhileDisabledCondition = null;
 
 		public readonly string Cursor = "move";
 		public readonly string BlockedCursor = "move-blocked";
@@ -82,9 +92,13 @@ namespace OpenRA.Mods.Common.Traits
 			return LocomotorInfo.CanMoveFreelyInto(world, self, cell, ignoreActor, check);
 		}
 
+		// Modded for OP mod to support units that share the entire cell (like mob nexus)
 		public IReadOnlyDictionary<CPos, SubCell> OccupiedCells(ActorInfo info, CPos location, SubCell subCell = SubCell.Any)
 		{
-			return new ReadOnlyDictionary<CPos, SubCell>(new Dictionary<CPos, SubCell>() { { location, subCell } });
+			if (OccupySpace)
+				return new ReadOnlyDictionary<CPos, SubCell>(new Dictionary<CPos, SubCell>() { { location, subCell } });
+			else
+				return new ReadOnlyDictionary<CPos, SubCell>(); // like aircraft!
 		}
 
 		bool IOccupySpaceInfo.SharesCell { get { return LocomotorInfo.SharesCell; } }
@@ -139,9 +153,12 @@ namespace OpenRA.Mods.Common.Traits
 		int facing;
 		CPos fromCell, toCell;
 		public SubCell FromSubCell, ToSubCell;
+
 		INotifyCustomLayerChanged[] notifyCustomLayerChanged;
 		INotifyVisualPositionChanged[] notifyVisualPositionChanged;
 		INotifyFinishedMoving[] notifyFinishedMoving;
+		ConditionManager conditionManager;
+		bool turnWhileDisabled = false;
 
 		#region IFacing
 		[Sync] public int Facing
@@ -363,6 +380,123 @@ namespace OpenRA.Mods.Common.Traits
 				n.VisualPositionChanged(self, fromCell.Layer, toCell.Layer);
 		}
 
+		void INotifyAddedToWorld.AddedToWorld(Actor self)
+		{
+			self.World.AddToMaps(self, this);
+		}
+
+		void INotifyRemovedFromWorld.RemovedFromWorld(Actor self)
+		{
+			self.World.RemoveFromMaps(self, this);
+		}
+
+		public IEnumerable<IOrderTargeter> Orders { get { yield return new MoveOrderTargeter(self, this); } }
+
+		// Note: Returns a valid order even if the unit can't move to the target
+		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
+		{
+			if (order is MoveOrderTargeter)
+				return new Order("Move", self, target, queued);
+
+			return null;
+		}
+
+		public CPos NearestMoveableCell(CPos target)
+		{
+			// Limit search to a radius of 10 tiles
+			return NearestMoveableCell(target, 1, 10);
+		}
+
+		public CPos NearestMoveableCell(CPos target, int minRange, int maxRange)
+		{
+			// HACK: This entire method is a hack, and needs to be replaced with
+			// a proper path search that can account for movement layer transitions.
+			// HACK: Work around code that blindly tries to move to cells in invalid movement layers.
+			// This will need to change (by removing this method completely as above) before we can
+			// properly support user-issued orders on to elevated bridges or other interactable custom layers
+			if (target.Layer != 0)
+				target = new CPos(target.X, target.Y);
+
+			if (CanEnterCell(target))
+				return target;
+
+			foreach (var tile in self.World.Map.FindTilesInAnnulus(target, minRange, maxRange))
+				if (CanEnterCell(tile))
+					return tile;
+
+			// Couldn't find a cell
+			return target;
+		}
+
+		public CPos NearestCell(CPos target, Func<CPos, bool> check, int minRange, int maxRange)
+		{
+			if (check(target))
+				return target;
+
+			foreach (var tile in self.World.Map.FindTilesInAnnulus(target, minRange, maxRange))
+				if (check(tile))
+					return tile;
+
+			// Couldn't find a cell
+			return target;
+		}
+
+		public void ResolveOrder(Actor self, Order order)
+		{
+			if (order.OrderString == "Move")
+			{
+				var loc = self.World.Map.Clamp(order.TargetLocation);
+
+				if (!Info.LocomotorInfo.MoveIntoShroud && !self.Owner.Shroud.IsExplored(loc))
+					return;
+
+				if (!order.Queued)
+					self.CancelActivity();
+
+				TicksBeforePathing = AverageTicksBeforePathing + self.World.SharedRandom.Next(-SpreadTicksBeforePathing, SpreadTicksBeforePathing);
+
+				self.SetTargetLine(Target.FromCell(self.World, loc), Color.Green);
+				self.QueueActivity(order.Queued, new Move(self, loc, WDist.FromCells(8), null, true));
+			}
+
+			if (order.OrderString == "Stop")
+				self.CancelActivity();
+
+			if (order.OrderString == "Scatter")
+				Nudge(self, self, true);
+		}
+
+		public string VoicePhraseForOrder(Actor self, Order order)
+		{
+			if (!Info.LocomotorInfo.MoveIntoShroud && !self.Owner.Shroud.IsExplored(order.TargetLocation))
+				return null;
+
+			switch (order.OrderString)
+			{
+				case "Move":
+				case "Scatter":
+				case "Stop":
+					return Info.Voice;
+				default:
+					return null;
+			}
+		}
+
+		public CPos TopLeft { get { return ToCell; } }
+
+		public Pair<CPos, SubCell>[] OccupiedCells()
+		{
+			if (!Info.OccupySpace)
+				return new Pair<CPos, SubCell>[] { };
+
+			if (FromCell == ToCell)
+				return new[] { Pair.New(FromCell, FromSubCell) };
+			if (CanEnterCell(ToCell))
+				return new[] { Pair.New(ToCell, ToSubCell) };
+
+			return new[] { Pair.New(FromCell, FromSubCell), Pair.New(ToCell, ToSubCell) };
+		}
+
 		public bool IsLeavingCell(CPos location, SubCell subCell = SubCell.Any)
 		{
 			return ToCell != location && fromCell == location
@@ -519,11 +653,20 @@ namespace OpenRA.Mods.Common.Traits
 			return self.Location == self.World.Map.CellContaining(target.CenterPosition) || Util.AdjacentCells(self.World, target).Any(c => c == self.Location);
 		}
 
+<<<<<<< HEAD
 		#endregion
 
 		#region Local IMove-related
 
 		public int MovementSpeedForCell(Actor self, CPos cell)
+=======
+		bool IMove.TurnWhileDisabled(Actor self)
+		{
+			return turnWhileDisabled;
+		}
+
+		public Activity VisualMove(Actor self, WPos fromPos, WPos toPos)
+>>>>>>> Upload Engine for Generals Alpha
 		{
 			var index = cell.Layer == 0 ? self.World.Map.GetTerrainIndex(cell) :
 				self.World.GetCustomMovementLayers()[cell.Layer].GetTerrainIndex(cell);
@@ -653,6 +796,7 @@ namespace OpenRA.Mods.Common.Traits
 				self.QueueActivity(MoveTo(moveTo.Value, 0));
 		}
 
+<<<<<<< HEAD
 		void INotifyBlockingMove.OnNotifyBlockingMove(Actor self, Actor blocking)
 		{
 			if (self.IsIdle && self.AppearsFriendlyTo(blocking))
@@ -749,6 +893,21 @@ namespace OpenRA.Mods.Common.Traits
 
 				return true;
 			}
+=======
+		public override IEnumerable<VariableObserver> GetVariableObservers()
+		{
+			if (Info.TurnWhileDisabledCondition != null)
+				yield return new VariableObserver(TurnWhileDisabledConditionChanged, Info.TurnWhileDisabledCondition.Variables);
+
+			foreach (var v in base.GetVariableObservers())
+				yield return v;
+		}
+
+		void TurnWhileDisabledConditionChanged(Actor self, IReadOnlyDictionary<string, int> conditions)
+		{
+			if (Info.TurnWhileDisabledCondition != null)
+				turnWhileDisabled = Info.TurnWhileDisabledCondition.Evaluate(conditions);
+>>>>>>> Upload Engine for Generals Alpha
 		}
 	}
 }

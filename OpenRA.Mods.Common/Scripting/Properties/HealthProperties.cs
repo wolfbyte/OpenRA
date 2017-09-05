@@ -28,6 +28,7 @@ namespace OpenRA.Mods.Common.Scripting
 		public int Health
 		{
 			get { return health.HP; }
+
 			set { health.InflictDamage(Self, Self, new Damage(health.HP - value), true); }
 		}
 

@@ -22,7 +22,7 @@ namespace OpenRA.Mods.Common.Activities
 		readonly CaptureManager manager;
 
 		public CaptureActor(Actor self, Actor target)
-			: base(self, target, EnterBehaviour.Exit)
+			: base(self, target, EnterBehaviour.Exit, WDist.Zero)
 		{
 			actor = target;
 			manager = self.Trait<CaptureManager>();

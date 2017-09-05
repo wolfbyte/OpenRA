@@ -124,6 +124,8 @@ namespace OpenRA.Mods.Common.Projectiles
 
 		public readonly Color ContrailColor = Color.White;
 
+		public readonly Color ContrailFadeColor = Color.Transparent;
+
 		public readonly bool ContrailUsePlayerColor = false;
 
 		public readonly int ContrailDelay = 1;
@@ -133,6 +135,9 @@ namespace OpenRA.Mods.Common.Projectiles
 
 		[Desc("Range of facings by which jammed missiles can stray from current path.")]
 		public readonly int JammedDiversionRange = 20;
+
+		[Desc("Missile shootable by point defense laser?")]
+		public readonly bool LaserShootable = true;
 
 		[Desc("Explodes when leaving the following terrain type, e.g., Water for torpedoes.")]
 		public readonly string BoundToTerrainType = "";
@@ -243,7 +248,7 @@ namespace OpenRA.Mods.Common.Projectiles
 			if (info.ContrailLength > 0)
 			{
 				var color = info.ContrailUsePlayerColor ? ContrailRenderable.ChooseColor(args.SourceActor) : info.ContrailColor;
-				contrail = new ContrailRenderable(world, color, info.ContrailWidth, info.ContrailLength, info.ContrailDelay, info.ContrailZOffset);
+				contrail = new ContrailRenderable(world, color, info.ContrailFadeColor, info.ContrailWidth, info.ContrailLength, info.ContrailDelay, info.ContrailZOffset);
 			}
 
 			trailPalette = info.TrailPalette;
@@ -418,6 +423,29 @@ namespace OpenRA.Mods.Common.Projectiles
 				return false;
 
 			return tp.Actor.World.SharedRandom.Next(100 / tp.Trait.Chance) == 0;
+		}
+
+		// Function added for OP Mod to implement point defense laser.
+		bool ShotBy(TraitPair<ShootsMissiles> tp)
+		{
+			if ((tp.Actor.CenterPosition - pos).HorizontalLengthSquared > tp.Trait.Range.LengthSquared)
+				return false;
+
+			if (!tp.Trait.DeflectionStances.HasStance(tp.Actor.Owner.Stances[args.SourceActor.Owner]))
+				return false;
+
+			if (tp.Trait.IsTraitDisabled)
+				return false;
+
+			if (tp.Trait.Armament.IsReloading)
+				return false;
+
+			args.SourceActor.World.AddFrameEndTask(w =>
+			{
+				if (!tp.Actor.IsDead)
+					tp.Trait.Armament.CheckFire(tp.Actor, null, Target.FromPos(pos));
+			});
+			return true;
 		}
 
 		void ChangeSpeed(int sign = 1)
@@ -840,6 +868,11 @@ namespace OpenRA.Mods.Common.Projectiles
 				out blockedPos))
 			{
 				pos = blockedPos;
+				shouldExplode = true;
+			}
+			else if (info.LaserShootable && world.ActorsWithTrait<ShootsMissiles>().Any(ShotBy))
+			{
+				// else if added for OP mod, for point defense laser.
 				shouldExplode = true;
 			}
 

@@ -96,8 +96,8 @@ namespace OpenRA.Mods.Common.Scripting
 			if (!targetActor.Info.HasTraitInfo<FrozenUnderFogInfo>() && !targetActor.CanBeViewedByPlayer(Self.Owner))
 				Log.Write("lua", "{1} is not revealed for player {0}!", Self.Owner, targetActor);
 
-			foreach (var attack in attackBases)
-				attack.AttackTarget(target, true, allowMove, forceAttack);
+			foreach (var attackBase in attackBases)
+				attackBase.AttackTarget(target, true, allowMove, forceAttack);
 		}
 
 		[Desc("Checks if the targeted actor is a valid target for this actor.")]

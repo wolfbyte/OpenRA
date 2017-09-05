@@ -27,7 +27,7 @@ namespace OpenRA.Mods.Common.Activities
 
 		public Demolish(Actor self, Actor target, EnterBehaviour enterBehaviour, int delay,
 			int flashes, int flashesDelay, int flashInterval)
-			: base(self, target, enterBehaviour)
+			: base(self, target, enterBehaviour, WDist.Zero)
 		{
 			this.target = target;
 			demolishables = target.TraitsImplementing<IDemolishable>().ToArray();

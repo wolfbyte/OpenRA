@@ -33,7 +33,6 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 				.Where(a => a.Owner == squad.Bot.Player).ToList();
 			if (buildings.Count > 0)
 				location = buildings.Random(squad.Random).Location;
-
 			return location;
 		}
 

@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using OpenRA.Activities;
@@ -53,7 +54,10 @@ namespace OpenRA.Mods.Common.Activities
 				return NextActivity;
 
 			if (harv.IsFull)
-				return ActivityUtils.SequenceActivities(new DeliverResources(self), NextActivity);
+			{
+				Queue(new DeliverResources(self));
+				return NextActivity;
+			}
 
 			var closestHarvestablePosition = ClosestHarvestablePos(self);
 
@@ -62,7 +66,10 @@ namespace OpenRA.Mods.Common.Activities
 			if (!closestHarvestablePosition.HasValue)
 			{
 				if (!harv.IsEmpty)
-					return new DeliverResources(self);
+				{
+					Queue(new DeliverResources(self));
+					return NextActivity;
+				}
 
 				harv.LastSearchFailed = true;
 
@@ -93,11 +100,30 @@ namespace OpenRA.Mods.Common.Activities
 				if (!harv.LastOrderLocation.HasValue)
 					harv.LastOrderLocation = closestHarvestablePosition;
 
-				foreach (var n in self.TraitsImplementing<INotifyHarvesterAction>())
-					n.MovingToResources(self, closestHarvestablePosition.Value, this);
-
 				self.SetTargetLine(Target.FromCell(self.World, closestHarvestablePosition.Value), Color.Red, false);
-				return ActivityUtils.SequenceActivities(mobile.MoveTo(closestHarvestablePosition.Value, 1), new HarvestResource(self), this);
+
+				var move = mobile.MoveTo(closestHarvestablePosition.Value, 2);
+
+				Activity extraActivities = null;
+				foreach (var n in self.TraitsImplementing<INotifyHarvesterAction>())
+				{
+					var extra = n.MovingToResources(self, closestHarvestablePosition.Value, move);
+					if (extra != null)
+					{
+						if (extraActivities != null)
+							throw new InvalidOperationException("Actor {0} has conflicting activities to perform for INotifyHarvesterAction.".F(self.ToString()));
+
+						extraActivities = extra;
+					}
+				}
+
+				if (extraActivities != null)
+					Queue(extraActivities);
+				else
+					Queue(move);
+
+				Queue(new HarvestResource(self));
+				return NextActivity;
 			}
 		}
 

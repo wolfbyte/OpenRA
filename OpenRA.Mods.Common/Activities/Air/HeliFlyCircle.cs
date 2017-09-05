@@ -27,6 +27,7 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
+<<<<<<< HEAD
 			// Refuse to take off if it would land immediately again.
 			if (aircraft.ForceLanding)
 			{
@@ -34,6 +35,8 @@ namespace OpenRA.Mods.Common.Activities
 				return NextActivity;
 			}
 
+=======
+>>>>>>> Upload Engine for Generals Alpha
 			if (IsCanceled)
 				return NextActivity;
 

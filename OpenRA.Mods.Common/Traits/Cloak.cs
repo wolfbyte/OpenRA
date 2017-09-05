@@ -32,7 +32,8 @@ namespace OpenRA.Mods.Common.Traits
 		Damage = 32,
 		Heal = 64,
 		SelfHeal = 128,
-		Dock = 256
+		Dock = 256,
+		Capturing = 512
 	}
 
 	// Type tag for cloaktypes
@@ -47,9 +48,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Measured in game ticks.")]
 		public readonly int CloakDelay = 30;
 
-		[Desc("Events leading to the actor getting uncloaked. Possible values are: Attack, Move, Unload, Infiltrate, Demolish, Dock, Damage, Heal and SelfHeal.")]
+		[Desc("Events leading to the actor getting uncloaked. Possible values are: Attack, Move, Unload, Infiltrate, Demolish, Dock, Damage, Capturing, Heal and SelfHeal.")]
 		public readonly UncloakType UncloakOn = UncloakType.Attack
-			| UncloakType.Unload | UncloakType.Infiltrate | UncloakType.Demolish | UncloakType.Dock;
+			| UncloakType.Unload | UncloakType.Infiltrate | UncloakType.Demolish | UncloakType.Dock | UncloakType.Capturing;
 
 		public readonly string CloakSound = null;
 		public readonly string UncloakSound = null;
@@ -71,6 +72,7 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		[Sync] int remainingTime;
 		bool isDocking;
+		bool isCapturing = false;
 		ConditionManager conditionManager;
 		Cloak[] otherCloaks;
 
@@ -150,7 +152,7 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			if (!IsTraitDisabled && !IsTraitPaused)
 			{
-				if (remainingTime > 0 && !isDocking)
+				if (remainingTime > 0 && !isDocking && !isCapturing)
 					remainingTime--;
 
 				if (Info.UncloakOn.HasFlag(UncloakType.Move) && (lastPos == null || lastPos.Value != self.Location))
@@ -208,9 +210,8 @@ namespace OpenRA.Mods.Common.Traits
 			return color;
 		}
 
-		void INotifyHarvesterAction.MovingToResources(Actor self, CPos targetCell, Activity next) { }
-
-		void INotifyHarvesterAction.MovingToRefinery(Actor self, Actor refineryActor, Activity next) { }
+		Activity INotifyHarvesterAction.MovingToResources(Actor self, CPos targetCell, Activity next) { return null; }
+		Activity INotifyHarvesterAction.MovingToRefinery(Actor self, Actor refineryActor, Activity next) { return null; }
 
 		void INotifyHarvesterAction.MovementCancelled(Actor self) { }
 

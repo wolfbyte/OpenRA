@@ -58,7 +58,7 @@ namespace OpenRA.Mods.Common.Effects
 
 		public IEnumerable<IRenderable> Render(WorldRenderer wr)
 		{
-			if (!visibleThroughFog && world.FogObscures(pos))
+			if (world.FogObscures(pos) && !visibleThroughFog)
 				return SpriteRenderable.None;
 
 			var zoom = scaleSizeWithZoom ? 1f / wr.Viewport.Zoom : 1f;
