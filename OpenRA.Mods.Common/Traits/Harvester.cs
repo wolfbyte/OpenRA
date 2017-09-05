@@ -46,6 +46,12 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Which resources it can harvest.")]
 		public readonly HashSet<string> Resources = new HashSet<string>();
 
+		[Desc("Teleports harvested ore? \"Chrono harvester\"?")]
+		public readonly bool OreTeleporter = false;
+
+		[Desc("Slaved to a slave miner?")]
+		public readonly bool Slaved = false;
+
 		[Desc("Percentage of maximum speed when fully loaded.")]
 		public readonly int FullyLoadedSpeed = 85;
 
@@ -77,14 +83,13 @@ namespace OpenRA.Mods.Common.Traits
 	}
 
 	public class Harvester : IIssueOrder, IResolveOrder, IPips, IExplodeModifier, IOrderVoice,
-		ISpeedModifier, ISync, INotifyCreated, INotifyIdle, INotifyBlockingMove
+		ISpeedModifier, ISync, INotifyCreated, INotifyIdle, INotifyBlockingMove, INotifyBuildComplete
 	{
 		public readonly HarvesterInfo Info;
 		readonly Mobile mobile;
 		readonly ResourceLayer resLayer;
 		readonly ResourceClaimLayer claimLayer;
 		Dictionary<ResourceTypeInfo, int> contents = new Dictionary<ResourceTypeInfo, int>();
-		INotifyHarvesterAction[] notify;
 		bool idleSmart = true;
 		int idleDuration;
 
@@ -92,6 +97,7 @@ namespace OpenRA.Mods.Common.Traits
 		[Sync] public Actor OwnerLinkedProc = null;
 		[Sync] public Actor LastLinkedProc = null;
 		[Sync] public Actor LinkedProc = null;
+		[Sync] public Actor Master = null; // if slaved, then who is the master?
 		[Sync] int currentUnloadTicks;
 		public CPos? LastHarvestedCell = null;
 		public CPos? LastOrderLocation = null;
@@ -119,17 +125,20 @@ namespace OpenRA.Mods.Common.Traits
 
 		void INotifyCreated.Created(Actor self)
 		{
-			notify = self.TraitsImplementing<INotifyHarvesterAction>().ToArray();
-
-			// Note: This is queued in a FrameEndTask because otherwise the activity is dropped/overridden while moving out of a factory.
 			if (Info.SearchOnCreation)
-				self.World.AddFrameEndTask(w => self.QueueActivity(new FindResources(self)));
+				self.QueueActivity(new FindResources(self));
+		}
+
+		void INotifyBuildComplete.BuildingComplete(Actor self)
+		{
+			if (Info.SearchOnCreation)
+				self.QueueActivity(new FindResources(self));
 		}
 
 		public void SetProcLines(Actor proc)
 		{
-			if (proc == null || proc.IsDead)
-				return;
+			if (proc == null) return;
+			if (proc.Disposed) return;
 
 			var linkedHarvs = proc.World.ActorsHavingTrait<Harvester>(h => h.LinkedProc == proc)
 				.Select(a => Target.FromActor(a))
@@ -161,7 +170,10 @@ namespace OpenRA.Mods.Common.Traits
 		public void ContinueHarvesting(Actor self)
 		{
 			// Move out of the refinery dock and continue harvesting
-			UnblockRefinery(self);
+			var moveAway = UnblockRefinery(self);
+			if (moveAway != null)
+				self.QueueActivity(moveAway);
+
 			self.QueueActivity(new FindResources(self));
 		}
 
@@ -173,11 +185,19 @@ namespace OpenRA.Mods.Common.Traits
 
 		public Actor ClosestProc(Actor self, Actor ignore)
 		{
+            // Slaved harvesters can only attach to master.
+			if (Info.Slaved)
+			{
+				if (!Master.IsInWorld)
+					return null;
+				return Master;
+			}
+
 			// Find all refineries and their occupancy count:
-			var refs = self.World.ActorsWithTrait<IAcceptResources>()
+			var refs = self.World.ActorsWithTrait<Refinery>()
 				.Where(r => r.Actor != ignore && r.Actor.Owner == self.Owner && IsAcceptableProcType(r.Actor))
 				.Select(r => new {
-					Location = r.Actor.Location + r.Trait.DeliveryOffset,
+					Location = r.Actor.Location, // ignore dock offsets
 					Actor = r.Actor,
 					Occupancy = self.World.ActorsHavingTrait<Harvester>(h => h.LinkedProc == r.Actor).Count() })
 				.ToDictionary(r => r.Location);
@@ -220,29 +240,30 @@ namespace OpenRA.Mods.Common.Traits
 				contents[type.Info]++;
 		}
 
-		public void UnblockRefinery(Actor self)
+		public Activity UnblockRefinery(Actor self)
 		{
 			// Check that we're not in a critical location and being useless (refinery drop-off):
 			var lastproc = LastLinkedProc ?? LinkedProc;
 			if (lastproc != null && !lastproc.Disposed)
 			{
-				var deliveryLoc = lastproc.Location + lastproc.Trait<IAcceptResources>().DeliveryOffset;
-				if (self.Location == deliveryLoc)
+				// Am I blocking one of the dock positions?
+				var deliveryLocs = lastproc.Trait<DockManager>().DockLocations;
+				if (deliveryLocs.Any(loc => loc == self.Location))
 				{
 					// Get out of the way:
-					var unblockCell = LastHarvestedCell ?? (deliveryLoc + Info.UnblockCell);
-					var moveTo = mobile.NearestMoveableCell(unblockCell, 1, 5);
-
-					// TODO: The harvest-deliver-return sequence is a horrible mess of duplicated code and edge-cases
-					var notify = self.TraitsImplementing<INotifyHarvesterAction>();
-					var findResources = new FindResources(self);
-					foreach (var n in notify)
-						n.MovingToResources(self, moveTo, findResources);
-
-					self.QueueActivity(mobile.MoveTo(moveTo, 1));
-					self.SetTargetLine(Target.FromCell(self.World, moveTo), Color.Gray, false);
+					// Find an empty cell that's not a dock location and that can be entered.
+					foreach (var t in self.World.Map.FindTilesInCircle(self.Location, 10))
+					{
+						if (mobile.CanEnterCell(t) && deliveryLocs.All(d => d != t))
+						{
+							var moveTo = mobile.NearestMoveableCell(t, 1, 5);
+							return mobile.MoveTo(moveTo, 1);
+						}
+					}
 				}
 			}
+
+			return null;
 		}
 
 		void INotifyBlockingMove.OnNotifyBlockingMove(Actor self, Actor blocking)
@@ -268,8 +289,7 @@ namespace OpenRA.Mods.Common.Traits
 		void INotifyIdle.TickIdle(Actor self)
 		{
 			// Should we be intelligent while idle?
-			if (!idleSmart)
-				return;
+			if (!idleSmart) return;
 
 			// Are we not empty? Deliver resources:
 			if (!IsEmpty)
@@ -278,7 +298,12 @@ namespace OpenRA.Mods.Common.Traits
 				return;
 			}
 
-			UnblockRefinery(self);
+			var moveAway = UnblockRefinery(self);
+			if (moveAway != null)
+				self.QueueActivity(moveAway);
+
+			self.QueueActivity(new FindResources(self));
+
 			idleDuration += 1;
 
 			// Wait a bit before queueing Wait activity
@@ -301,11 +326,11 @@ namespace OpenRA.Mods.Common.Traits
 			if (contents.Keys.Count > 0)
 			{
 				var type = contents.First().Key;
-				var iao = proc.Trait<IAcceptResources>();
-				if (!iao.CanGiveResource(type.ValuePerUnit))
+				var ire = proc.Trait<IResourceExchange>();
+				if (!ire.CanGiveResource(type.ValuePerUnit))
 					return false;
 
-				iao.GiveResource(type.ValuePerUnit);
+				ire.GiveResource(type.ValuePerUnit);
 				if (--contents[type] == 0)
 					contents.Remove(type);
 
@@ -333,9 +358,9 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			get
 			{
-				yield return new EnterAlliedActorTargeter<IAcceptResourcesInfo>("Deliver", 5,
+				yield return new EnterAlliedActorTargeter<RefineryInfo>("Deliver", 5,
 					proc => IsAcceptableProcType(proc),
-					proc => proc.Trait<IAcceptResources>().AllowDocking);
+					proc => proc.Trait<Refinery>().AllowDocking);
 				yield return new HarvestOrderTargeter();
 			}
 		}
@@ -385,6 +410,7 @@ namespace OpenRA.Mods.Common.Traits
 				self.QueueActivity(findResources);
 				self.SetTargetLine(Target.FromCell(self.World, loc.Value), Color.Red);
 
+				var notify = self.TraitsImplementing<INotifyHarvesterAction>();
 				foreach (var n in notify)
 					n.MovingToResources(self, loc.Value, findResources);
 
@@ -396,8 +422,8 @@ namespace OpenRA.Mods.Common.Traits
 			else if (order.OrderString == "Deliver")
 			{
 				// NOTE: An explicit deliver order forces the harvester to always deliver to this refinery.
-				var iao = order.TargetActor.TraitOrDefault<IAcceptResources>();
-				if (iao == null || !iao.AllowDocking || !IsAcceptableProcType(order.TargetActor))
+				var refi = order.TargetActor.TraitOrDefault<Refinery>();
+				if (refi == null || !refi.AllowDocking || !IsAcceptableProcType(order.TargetActor))
 					return;
 
 				if (order.TargetActor != OwnerLinkedProc)
@@ -412,12 +438,14 @@ namespace OpenRA.Mods.Common.Traits
 				var deliver = new DeliverResources(self);
 				self.QueueActivity(deliver);
 
+				var notify = self.TraitsImplementing<INotifyHarvesterAction>();
 				if (order.Target.Type == TargetType.Actor)
 					foreach (var n in notify)
 						n.MovingToRefinery(self, order.Target.Actor, deliver);
 			}
 			else if (order.OrderString == "Stop" || order.OrderString == "Move")
 			{
+				var notify = self.TraitsImplementing<INotifyHarvesterAction>();
 				foreach (var n in notify)
 					n.MovementCancelled(self);
 

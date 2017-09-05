@@ -126,7 +126,7 @@ namespace OpenRA.Mods.Common.Traits
 	public interface INotifyProduction { void UnitProduced(Actor self, Actor other, CPos exit); }
 	public interface INotifyOtherProduction { void UnitProducedByOther(Actor self, Actor producer, Actor produced, string productionType); }
 	public interface INotifyDelivery { void IncomingDelivery(Actor self); void Delivered(Actor self); }
-	public interface INotifyDocking { void Docked(Actor self, Actor harvester); void Undocked(Actor self, Actor harvester); }
+	public interface INotifyDocking { void Docked(Actor self, Actor client); void Undocked(Actor self, Actor client); }
 	public interface INotifyParachute { void OnParachute(Actor self); void OnLanded(Actor self, Actor ignore); }
 	public interface INotifyCapture { void OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner); }
 	public interface INotifyDiscovered { void OnDiscovered(Actor self, Player discoverer, bool playNotification); }
@@ -137,6 +137,12 @@ namespace OpenRA.Mods.Common.Traits
 	public interface IHuskModifier { string HuskActor(Actor self); }
 
 	public interface ISeedableResource { void Seed(Actor self); }
+
+	public interface IAcceptsRallyPoint
+	{
+		bool IsAcceptableActor(Actor produced, Actor dest);
+		Activity RallyActivities(Actor produced, Actor dest);
+	}
 
 	[RequireExplicitImplementation]
 	public interface INotifyInfiltrated { void Infiltrated(Actor self, Actor infiltrator, BitSet<TargetableType> types); }
@@ -178,8 +184,8 @@ namespace OpenRA.Mods.Common.Traits
 
 	public interface INotifyHarvesterAction
 	{
-		void MovingToResources(Actor self, CPos targetCell, Activity next);
-		void MovingToRefinery(Actor self, Actor refineryActor, Activity next);
+		Activity MovingToResources(Actor self, CPos targetCell, Activity next);
+		Activity MovingToRefinery(Actor self, Actor refineryActor, Activity next);
 		void MovementCancelled(Actor self);
 		void Harvested(Actor self, ResourceType resource);
 		void Docked();
@@ -241,18 +247,14 @@ namespace OpenRA.Mods.Common.Traits
 
 	public interface INotifyDeployTriggered
 	{
-		void Deploy(Actor self, bool skipMakeAnim);
-		void Undeploy(Actor self, bool skipMakeAnim);
+		void Deploy(Actor self, string[] deployTypes);
+		void Undeploy(Actor self, string[] deployTypes);
 	}
 
-	public interface IAcceptResourcesInfo : ITraitInfo { }
-	public interface IAcceptResources
+	public interface IResourceExchange
 	{
-		void OnDock(Actor harv, DeliverResources dockOrder);
 		void GiveResource(int amount);
 		bool CanGiveResource(int amount);
-		CVec DeliveryOffset { get; }
-		bool AllowDocking { get; }
 	}
 
 	public interface IProvidesAssetBrowserPalettes
