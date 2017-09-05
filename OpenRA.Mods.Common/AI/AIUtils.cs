@@ -15,7 +15,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.AI
 {
-	public enum BuildingType { Building, Defense, Refinery }
+	public enum BuildingPlacementType { Building, Defense, Refinery, Fragile }
 
 	public class CaptureTarget<TInfoType> where TInfoType : class, ITraitInfoInterface
 	{

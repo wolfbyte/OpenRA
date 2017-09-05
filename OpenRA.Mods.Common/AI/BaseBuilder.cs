@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Scripting;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.AI
@@ -26,6 +27,7 @@ namespace OpenRA.Mods.Common.AI
 		readonly Player player;
 		readonly PowerManager playerPower;
 		readonly PlayerResources playerResources;
+		readonly AIScriptContext context;
 
 		int waitTicks;
 		Actor[] playerBuildings;
@@ -45,7 +47,7 @@ namespace OpenRA.Mods.Common.AI
 
 		Water waterState = Water.NotChecked;
 
-		public BaseBuilder(HackyAI ai, string category, Player p, PowerManager pm, PlayerResources pr)
+		public BaseBuilder(HackyAI ai, string category, Player p, PowerManager pm, PlayerResources pr, AIScriptContext context)
 		{
 			this.ai = ai;
 			world = p.World;
@@ -55,6 +57,7 @@ namespace OpenRA.Mods.Common.AI
 			this.category = category;
 			failRetryTicks = ai.Info.StructureProductionResumeDelay;
 			minimumExcessPower = ai.Info.MinimumExcessPower;
+			this.context = context;
 		}
 
 		public void Tick()
@@ -135,13 +138,13 @@ namespace OpenRA.Mods.Common.AI
 			{
 				// Production is complete
 				// Choose the placement logic
-				// HACK: HACK HACK HACK
-				// TODO: Derive this from BuildingCommonNames instead
-				var type = BuildingType.Building;
-				if (world.Map.Rules.Actors[currentBuilding.Item].HasTraitInfo<AttackBaseInfo>())
-					type = BuildingType.Defense;
-				else if (world.Map.Rules.Actors[currentBuilding.Item].HasTraitInfo<RefineryInfo>())
-					type = BuildingType.Refinery;
+				var type = BuildingPlacementType.Building;
+				if (ai.Info.BuildingCommonNames.Fragile.Contains(currentBuilding.Item))
+					type = BuildingPlacementType.Fragile;
+				else if (ai.Info.BuildingCommonNames.Defense.Contains(currentBuilding.Item))
+					type = BuildingPlacementType.Defense;
+				else if (ai.Info.BuildingCommonNames.Refinery.Contains(currentBuilding.Item))
+					type = BuildingPlacementType.Refinery;
 
 				var location = ai.ChooseBuildLocation(currentBuilding.Item, true, type);
 				if (location == null)
@@ -203,13 +206,89 @@ namespace OpenRA.Mods.Common.AI
 				.Sum(p => p.Amount) + playerPower.ExcessPower) >= minimumExcessPower;
 		}
 
+		ActorInfo QueryScript(ProductionQueue queue, IEnumerable<ActorInfo> buildableThings)
+		{
+			var luaParams = context.CreateTable();
+
+			// Lets prepare parameters for lua call.
+			// Modders are free to add more if necessary.
+			// We assert that no buildings have names like nil or none or null.
+			// (Which crazy modders will do that anyway? Unless they are making a mod that is themed computer science/mathematics)
+			luaParams.Add("queue_type", queue.Info.Type.ToLowerInvariant());
+
+			var player_buildings = playerBuildings.Select(pb => pb.Info.Name.ToLowerInvariant()).ToArray();
+			luaParams.Add("player_buildings", player_buildings.ToLuaValue(context));
+
+			var buildable_things = buildableThings.Select(th => th.Name.ToLowerInvariant()).ToArray();
+			luaParams.Add("builable_things", buildable_things.ToLuaValue(context));
+
+			var power = GetProducibleBuilding(ai.Info.BuildingCommonNames.Power, buildableThings,
+				a => a.TraitInfos<PowerInfo>().Where(i => i.EnabledByDefault).Sum(p => p.Amount)); // find the best power plant
+			int powerGen = 0;
+			if (power != null)
+				powerGen = power.TraitInfos<PowerInfo>().Where(i => i.EnabledByDefault).Sum(p => p.Amount);
+
+			// Factions like GLA doesn't have powerplants. Must check.
+			if (power != null && powerGen > 0)
+			{
+				luaParams.Add("power", power.Name);
+				luaParams.Add("power_gen", powerGen);
+			}
+			else
+			{
+				luaParams.Add("power", null);
+				luaParams.Add("power_gen", 0);
+			}
+
+			// excess power information
+			luaParams.Add("excess_power", playerPower.ExcessPower);
+			luaParams.Add("minimum_excess_power", ai.Info.MinimumExcessPower);
+
+			// Finally! Call lua func.
+			var ret = context.CallLuaFunc("BB_choose_building_to_build", luaParams);
+			if (ret == null)
+				return null; // shouldn't happen but just to be sure.
+			if (ret.Count() == 0)
+				return null; // hmmm.. this shouldn't happen either.
+
+			// get ret val and dispose stuff.
+			string n = ret[0].ToString().ToLowerInvariant();
+			ret.Dispose();
+			luaParams.Dispose();
+
+			// decode results for AI.
+			// Modders may not use "nil" as their building name. I'm not sure of a good way to enforce that.
+			if (n == "nil")
+				return null; // lua chose to build nothing.
+
+			if (world.Map.Rules.Actors.ContainsKey(n))
+				return world.Map.Rules.Actors[n];
+
+			// If not found, it can be some errorneous lua input.
+			// However, there is a special keyword that allows AI to do old hacky behavior.
+			if (n != "hacky_fallback")
+				return null;
+
+			// Fall back to hacky selection.
+			return HackyChooseBuildingToBuild(queue, buildableThings);
+		}
+
 		ActorInfo ChooseBuildingToBuild(ProductionQueue queue)
 		{
 			var buildableThings = queue.BuildableItems();
+			if (!buildableThings.Any())
+				return null;
 
-			// This gets used quite a bit, so let's cache it here
+			if (context != null)
+				return QueryScript(queue, buildableThings);
+			else
+				return HackyChooseBuildingToBuild(queue, buildableThings);
+		}
+
+		ActorInfo HackyChooseBuildingToBuild(ProductionQueue queue, IEnumerable<ActorInfo> buildableThings)
+		{
 			var power = GetProducibleBuilding(ai.Info.BuildingCommonNames.Power, buildableThings,
-				a => a.TraitInfos<PowerInfo>().Where(i => i.EnabledByDefault).Sum(p => p.Amount));
+				a => a.TraitInfos<PowerInfo>().Where(i => i.EnabledByDefault).Sum(p => p.Amount)); // find the best power plant
 
 			// First priority is to get out of a low power situation
 			if (playerPower.ExcessPower < minimumExcessPower)
@@ -298,7 +377,15 @@ namespace OpenRA.Mods.Common.AI
 
 				// Can we build this structure?
 				if (!buildableThings.Any(b => b.Name == name))
-					continue;
+				{
+					// Check if it is defined in the core and buildable.
+					if (ai.Info.CoreDefinitions == null || !ai.Info.CoreDefinitions.ContainsKey(name))
+						//// Not even indirectly buildable with a "core".
+						continue;
+					if (!buildableThings.Any(b => b.Name == ai.Info.CoreDefinitions[name]))
+						//// Indirectly buildable, but that core is not currently buildable.
+						continue;
+				}
 
 				// Do we want to build this structure?
 				var count = playerBuildings.Count(a => a.Info.Name == name);
@@ -335,7 +422,12 @@ namespace OpenRA.Mods.Common.AI
 				// Lets build this
 				HackyAI.BotDebug("{0} decided to build {1}: Desired is {2} ({3} / {4}); current is {5} / {4}",
 					queue.Actor.Owner, name, frac.Value, frac.Value * playerBuildings.Length, playerBuildings.Length, count);
-				return actor;
+
+				// If a core actor, return the core instead.
+				if (ai.Info.CoreDefinitions != null && ai.Info.CoreDefinitions.ContainsKey(name))
+					return world.Map.Rules.Actors[ai.Info.CoreDefinitions[name]];
+				else
+					return actor;
 			}
 
 			// Too spammy to keep enabled all the time, but very useful when debugging specific issues.

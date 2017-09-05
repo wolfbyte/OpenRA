@@ -100,7 +100,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		bool CanEnter(Cargo cargo)
 		{
-			return cargo != null && cargo.HasSpace(Info.Weight);
+			return cargo != null && cargo.HasSpace(Info.Weight) && !cargo.IsTraitDisabled;
 		}
 
 		bool CanEnter(Actor target)

@@ -161,6 +161,7 @@ namespace OpenRA
 			new MapField("Title"),
 			new MapField("Author"),
 			new MapField("Tileset"),
+			new MapField("SkyboxImage", required: false),
 			new MapField("MapSize"),
 			new MapField("Bounds"),
 			new MapField("Visibility"),
@@ -187,6 +188,7 @@ namespace OpenRA
 		public string Title;
 		public string Author;
 		public string Tileset;
+		public string SkyboxImage;
 		public bool LockPreview;
 		public Rectangle Bounds;
 		public MapVisibility Visibility = MapVisibility.Lobby;
