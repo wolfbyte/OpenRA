@@ -19,7 +19,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Cnc.Traits
 {
 	[Desc("This structure can be infiltrated causing funds to be stolen.")]
-	class InfiltrateForCashInfo : ITraitInfo
+	class InfiltrateForCashInfo : ConditionalTraitInfo
 	{
 		public readonly BitSet<TargetableType> Types;
 
@@ -39,7 +39,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		[Desc("Whether to show the cash tick indicators rising from the actor.")]
 		public readonly bool ShowTicks = true;
 
-		public object Create(ActorInitializer init) { return new InfiltrateForCash(this); }
+		public override object Create(ActorInitializer init) { return new InfiltrateForCash(this); }
 	}
 
 	class InfiltrateForCash : INotifyInfiltrated
