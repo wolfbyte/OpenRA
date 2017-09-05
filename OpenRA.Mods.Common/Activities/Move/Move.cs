@@ -254,8 +254,8 @@ namespace OpenRA.Mods.Common.Activities
 				0));
 
 			// While carrying out one Move order, MoveSecondHalf finishes its work from time to time and returns null.
-			// That causes the ChildActivity to be null and makes us return to this part of code.
-			// If we only queue the activity and not run it, units will lose one tick and pause briefly!
+			// That causes the ChildActivity to be null and makes us return to this part of this function.
+			// If we only queue the activity and not run it, units will pause for one tick!
 			ChildActivity = ActivityUtils.RunActivity(self, ChildActivity);
 			return this;
 		}

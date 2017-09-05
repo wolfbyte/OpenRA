@@ -203,6 +203,11 @@ namespace OpenRA.Mods.Cnc.Traits
 			return false;
 		}
 
+		bool IMove.TurnWhileDisabled(Actor self)
+		{
+			return false;
+		}
+
 		void IActorPreviewInitModifier.ModifyActorPreviewInit(Actor self, TypeDictionary inits)
 		{
 			if (!inits.Contains<DynamicFacingInit>() && !inits.Contains<FacingInit>())

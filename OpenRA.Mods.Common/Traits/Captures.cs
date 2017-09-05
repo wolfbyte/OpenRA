@@ -124,6 +124,7 @@ namespace OpenRA.Mods.Common.Traits
 				// TODO: This doesn't account for disabled traits.
 				// Actors with FrozenUnderFog should not disable the Capturable trait.
 				var c = target.Info.TraitInfoOrDefault<CapturableInfo>();
+
 				if (c == null || !c.CanBeTargetedBy(self, target.Owner))
 				{
 					cursor = capturesInfo.EnterCursor;

@@ -9,13 +9,10 @@
  */
 #endregion
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Activities;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Orders;
-using OpenRA.Mods.Common.Traits.Render;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -56,6 +53,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("Skip make/deploy animation?")]
 		public readonly bool SkipMakeAnimation = false;
+
+		[Desc("Play MakeAnimation only when its DeployType matches one of these types")]
+		public readonly string[] MakeAnimationDeployTypes = { "make" };
 
 		public override object Create(ActorInitializer init) { return new GrantConditionOnDeploy(init, this); }
 	}
@@ -203,14 +203,22 @@ namespace OpenRA.Mods.Common.Traits
 			return ramp == 0;
 		}
 
+		int deployNotificationCount = 0;
 		void INotifyDeployComplete.FinishedDeploy(Actor self)
 		{
-			OnDeployCompleted();
+			deployNotificationCount--;
+
+			if (deployNotificationCount <= 0)
+				OnDeployCompleted();
 		}
 
+		int undeployNotificationCount = 0;
 		void INotifyDeployComplete.FinishedUndeploy(Actor self)
 		{
-			OnUndeployCompleted();
+			undeployNotificationCount--;
+
+			if (undeployNotificationCount <= 0)
+				OnUndeployCompleted();
 		}
 
 		/// <summary>Play deploy sound and animation.</summary>
@@ -236,8 +244,11 @@ namespace OpenRA.Mods.Common.Traits
 			if (!notify.Any())
 				OnDeployCompleted();
 			else
+			{
+				deployNotificationCount = notify.Count();
 				foreach (var n in notify)
-					n.Deploy(self, Info.SkipMakeAnimation);
+					n.Deploy(self, Info.MakeAnimationDeployTypes);
+			}
 		}
 
 		/// <summary>Play undeploy sound and animation and after that revoke the condition.</summary>
@@ -259,8 +270,11 @@ namespace OpenRA.Mods.Common.Traits
 			if (!notify.Any())
 				OnUndeployCompleted();
 			else
+			{
+				undeployNotificationCount = notify.Count();
 				foreach (var n in notify)
-					n.Undeploy(self, Info.SkipMakeAnimation);
+					n.Undeploy(self, Info.MakeAnimationDeployTypes);
+			}
 		}
 
 		void OnDeployStarted()
@@ -277,6 +291,10 @@ namespace OpenRA.Mods.Common.Traits
 				deployedToken = conditionManager.GrantCondition(self, Info.DeployedCondition);
 
 			deployState = DeployState.Deployed;
+
+			var notis = self.TraitsImplementing<INotifyDeploy>();
+			foreach (var noti in notis)
+				noti.OnDeployed(self);
 		}
 
 		void OnUndeployStarted()
@@ -285,6 +303,10 @@ namespace OpenRA.Mods.Common.Traits
 				deployedToken = conditionManager.RevokeCondition(self, deployedToken);
 
 			deployState = DeployState.Deploying;
+
+			var notis = self.TraitsImplementing<INotifyDeploy>();
+			foreach (var noti in notis)
+				noti.OnUndeployed(self);
 		}
 
 		void OnUndeployCompleted()
