@@ -50,6 +50,7 @@ namespace OpenRA.Mods.Common.Traits
 			return new AttackActivity(self, newTarget, allowMove, forceAttack);
 		}
 
+		// Some 3rd-party mods rely on this being public
 		public override void OnStopOrder(Actor self)
 		{
 			Target = Target.Invalid;
@@ -63,7 +64,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		class AttackActivity : Activity
 		{
-			readonly AttackFollow attack;
+			readonly AttackFollow[] attackFollows;
 			readonly RevealsShroud[] revealsShroud;
 			readonly IMove move;
 			readonly bool forceAttack;
@@ -72,12 +73,26 @@ namespace OpenRA.Mods.Common.Traits
 
 			public AttackActivity(Actor self, Target target, bool allowMove, bool forceAttack)
 			{
-				attack = self.Trait<AttackFollow>();
+				attackFollows = self.TraitsImplementing<AttackFollow>().ToArray();
 				move = allowMove ? self.TraitOrDefault<IMove>() : null;
 				revealsShroud = self.TraitsImplementing<RevealsShroud>().ToArray();
 
 				this.target = target;
 				this.forceAttack = forceAttack;
+			}
+
+			Armament GetFirstFeasibleWeapon(Target target, bool forceAttack)
+			{
+				// We scan attackbases in order.
+				// That means, the order of attack base in YAML matters!
+				foreach (var atb in attackFollows)
+				{
+					var weapon = atb.ChooseArmamentsForTarget(target, forceAttack).FirstOrDefault();
+					if (weapon != null)
+						return weapon;
+				}
+
+				return null;
 			}
 
 			public override Activity Tick(Actor self)
@@ -86,15 +101,15 @@ namespace OpenRA.Mods.Common.Traits
 				if (IsCanceled || !target.IsValidFor(self))
 					return NextActivity;
 
-				if (attack.IsTraitPaused)
+				if (attackFollows.All(a => a.IsTraitPaused))
 					return this;
 
-				var weapon = attack.ChooseArmamentsForTarget(target, forceAttack).FirstOrDefault();
+				var weapon = GetFirstFeasibleWeapon(target, forceAttack);
 				if (weapon != null)
 				{
 					// Check that AttackFollow hasn't cancelled the target by modifying attack.Target
 					// Having both this and AttackFollow modify that field is a horrible hack.
-					if (hasTicked && attack.Target.Type == TargetType.Invalid)
+					if (hasTicked && attackFollows.All(a => a.Target.Type == TargetType.Invalid))
 						return NextActivity;
 
 					var targetIsMobile = (target.Type == TargetType.Actor && target.Actor.Info.HasTraitInfo<IMoveInfo>())
@@ -106,7 +121,7 @@ namespace OpenRA.Mods.Common.Traits
 						: modifiedRange;
 
 					// Most actors want to be able to see their target before shooting
-					if (!attack.Info.TargetFrozenActors && !forceAttack && target.Type == TargetType.FrozenActor)
+					if (!attackFollows.Any(a => a.Info.TargetFrozenActors) && !forceAttack && target.Type == TargetType.FrozenActor)
 					{
 						var rs = revealsShroud
 							.Where(Exts.IsTraitEnabled)
@@ -118,7 +133,9 @@ namespace OpenRA.Mods.Common.Traits
 							maxRange = sightRange;
 					}
 
-					attack.Target = target;
+					// Assign targets to all so if it can fire, it will fire.
+					foreach (var attack in attackFollows)
+						attack.Target = target;
 					hasTicked = true;
 
 					if (move != null)
@@ -128,7 +145,8 @@ namespace OpenRA.Mods.Common.Traits
 						return this;
 				}
 
-				attack.Target = Target.Invalid;
+				foreach (var attack in attackFollows)
+					attack.Target = Target.Invalid;
 
 				return NextActivity;
 			}

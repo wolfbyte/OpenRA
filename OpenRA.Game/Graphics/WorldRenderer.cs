@@ -34,8 +34,8 @@ namespace OpenRA.Graphics
 		readonly HashSet<Actor> onScreenActors = new HashSet<Actor>();
 		readonly HardwarePalette palette = new HardwarePalette();
 		readonly Dictionary<string, PaletteReference> palettes = new Dictionary<string, PaletteReference>();
-		readonly IRenderTerrain terrainRenderer;
-		readonly Lazy<DebugVisualizations> debugVis;
+		readonly TerrainRenderer terrainRenderer;
+		readonly Lazy<DeveloperMode> devTrait;
 		readonly Func<string, PaletteReference> createPaletteReference;
 		readonly bool enableDepthBuffer;
 
@@ -64,7 +64,7 @@ namespace OpenRA.Graphics
 			Theater = new Theater(world.Map.Rules.TileSet);
 			terrainRenderer = world.WorldActor.TraitOrDefault<IRenderTerrain>();
 
-			debugVis = Exts.Lazy(() => world.WorldActor.TraitOrDefault<DebugVisualizations>());
+			devTrait = Exts.Lazy(() => world.LocalPlayer != null ? world.LocalPlayer.PlayerActor.Trait<DeveloperMode>() : null);
 		}
 
 		public void UpdatePalettesForPlayer(string internalName, HSLColor color, bool replaceExisting)
@@ -165,9 +165,9 @@ namespace OpenRA.Graphics
 			if (World.WorldActor.Disposed)
 				return;
 
-			if (debugVis.Value != null && lastDepthPreviewEnabled != debugVis.Value.DepthBuffer)
+			if (devTrait.Value != null && lastDepthPreviewEnabled != devTrait.Value.DepthBuffer)
 			{
-				lastDepthPreviewEnabled = debugVis.Value.DepthBuffer;
+				lastDepthPreviewEnabled = devTrait.Value.ShowDepthPreview;
 				Game.Renderer.WorldSpriteRenderer.SetDepthPreviewEnabled(lastDepthPreviewEnabled);
 			}
 
@@ -217,7 +217,7 @@ namespace OpenRA.Graphics
 				foreach (var r in g)
 					r.Render(this);
 
-			if (debugVis.Value != null && debugVis.Value.RenderGeometry)
+			if (devTrait.Value != null && devTrait.Value.ShowDebugGeometry)
 			{
 				for (var i = 0; i < renderables.Count; i++)
 					renderables[i].RenderDebugGeometry(this);

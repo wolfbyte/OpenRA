@@ -9,8 +9,11 @@
  */
 #endregion
 
+<<<<<<< HEAD
 using System;
 using System.Collections.Generic;
+=======
+>>>>>>> Upload Engine for Generals Alpha
 using System.Drawing;
 using System.Linq;
 using OpenRA.Mods.Common.Commands;
@@ -43,7 +46,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		bool teamChat;
 
 		[ObjectCreator.UseCtor]
-		public IngameChatLogic(Widget widget, OrderManager orderManager, World world, ModData modData, bool isMenuChat, Dictionary<string, MiniYaml> logicArgs)
+		public IngameChatLogic(Widget widget, OrderManager orderManager, World world, ModData modData, Dictionary<string, MiniYaml> logicArgs)
 		{
 			this.orderManager = orderManager;
 			this.modRules = modData.DefaultRules;
@@ -58,12 +61,9 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			tabCompletion.Names = orderManager.LobbyInfo.Clients.Select(c => c.Name).Distinct().ToList();
 
 			var chatPanel = (ContainerWidget)widget;
-			chatOverlay = chatPanel.GetOrNull<ContainerWidget>("CHAT_OVERLAY");
-			if (chatOverlay != null)
-			{
-				chatOverlayDisplay = chatOverlay.Get<ChatDisplayWidget>("CHAT_DISPLAY");
-				chatOverlay.Visible = false;
-			}
+			chatOverlay = chatPanel.Get<ContainerWidget>("CHAT_OVERLAY");
+			chatOverlayDisplay = chatOverlay.Get<ChatDisplayWidget>("CHAT_DISPLAY");
+			chatOverlay.Visible = false;
 
 			chatChrome = chatPanel.Get<ContainerWidget>("CHAT_CHROME");
 			chatChrome.Visible = true;
@@ -91,9 +91,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 				}
 
 				chatText.Text = "";
-				if (!isMenuChat)
-					CloseChat();
-
+				CloseChat();
 				return true;
 			};
 
@@ -109,35 +107,24 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 					return true;
 			};
 
-			chatText.OnEscKey = () =>
+			chatText.OnEscKey = () => { CloseChat(); return true; };
+
+			var chatClose = chatChrome.Get<ButtonWidget>("CHAT_CLOSE");
+			chatClose.OnClick += CloseChat;
+
+			chatPanel.OnKeyPress = e =>
 			{
-				if (!isMenuChat)
-					CloseChat();
-				else
-					chatText.YieldKeyboardFocus();
-
-				return true;
-			};
-
-			if (!isMenuChat)
-			{
-				var chatClose = chatChrome.Get<ButtonWidget>("CHAT_CLOSE");
-				chatClose.OnClick += CloseChat;
-
-				chatPanel.OnKeyPress = e =>
-				{
-					if (e.Event == KeyInputEvent.Up)
-						return false;
-
-					if (!chatChrome.IsVisible() && (e.Key == Keycode.RETURN || e.Key == Keycode.KP_ENTER))
-					{
-						OpenChat();
-						return true;
-					}
-
+				if (e.Event == KeyInputEvent.Up)
 					return false;
-				};
-			}
+
+				if (!chatChrome.IsVisible() && (e.Key == Keycode.RETURN || e.Key == Keycode.KP_ENTER))
+				{
+					OpenChat();
+					return true;
+				}
+
+				return false;
+			};
 
 			chatScrollPanel = chatChrome.Get<ScrollPanelWidget>("CHAT_SCROLLPANEL");
 			chatTemplate = chatScrollPanel.Get<ContainerWidget>("CHAT_TEMPLATE");
@@ -149,27 +136,23 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 
 			orderManager.AddChatLine += AddChatLineWrapper;
 
+			CloseChat();
 			chatText.IsDisabled = () => world.IsReplay && !Game.Settings.Debug.EnableDebugCommandsInReplays;
 
-			if (!isMenuChat)
+			var keyListener = chatChrome.Get<LogicKeyListenerWidget>("KEY_LISTENER");
+			keyListener.OnKeyPress = e =>
 			{
-				CloseChat();
-
-				var keyListener = chatChrome.Get<LogicKeyListenerWidget>("KEY_LISTENER");
-				keyListener.AddHandler(e =>
-				{
-					if (e.Event == KeyInputEvent.Up || !chatText.IsDisabled())
-						return false;
-
-					if ((e.Key == Keycode.RETURN || e.Key == Keycode.KP_ENTER || e.Key == Keycode.ESCAPE) && e.Modifiers == Modifiers.None)
-					{
-						CloseChat();
-						return true;
-					}
-
+				if (e.Event == KeyInputEvent.Up || !chatText.IsDisabled())
 					return false;
-				});
-			}
+
+				if ((e.Key == Keycode.RETURN || e.Key == Keycode.KP_ENTER || e.Key == Keycode.ESCAPE) && e.Modifiers == Modifiers.None)
+				{
+					CloseChat();
+					return true;
+				}
+
+				return false;
+			};
 
 			MiniYaml yaml;
 			if (logicArgs.TryGetValue("ChatLineSound", out yaml))
@@ -190,7 +173,6 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			chatScrollPanel.ScrollToBottom();
 			if (!chatText.IsDisabled())
 				chatText.TakeKeyboardFocus();
-
 			chatOverlay.Visible = false;
 		}
 

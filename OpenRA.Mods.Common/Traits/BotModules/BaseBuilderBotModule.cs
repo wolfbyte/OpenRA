@@ -45,6 +45,12 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Tells the AI what building types are considered silos (resource storage).")]
 		public readonly HashSet<string> SiloTypes = new HashSet<string>();
 
+		[Desc("Tells the AI what building types are considered as base defense.")]
+		public readonly HashSet<string> DefenseTypes = new HashSet<string>();
+
+		[Desc("Tells the AI what building types are considered as fragile buildings (tech center, radar, sws etc.).")]
+		public readonly HashSet<string> FragileTypes = new HashSet<string>();
+
 		[Desc("Production queues AI uses for buildings.")]
 		public readonly HashSet<string> BuildingQueues = new HashSet<string> { "Building" };
 
@@ -56,6 +62,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("Radius in cells around the center of the base to expand.")]
 		public readonly int MaxBaseRadius = 20;
+
+		[Desc("Same as MinBaseRadius but for fragile structures to push them further away.")]
+		public readonly int MinFragilePlacementRadius = 8;
 
 		[Desc("Minimum excess power the AI should try to maintain.")]
 		public readonly int MinimumExcessPower = 0;

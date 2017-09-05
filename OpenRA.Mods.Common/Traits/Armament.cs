@@ -94,9 +94,6 @@ namespace OpenRA.Mods.Common.Traits
 				WeaponInfo.Range.Length,
 				ai.TraitInfos<IRangeModifierInfo>().Select(m => m.GetRangeModifierDefault())));
 
-			if (WeaponInfo.Burst > 1 && WeaponInfo.BurstDelays.Length > 1 && (WeaponInfo.BurstDelays.Length != WeaponInfo.Burst - 1))
-				throw new YamlException("Weapon '{0}' has an invalid number of BurstDelays, must be single entry or Burst - 1.".F(weaponToLower));
-
 			base.RulesetLoaded(rules, ai);
 		}
 	}
@@ -231,29 +228,26 @@ namespace OpenRA.Mods.Common.Traits
 				a();
 		}
 
-		protected virtual bool CanFire(Actor self, Target target)
-		{
-			if (IsReloading || IsTraitPaused)
-				return false;
-
-			if (turret != null && !turret.HasAchievedDesiredFacing)
-				return false;
-
-			if ((!target.IsInRange(self.CenterPosition, MaxRange()))
-				|| (Weapon.MinRange != WDist.Zero && target.IsInRange(self.CenterPosition, Weapon.MinRange)))
-				return false;
-
-			if (!Weapon.IsValidAgainst(target, self.World, self))
-				return false;
-
-			return true;
-		}
-
 		// Note: facing is only used by the legacy positioning code
 		// The world coordinate model uses Actor.Orientation
 		public virtual Barrel CheckFire(Actor self, IFacing facing, Target target)
 		{
-			if (!CanFire(self, target))
+			if (IsReloading || IsTraitPaused)
+				return false;
+
+			if (ammoPool != null && !ammoPool.HasAmmo())
+				return null;
+
+			if (turret != null && !turret.HasAchievedDesiredFacing)
+				return null;
+
+			if (!target.IsInRange(self.CenterPosition, MaxRange()))
+				return null;
+
+			if (Weapon.MinRange != WDist.Zero && target.IsInRange(self.CenterPosition, Weapon.MinRange))
+				return null;
+
+			if (!Weapon.IsValidAgainst(target, self.World, self))
 				return null;
 
 			if (ticksSinceLastShot >= Weapon.ReloadDelay)
@@ -261,22 +255,12 @@ namespace OpenRA.Mods.Common.Traits
 
 			ticksSinceLastShot = 0;
 
-			// If Weapon.Burst == 1, cycle through all LocalOffsets, otherwise use the offset corresponding to current Burst
 			currentBarrel %= barrelCount;
 			var barrel = Weapon.Burst == 1 ? Barrels[currentBarrel] : Barrels[Burst % Barrels.Length];
 			currentBarrel++;
 
-			FireBarrel(self, facing, target, barrel);
-
-			UpdateBurst(self, target);
-
-			return barrel;
-		}
-
-		protected virtual void FireBarrel(Actor self, IFacing facing, Target target, Barrel barrel)
-		{
 			foreach (var na in notifyAttacks)
-				na.PreparingAttack(self, target, this, barrel);
+				na.PreparingAttack(self, target, this, barrel)
 
 			Func<WPos> muzzlePosition = () => self.CenterPosition + MuzzleOffset(self, barrel);
 			var legacyFacing = MuzzleOrientation(self, barrel).Yaw.Angle / 4;
@@ -338,24 +322,16 @@ namespace OpenRA.Mods.Common.Traits
 					Recoil = Info.Recoil;
 				}
 			});
-		}
 
-		protected virtual void UpdateBurst(Actor self, Target target)
-		{
 			if (--Burst > 0)
-			{
-				if (Weapon.BurstDelays.Length == 1)
-					FireDelay = Weapon.BurstDelays[0];
-				else
-					FireDelay = Weapon.BurstDelays[Weapon.Burst - (Burst + 1)];
-			}
+				FireDelay = Weapon.BurstDelay;
 			else
 			{
 				var modifiers = reloadModifiers.ToArray();
 				FireDelay = Util.ApplyPercentageModifiers(Weapon.ReloadDelay, modifiers);
 				Burst = Weapon.Burst;
 
-				if (Weapon.AfterFireSound != null && Weapon.AfterFireSound.Any())
+				if (args.Weapon.AfterFireSound != null && args.Weapon.AfterFireSound.Any())
 				{
 					ScheduleDelayedAction(Weapon.AfterFireSoundDelay, () =>
 					{
@@ -366,16 +342,13 @@ namespace OpenRA.Mods.Common.Traits
 				foreach (var nbc in notifyBurstComplete)
 					nbc.FiredBurst(self, target, this);
 			}
+
+			return barrel;
 		}
 
 		public virtual bool IsReloading { get { return FireDelay > 0 || IsTraitDisabled; } }
 
-		public WVec MuzzleOffset(Actor self, Barrel b)
-		{
-			return CalculateMuzzleOffset(self, b);
-		}
-
-		protected virtual WVec CalculateMuzzleOffset(Actor self, Barrel b)
+		public virtual WVec MuzzleOffset(Actor self, Barrel b)
 		{
 			var bodyOrientation = coords.QuantizeOrientation(self, self.Orientation);
 			var localOffset = b.Offset + new WVec(-Recoil, WDist.Zero, WDist.Zero);
@@ -392,12 +365,7 @@ namespace OpenRA.Mods.Common.Traits
 			return coords.LocalToWorld(localOffset.Rotate(bodyOrientation));
 		}
 
-		public WRot MuzzleOrientation(Actor self, Barrel b)
-		{
-			return CalculateMuzzleOrientation(self, b);
-		}
-
-		protected virtual WRot CalculateMuzzleOrientation(Actor self, Barrel b)
+		public virtual WRot MuzzleOrientation(Actor self, Barrel b)
 		{
 			var orientation = turret != null ? turret.WorldOrientation(self) :
 				coords.QuantizeOrientation(self, self.Orientation);

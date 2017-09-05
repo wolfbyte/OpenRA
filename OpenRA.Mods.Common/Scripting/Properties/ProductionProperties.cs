@@ -221,6 +221,17 @@ namespace OpenRA.Mods.Common.Scripting
 			triggers.OnOtherProducedInternal += globalProductionHandler;
 		}
 
+		[Desc("Check if the player has these prerequisites available to build the actor type")]
+		public bool HasPrerequisitesForActorType(string type)
+		{
+			var tt = Player.PlayerActor.TraitOrDefault<TechTree>();
+			if (tt == null)
+				throw new LuaException("Missing TechTree trait on player {0}!".F(Player));
+
+			var bi = GetBuildableInfo(type);
+			return tt.HasPrerequisites(bi.Prerequisites);
+		}
+
 		[Desc("Build the specified set of actors using classic (RA-style) production queues. " +
 			"The function will return true if production could be started, false otherwise. " +
 			"If an actionFunc is given, it will be called as actionFunc(Actor[] actors) once " +
@@ -240,6 +251,12 @@ namespace OpenRA.Mods.Common.Scripting
 
 			if (queueTypes.Any(t => queues[t].AllQueued().Any()))
 				return false;
+
+			// Do we have all prerequisites?
+			// If we don't check first, AI gets stuck!
+			foreach (var name in actorTypes)
+				if (!HasPrerequisitesForActorType(name))
+					return false;
 
 			if (actionFunc != null)
 			{
@@ -288,6 +305,9 @@ namespace OpenRA.Mods.Common.Scripting
 
 		BuildableInfo GetBuildableInfo(string actorType)
 		{
+			if (!Player.World.Map.Rules.Actors.ContainsKey(actorType))
+				throw new LuaException("Actor of type {0} is invalid".F(actorType));
+
 			var ri = Player.World.Map.Rules.Actors[actorType];
 			var bi = ri.TraitInfoOrDefault<BuildableInfo>();
 

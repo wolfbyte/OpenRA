@@ -13,6 +13,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using OpenRA.Scripting;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -26,6 +27,7 @@ namespace OpenRA.Mods.Common.Traits
 		readonly Player player;
 		readonly PowerManager playerPower;
 		readonly PlayerResources playerResources;
+		readonly AIScriptContext context;
 
 		int waitTicks;
 		Actor[] playerBuildings;
@@ -40,7 +42,7 @@ namespace OpenRA.Mods.Common.Traits
 		WaterCheck waterState = WaterCheck.NotChecked;
 
 		public BaseBuilderQueueManager(BaseBuilderBotModule baseBuilder, string category, Player p, PowerManager pm,
-			PlayerResources pr, BitArray resourceTypeIndices)
+			PlayerResources pr, BitArray resourceTypeIndices, AIScriptContext context)
 		{
 			this.baseBuilder = baseBuilder;
 			world = p.World;
@@ -51,6 +53,7 @@ namespace OpenRA.Mods.Common.Traits
 			failRetryTicks = baseBuilder.Info.StructureProductionResumeDelay;
 			minimumExcessPower = baseBuilder.Info.MinimumExcessPower;
 			this.resourceTypeIndices = resourceTypeIndices;
+			this.context = context;
 		}
 
 		public void Tick(IBot bot)
@@ -131,13 +134,13 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				// Production is complete
 				// Choose the placement logic
-				// HACK: HACK HACK HACK
-				// TODO: Derive this from BuildingCommonNames instead
 				var type = BuildingType.Building;
-				if (world.Map.Rules.Actors[currentBuilding.Item].HasTraitInfo<AttackBaseInfo>())
+				if (baseBuilder.Info.DefenseTypes.Contains(world.Map.Rules.Actors[currentBuilding.Item].Name))
 					type = BuildingType.Defense;
 				else if (baseBuilder.Info.RefineryTypes.Contains(world.Map.Rules.Actors[currentBuilding.Item].Name))
 					type = BuildingType.Refinery;
+				else if (baseBuilder.Info.FragileTypes.Contains(world.Map.Rules.Actors[currentBuilding.Item].Name))
+					type = BuildingType.Fragile;
 
 				var location = ChooseBuildLocation(currentBuilding.Item, true, type);
 				if (location == null)
@@ -199,10 +202,87 @@ namespace OpenRA.Mods.Common.Traits
 				.Sum(p => p.Amount) + playerPower.ExcessPower) >= baseBuilder.Info.MinimumExcessPower;
 		}
 
+		ActorInfo QueryScript(ProductionQueue queue, IEnumerable<ActorInfo> buildableThings)
+		{
+			var luaParams = context.CreateTable();
+
+			// Lets prepare parameters for lua call.
+			// Modders are free to add more if necessary.
+			// We assert that no buildings have names like nil or none or null.
+			// (Which crazy modders will do that anyway? Unless they are making a mod that is themed computer science/mathematics)
+			luaParams.Add("queue_type", queue.Info.Type.ToLowerInvariant());
+
+			var player_buildings = playerBuildings.Select(pb => pb.Info.Name.ToLowerInvariant()).ToArray();
+			luaParams.Add("player_buildings", player_buildings.ToLuaValue(context));
+
+			var buildable_things = buildableThings.Select(th => th.Name.ToLowerInvariant()).ToArray();
+			luaParams.Add("builable_things", buildable_things.ToLuaValue(context));
+
+			var power = GetProducibleBuilding(baseBuilder.Info.PowerTypes, buildableThings,
+				a => a.TraitInfos<PowerInfo>().Where(i => i.EnabledByDefault).Sum(p => p.Amount));
+			int powerGen = 0;
+			if (power != null)
+				powerGen = power.TraitInfos<PowerInfo>().Where(i => i.EnabledByDefault).Sum(p => p.Amount);
+
+			// Factions like GLA doesn't have powerplants. Must check.
+			if (power != null && powerGen > 0)
+			{
+				luaParams.Add("power", power.Name);
+				luaParams.Add("power_gen", powerGen);
+			}
+			else
+			{
+				luaParams.Add("power", null);
+				luaParams.Add("power_gen", 0);
+			}
+
+			// excess power information
+			luaParams.Add("excess_power", playerPower.ExcessPower);
+			luaParams.Add("minimum_excess_power", baseBuilder.Info.MinimumExcessPower);
+
+			// Finally! Call lua func.
+			var ret = context.CallLuaFunc("BB_choose_building_to_build", luaParams);
+			if (ret == null)
+				return null; // shouldn't happen but just to be sure.
+			if (ret.Count() == 0)
+				return null; // hmmm.. this shouldn't happen either.
+
+			// get ret val and dispose stuff.
+			string n = ret[0].ToString().ToLowerInvariant();
+			ret.Dispose();
+			luaParams.Dispose();
+
+			// decode results for AI.
+			// Modders may not use "nil" as their building name. I'm not sure of a good way to enforce that.
+			if (n == "nil")
+				return null; // lua chose to build nothing.
+
+			if (world.Map.Rules.Actors.ContainsKey(n))
+				return world.Map.Rules.Actors[n];
+
+			// If not found, it can be some errorneous lua input.
+			// However, there is a special keyword that allows AI to do old hacky behavior.
+			if (n != "hacky_fallback")
+				return null;
+
+			// Fall back to hacky selection.
+			return HackyChooseBuildingToBuild(queue, buildableThings);
+		}
+
 		ActorInfo ChooseBuildingToBuild(ProductionQueue queue)
 		{
 			var buildableThings = queue.BuildableItems();
+			if (!buildableThings.Any())
+				return null;
 
+			if (context != null)
+				return QueryScript(queue, buildableThings);
+			else
+				return HackyChooseBuildingToBuild(queue, buildableThings);
+		}
+
+		ActorInfo HackyChooseBuildingToBuild(ProductionQueue queue, IEnumerable<ActorInfo> buildableThings)
+		{
 			// This gets used quite a bit, so let's cache it here
 			var power = GetProducibleBuilding(baseBuilder.Info.PowerTypes, buildableThings,
 				a => a.TraitInfos<PowerInfo>().Where(i => i.EnabledByDefault).Sum(p => p.Amount));
@@ -292,9 +372,18 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				var name = frac.Key;
 
+				// Core logic should be implemented as a seperate module, commenting this out for now.
 				// Can we build this structure?
-				if (!buildableThings.Any(b => b.Name == name))
-					continue;
+				//if (!buildableThings.Any(b => b.Name == name))
+				//{
+				//	// Check if it is defined in the core and buildable.
+				//	if (ai.Info.CoreDefinitions == null || !ai.Info.CoreDefinitions.ContainsKey(name))
+				//		//// Not even indirectly buildable with a "core".
+				//		continue;
+				//	if (!buildableThings.Any(b => b.Name == ai.Info.CoreDefinitions[name]))
+				//		//// Indirectly buildable, but that core is not currently buildable.
+				//		continue;
+				//}
 
 				// Do we want to build this structure?
 				var count = playerBuildings.Count(a => a.Info.Name == name);
@@ -331,6 +420,14 @@ namespace OpenRA.Mods.Common.Traits
 				// Lets build this
 				AIUtils.BotDebug("{0} decided to build {1}: Desired is {2} ({3} / {4}); current is {5} / {4}",
 					queue.Actor.Owner, name, frac.Value, frac.Value * playerBuildings.Length, playerBuildings.Length, count);
+
+				// Core logic should be implemented as a seperate module, commenting this out for now.
+				//// If a core actor, return the core instead.
+				//if (ai.Info.CoreDefinitions != null && ai.Info.CoreDefinitions.ContainsKey(name))
+				//	return world.Map.Rules.Actors[ai.Info.CoreDefinitions[name]];
+				//else
+				//	return actor;
+
 				return actor;
 			}
 
@@ -383,6 +480,28 @@ namespace OpenRA.Mods.Common.Traits
 
 					var targetCell = closestEnemy != null ? closestEnemy.Location : baseCenter;
 					return findPos(baseBuilder.DefenseCenter, targetCell, baseBuilder.Info.MinimumDefenseRadius, baseBuilder.Info.MaximumDefenseRadius);
+
+				case BuildingType.Fragile:
+					{
+						// Build far from the closest enemy structure
+						var closestEnemy = world.ActorsHavingTrait<Building>().Where(a => !a.Disposed && player.Stances[a.Owner] == Stance.Enemy)
+							.ClosestTo(world.Map.CenterOfCell(baseBuilder.DefenseCenter));
+
+						CVec direction = CVec.Zero;
+						if (closestEnemy != null)
+							direction = baseCenter - closestEnemy.Location;
+
+						// MinFragilePlacementRadius introduced to push fragile buildings away from base center.
+						// Resilient to nuke.
+						var pos = findPos(baseCenter, direction, baseBuilder.Info.MinFragilePlacementRadius,
+								distanceToBaseIsImportant ? baseBuilder.Info.MaxBaseRadius : world.Map.Grid.MaximumTileSearchRange);
+
+						if (pos == null) // rear placement failed but we can still try placing anywhere.
+							pos = findPos(baseCenter, baseCenter, baseBuilder.Info.MinBaseRadius,
+								distanceToBaseIsImportant ? baseBuilder.Info.MaxBaseRadius : world.Map.Grid.MaximumTileSearchRange);
+
+						return pos;
+					}
 
 				case BuildingType.Refinery:
 

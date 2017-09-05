@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Mods.Common.Activities;
@@ -60,8 +61,51 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 			return target;
 		}
 
+		protected static List<Actor> ScanEnemyUnits(Squad owner, int maxCount)
+		{
+			// Use random sampling. Search from near to far.
+			var loc = owner.CenterLocation;
+			var any = owner.Units.First();
+			List<Actor> sampledCandidates;
+
+			var cands = owner.World.FindActorsInCircle(owner.CenterPosition, WDist.FromCells(20))
+			          .Where(a => a.AppearsHostileTo(any));
+			if (!cands.Any())
+				cands = owner.World.ActorsHavingTrait<IOccupySpace>().Where(a => a.AppearsHostileTo(any));
+
+			// Find units from near.
+			if (cands.Count() < maxCount)
+			{
+				sampledCandidates = cands.ToList();
+			}
+			else
+			{
+				sampledCandidates = new List<Actor>();
+				for (int i = 0; i < 20; i++)
+					sampledCandidates.Add(cands.Random(owner.Bot.Random));
+			}
+
+			// Sort them by distance.
+			return sampledCandidates.OrderBy(o => (o.Location - loc).LengthSquared).ToList();
+		}
+
 		protected static CPos? FindSafePlace(Squad owner, out Actor detectedEnemyTarget, bool needTarget)
 		{
+			foreach (var cand in ScanEnemyUnits(owner, 20))
+			{
+				if (NearToPosSafely(owner, cand.CenterPosition))
+				{
+					detectedEnemyTarget = cand;
+					return cand.Location;
+				}
+			}
+
+			detectedEnemyTarget = null;
+			return null;
+
+			/*
+			// do old full search
+
 			var map = owner.World.Map;
 			var dangerRadius = owner.SquadManager.Info.DangerScanRadius;
 			detectedEnemyTarget = null;
@@ -72,21 +116,22 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 			{
 				for (var j = 0; j < y; j += dangerRadius * 2)
 				{
-					var pos = new CPos(i, j);
-					if (NearToPosSafely(owner, map.CenterOfCell(pos), out detectedEnemyTarget))
+					var pos2 = new CPos(i, j);
+					if (NearToPosSafely(owner, map.CenterOfCell(pos2), out detectedEnemyTarget))
 					{
 						if (needTarget && detectedEnemyTarget == null)
 							continue;
 
-						return pos;
+						return pos2;
 					}
 				}
 			}
 
 			return null;
+			*/
 		}
 
-		protected static bool NearToPosSafely(Squad owner, WPos loc)
+		public static bool NearToPosSafely(Squad owner, WPos loc)
 		{
 			Actor a;
 			return NearToPosSafely(owner, loc, out a);
@@ -140,7 +185,8 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 
 			var activity = a.CurrentActivity;
 			var type = activity.GetType();
-			if (type == typeof(Rearm) || type == typeof(ResupplyAircraft))
+			if (type == typeof(Rearm) || type == typeof(ResupplyAircraft)
+					|| type == typeof(HeliLand) || type == typeof(Land))
 				return true;
 
 			var next = activity.NextActivity;
@@ -148,7 +194,8 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 				return false;
 
 			var nextType = next.GetType();
-			if (nextType == typeof(Rearm) || nextType == typeof(ResupplyAircraft))
+			if (nextType == typeof(Rearm) || nextType == typeof(ResupplyAircraft)
+					|| nextType == typeof(HeliLand) || nextType == typeof(Land))
 				return true;
 
 			return false;
@@ -157,7 +204,18 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 		// Checks the number of anti air enemies around units
 		protected virtual bool ShouldFlee(Squad owner)
 		{
+			var aas = EnemyStaticAAs(owner);
+			if (aas.Any(a => (a.Location - owner.CenterLocation).LengthSquared < 144))
+				return true;
 			return base.ShouldFlee(owner, enemies => CountAntiAirUnits(enemies) * MissileUnitMultiplier > owner.Units.Count);
+		}
+
+		protected IEnumerable<Actor> EnemyStaticAAs(Squad owner)
+		{
+			var anyUnit = owner.Units.First();
+			return owner.World.ActorsHavingTrait<Building>().Where(b => // from buildings,
+				b.AppearsHostileTo(anyUnit) && // enemy building and
+				owner.Bot.Info.BuildingCommonNames.StaticAntiAir.Contains(b.Info.Name)); // registered in Static AA.
 		}
 	}
 
@@ -196,6 +254,12 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 			if (!owner.IsValid)
 				return;
 
+			if (ShouldFlee(owner))
+			{
+				owner.FuzzyStateMachine.ChangeState(owner, new AirFleeState(), true);
+				return;
+			}
+
 			if (!owner.IsTargetValid)
 			{
 				var a = owner.Units.Random(owner.Random);
@@ -220,21 +284,33 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 				if (BusyAttack(a))
 					continue;
 
+				if (a.IsDead || a.Disposed || !a.IsInWorld)
+					continue;
+
 				if (!ReloadsAutomatically(a))
 				{
-					if (IsRearm(a))
-						continue;
-
 					if (!HasAmmo(a))
 					{
-						owner.Bot.QueueOrder(new Order("ReturnToBase", a, false));
+						if (IsRearm(a))
+							continue;
+						Flee(owner, a);
 						continue;
 					}
+
+					if (IsRearm(a))
+						continue;
 				}
 
-				if (CanAttackTarget(a, owner.TargetActor))
+				if (owner.TargetActor.Info.HasTraitInfo<ITargetableInfo>() && CanAttackTarget(a, owner.TargetActor))
 					owner.Bot.QueueOrder(new Order("Attack", a, Target.FromActor(owner.TargetActor), false));
 			}
+		}
+
+		void Flee(Squad owner, Actor a)
+		{
+			var safePoint = AirFleeState.CalcSafePoint(owner, owner.CenterLocation, EnemyStaticAAs(owner));
+			owner.Bot.QueueOrder(new Order("Move", a, false) { TargetLocation = safePoint });
+			owner.Bot.QueueOrder(new Order("ReturnToBase", a, true));
 		}
 
 		public void Deactivate(Squad owner) { }
@@ -242,7 +318,70 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 
 	class AirFleeState : AirStateBase, IState
 	{
-		public void Activate(Squad owner) { }
+		CPos escapeDest;
+		CPos safePoint; // to move to escapeDest safely, we take a detour to this point.
+
+		public void Activate(Squad owner)
+		{
+			escapeDest = RandomBuildingLocation(owner);
+			safePoint = CalcSafePoint(owner, escapeDest, EnemyStaticAAs(owner));
+		}
+
+		public static CPos CalcSafePoint(Squad owner, CPos dest, IEnumerable<Actor> enemyStaticAAs)
+		{
+			if (!owner.World.Map.Contains(owner.CenterLocation))
+				return RandomBuildingLocation(owner);
+
+			CPos currentPos = owner.CenterLocation;
+			List<CPos> cands = new List<CPos>();
+			cands.Add(dest); // direct movement
+
+			var within20 = owner.World.Map.FindTilesInAnnulus(dest, 2, 20);
+			if (within20.Any())
+				for (int i = 0; i < 32; i++)
+					cands.Add(within20.Random(owner.Bot.Random));
+
+			int best_score = -1;
+			CPos best = CPos.Zero;
+			foreach (var cand in cands)
+			{
+				var score = EvaluateSafePoint(currentPos, cand, enemyStaticAAs);
+				if (best_score == -1 || score < best_score)
+				{
+					best = cand;
+					best_score = score;
+				}
+			}
+
+			System.Diagnostics.Debug.Assert(owner.World.Map.Contains(best), "What? Unit out of map?");
+			return best;
+		}
+
+		static int EvaluateSafePoint(CPos safePoint, CPos currentPos, IEnumerable<Actor> enemyStaticAAs)
+		{
+			// Already there. No need to move, no threat
+			if (safePoint == currentPos)
+				return 0;
+
+			var x1 = safePoint.X;
+			var x2 = currentPos.X;
+			var y1 = safePoint.Y;
+			var y2 = currentPos.Y;
+
+			var a = y1 - y2;
+			var b = x2 - x1;
+			var c = -y1 * (x2 - x1) + x2 * (y2 - y1);
+			var denom = (new CVec(a, b)).Length;
+
+			int score = 0;
+
+			foreach (var aa in enemyStaticAAs)
+			{
+				score += Math.Abs(a * aa.Location.X + b * aa.Location.Y + c) / denom;
+			}
+
+			return score;
+		}
 
 		public void Tick(Squad owner)
 		{
@@ -251,16 +390,21 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 
 			foreach (var a in owner.Units)
 			{
+				if (a.IsDead || a.Disposed || !a.IsInWorld)
+					continue;
+
 				if (!ReloadsAutomatically(a) && !FullAmmo(a))
 				{
 					if (IsRearm(a))
 						continue;
 
-					owner.Bot.QueueOrder(new Order("ReturnToBase", a, false));
+					owner.Bot.QueueOrder(new Order("Move", a, Target.FromCell(owner.World, safePoint), false));
+					owner.Bot.QueueOrder(new Order("ReturnToBase", a, true));
 					continue;
 				}
 
-				owner.Bot.QueueOrder(new Order("Move", a, Target.FromCell(owner.World, RandomBuildingLocation(owner)), false));
+				owner.Bot.QueueOrder(new Order("Move", a, Target.FromCell(owner.World, safePoint), false));
+				owner.Bot.QueueOrder(new Order("Move", a, Target.FromCell(owner.World, escapeDest), true));
 			}
 
 			owner.FuzzyStateMachine.ChangeState(owner, new AirIdleState(), true);
