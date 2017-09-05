@@ -20,7 +20,7 @@ namespace OpenRA.Mods.Common.Activities
 	class ExternalCaptureActor : Activity
 	{
 		readonly ExternalCapturable capturable;
-		readonly ExternalCapturesInfo capturesInfo;
+		readonly ExternalCaptures[] externalCaptures;
 		readonly Mobile mobile;
 		readonly Target target;
 		readonly ConditionManager conditionManager;
@@ -30,14 +30,16 @@ namespace OpenRA.Mods.Common.Activities
 		{
 			this.target = target;
 			capturable = target.Actor.Trait<ExternalCapturable>();
-			capturesInfo = self.Info.TraitInfo<ExternalCapturesInfo>();
+			externalCaptures = self.TraitsImplementing<ExternalCaptures>().ToArray();
 			mobile = self.Trait<Mobile>();
 			conditionManager = self.TraitOrDefault<ConditionManager>();
 		}
 
 		public override Activity Tick(Actor self)
 		{
-			if (IsCanceled || !self.IsInWorld || self.IsDead || target.Type != TargetType.Actor || !target.IsValidFor(self))
+<<<<<<< HEAD
+			var activeExternalCaptures = externalCaptures.FirstOrDefault(c => !c.IsTraitDisabled);
+			if (IsCanceled || !self.IsInWorld || self.IsDead || target.Type != TargetType.Actor || !target.IsValidFor(self) || capturable.IsTraitDisabled || activeExternalCaptures == null || externalCaptures.All(c => c.IsTraitDisabled))
 			{
 				EndCapture(self);
 				return NextActivity;
@@ -46,6 +48,7 @@ namespace OpenRA.Mods.Common.Activities
 			if (!Util.AdjacentCells(self.World, target).Contains(mobile.ToCell))
 				return ActivityUtils.SequenceActivities(new MoveAdjacentTo(self, target), this);
 
+			var capturesInfo = activeExternalCaptures.Info;
 			if (!capturable.CaptureInProgress)
 				BeginCapture(self);
 			else
@@ -71,6 +74,8 @@ namespace OpenRA.Mods.Common.Activities
 
 						foreach (var t in target.Actor.TraitsImplementing<INotifyCapture>())
 							t.OnCapture(target.Actor, self, oldOwner, self.Owner);
+						foreach (var ini in notifiers)
+							ini.OnCaptured(target.Actor, self, target.Actor.Owner, self.Owner);
 
 						EndCapture(self);
 

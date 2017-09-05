@@ -166,9 +166,14 @@ BOAT:
 		InitialStance: AttackAnything
 	RejectsOrders:
 		Except: Attack
+
+Camera.Boat:
+	AlwaysVisible:
+	Mobile:
+		TerrainSpeeds:
 	RevealsShroud:
 		Range: 4c0
-		ValidStances: Enemy, Neutral, Ally
+	ScriptTriggers:
 
 FACT.IN:
 	Inherits: FACT

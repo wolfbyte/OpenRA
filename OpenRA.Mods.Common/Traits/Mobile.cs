@@ -18,6 +18,7 @@ using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Effects;
 using OpenRA.Mods.Common.Pathfinder;
 using OpenRA.Primitives;
+using OpenRA.Support;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -73,8 +74,17 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Allow multiple (infantry) units in one cell.")]
 		public readonly bool SharesCell = false;
 
+		// OP Mod extension
+		[Desc("Occupy space? Units such as Mob spawners doesn't occupy space, letting others to enter.")]
+		public readonly bool OccupySpace = true;
+
 		[Desc("Can the actor be ordered to move in to shroud?")]
 		public readonly bool MoveIntoShroud = true;
+
+		[ConsumedConditionReference]
+		[Desc("Under this condition, this actor may turn even while this trait is disabled.",
+			"Useful for turretless units that deploy to become immobile, but still fires its weapon.")]
+		public readonly BooleanExpression TurnWhileDisabledCondition = null;
 
 		public readonly string Cursor = "move";
 		public readonly string BlockedCursor = "move-blocked";
@@ -379,9 +389,13 @@ namespace OpenRA.Mods.Common.Traits
 
 		public int GetInitialFacing() { return InitialFacing; }
 
+		// Modded for OP mod to support units that share the entire cell (like mob nexus)
 		public IReadOnlyDictionary<CPos, SubCell> OccupiedCells(ActorInfo info, CPos location, SubCell subCell = SubCell.Any)
 		{
-			return new ReadOnlyDictionary<CPos, SubCell>(new Dictionary<CPos, SubCell>() { { location, subCell } });
+			if (OccupySpace)
+				return new ReadOnlyDictionary<CPos, SubCell>(new Dictionary<CPos, SubCell>() { { location, subCell } });
+			else
+				return new ReadOnlyDictionary<CPos, SubCell>(); // like aircraft!
 		}
 
 		bool IOccupySpaceInfo.SharesCell { get { return SharesCell; } }
@@ -406,6 +420,7 @@ namespace OpenRA.Mods.Common.Traits
 		int subterraneanToken = ConditionManager.InvalidConditionToken;
 		int jumpjetToken = ConditionManager.InvalidConditionToken;
 		ConditionManager conditionManager;
+		bool turnWhileDisabled = false;
 
 		[Sync] public int Facing
 		{
@@ -667,6 +682,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		public Pair<CPos, SubCell>[] OccupiedCells()
 		{
+			if (!Info.OccupySpace)
+				return new Pair<CPos, SubCell>[] { };
+
 			if (FromCell == ToCell)
 				return new[] { Pair.New(FromCell, FromSubCell) };
 			if (CanEnterCell(ToCell))
@@ -951,6 +969,11 @@ namespace OpenRA.Mods.Common.Traits
 			return self.Location == self.World.Map.CellContaining(target.CenterPosition) || Util.AdjacentCells(self.World, target).Any(c => c == self.Location);
 		}
 
+		bool IMove.TurnWhileDisabled(Actor self)
+		{
+			return turnWhileDisabled;
+		}
+
 		public Activity VisualMove(Actor self, WPos fromPos, WPos toPos)
 		{
 			return VisualMove(self, fromPos, toPos, self.Location);
@@ -1002,6 +1025,21 @@ namespace OpenRA.Mods.Common.Traits
 			var moveTo = ClosestGroundCell();
 			if (moveTo != null)
 				self.QueueActivity(MoveTo(moveTo.Value, 0));
+		}
+
+		public override IEnumerable<VariableObserver> GetVariableObservers()
+		{
+			if (Info.TurnWhileDisabledCondition != null)
+				yield return new VariableObserver(TurnWhileDisabledConditionChanged, Info.TurnWhileDisabledCondition.Variables);
+
+			foreach (var v in base.GetVariableObservers())
+				yield return v;
+		}
+
+		void TurnWhileDisabledConditionChanged(Actor self, IReadOnlyDictionary<string, int> conditions)
+		{
+			if (Info.TurnWhileDisabledCondition != null)
+				turnWhileDisabled = Info.TurnWhileDisabledCondition.Evaluate(conditions);
 		}
 	}
 }

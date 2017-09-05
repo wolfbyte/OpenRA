@@ -17,13 +17,18 @@ Visibility: Shellmap
 Categories: Shellmap
 
 Players:
+	PlayerReference@Neutral:
+		Name: Neutral
+		OwnsWorld: True
+		NonCombatant: True
+		Faction: atreides
 	PlayerReference@Atreides:
 		Name: Atreides
 		Faction: atreides
 		Color: 9191FF
-		Enemies: Corrino, Ordos, Harkonnen, Creeps
-	PlayerReference@Corrino:
-		Name: Corrino
+		Enemies: Emperor, Ordos, Harkonnen, Creeps
+	PlayerReference@Emperor:
+		Name: Emperor
 		Faction: corrino
 		Color: EF00FE
 		Enemies: Atreides, Ordos, Harkonnen, Creeps
@@ -31,27 +36,22 @@ Players:
 		Name: Ordos
 		Faction: ordos
 		Color: B3EAA5
-		Enemies: Atreides, Corrino, Harkonnen, Creeps
+		Enemies: Atreides, Emperor, Harkonnen, Creeps
 	PlayerReference@Harkonnen:
 		Name: Harkonnen
 		Faction: harkonnen
 		Color: FE0000
-		Enemies: Atreides, Corrino, Ordos, Creeps
+		Enemies: Atreides, Emperor, Ordos, Creeps
 	PlayerReference@Smugglers:
 		Name: Smugglers
 		Faction: smuggler
 		Color: 542209
 		Enemies: Creeps
-	PlayerReference@Neutral:
-		Name: Neutral
-		OwnsWorld: True
-		NonCombatant: True
-		Faction: atreides
 	PlayerReference@Creeps:
 		Name: Creeps
 		NonCombatant: True
 		Faction: atreides
-		Enemies: Atreides, Corrino, Ordos, Harkonnen, Smugglers
+		Enemies: Atreides, Emperor, Ordos, Harkonnen, Smugglers
 
 Actors:
 	WormSpawner: wormspawner
@@ -418,94 +418,94 @@ Actors:
 	ord_wind7: wind_trap
 		Owner: Ordos
 		Location: 20,25
-	cor_cyard: construction_yard
-		Owner: Corrino
+	emp_cyard: construction_yard
+		Owner: Emperor
 		Location: 27,92
-	cor_wind5: wind_trap
-		Owner: Corrino
+	emp_wind5: wind_trap
+		Owner: Emperor
 		Location: 31,92
-	cor_wind4: wind_trap
-		Owner: Corrino
+	emp_wind4: wind_trap
+		Owner: Emperor
 		Location: 24,92
-	cor_barracks: barracks
-		Owner: Corrino
+	emp_barracks: barracks
+		Owner: Emperor
 		Location: 33,92
-	cor_ref1: refinery
-		Owner: Corrino
+	emp_ref1: refinery
+		Owner: Emperor
 		Location: 38,87
-	cor_ref2: refinery
-		Owner: Corrino
+	emp_ref2: refinery
+		Owner: Emperor
 		Location: 21,86
-	cor_hfac: heavy_factory
-		Owner: Corrino
+	emp_hfac: heavy_factory
+		Owner: Emperor
 		Location: 31,85
-	cor_outp: outpost
-		Owner: Corrino
+	emp_outp: outpost
+		Owner: Emperor
 		Location: 17,92
-	cor_wind1: wind_trap
-		Owner: Corrino
+	emp_wind1: wind_trap
+		Owner: Emperor
 		Location: 22,92
-	cor_wind2: wind_trap
-		Owner: Corrino
+	emp_wind2: wind_trap
+		Owner: Emperor
 		Location: 20,92
 	Actor151: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 19,87
 	Actor152: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 20,86
 	Actor153: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 21,85
-	cor_gunt1: medium_gun_turret
-		Owner: Corrino
+	emp_gunt1: medium_gun_turret
+		Owner: Emperor
 		Location: 20,87
 		TurretFacing: 0
-	cor_rckt1: large_gun_turret
-		Owner: Corrino
+	emp_rckt1: large_gun_turret
+		Owner: Emperor
 		Location: 20,85
 		TurretFacing: 0
 	Actor154: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 23,83
 	Actor155: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 24,84
-	cor_gunt2: medium_gun_turret
-		Owner: Corrino
+	emp_gunt2: medium_gun_turret
+		Owner: Emperor
 		Location: 23,84
 		TurretFacing: 32
 	Actor158: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 35,84
 	Actor160: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 36,85
-	cor_gunt3: medium_gun_turret
-		Owner: Corrino
+	emp_gunt3: medium_gun_turret
+		Owner: Emperor
 		Location: 36,84
 		TurretFacing: 192
 	Actor162: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 36,80
 	Actor163: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 37,79
-	cor_rckt2: large_gun_turret
-		Owner: Corrino
+	emp_rckt2: large_gun_turret
+		Owner: Emperor
 		Location: 36,79
 		TurretFacing: 160
-	cor_htech: high_tech_factory
-		Owner: Corrino
+	emp_htech: high_tech_factory
+		Owner: Emperor
 		Location: 37,91
-	cor_wind3: wind_trap
-		Owner: Corrino
+	emp_wind3: wind_trap
+		Owner: Emperor
 		Location: 35,92
-	cor_lfac: light_factory
-		Owner: Corrino
+	emp_lfac: light_factory
+		Owner: Emperor
 		Location: 17,89
-	cor_pad: repair_pad
-		Owner: Corrino
+	emp_pad: repair_pad
+		Owner: Emperor
 		Location: 26,84
 	Actor170: spicebloom.spawnpoint
 		Owner: Neutral
@@ -760,62 +760,62 @@ Actors:
 		SubCell: 3
 		Facing: 0
 		TurretFacing: 0
-	cor_missile: missile_tank
-		Owner: Corrino
+	emp_missile: missile_tank
+		Owner: Emperor
 		Location: 41,91
 		Facing: 160
-	cor_combat1: combat_tank_h
-		Owner: Corrino
+	emp_combat1: combat_tank_h
+		Owner: Emperor
 		Location: 38,85
 		Facing: 0
 		TurretFacing: 0
-	cor_combat2: combat_tank_h
-		Owner: Corrino
+	emp_combat2: combat_tank_h
+		Owner: Emperor
 		Location: 21,84
 		Facing: 0
 		TurretFacing: 0
-	cor_siege1: siege_tank
-		Owner: Corrino
+	emp_siege1: siege_tank
+		Owner: Emperor
 		Location: 35,85
 		Facing: 224
 		TurretFacing: 224
-	cor_siege2: siege_tank
-		Owner: Corrino
+	emp_siege2: siege_tank
+		Owner: Emperor
 		Location: 20,88
 		Facing: 0
 		TurretFacing: 0
-	cor_sardaukar1: sardaukar
-		Owner: Corrino
+	emp_sardaukar1: sardaukar
+		Owner: Emperor
 		Location: 40,85
 		SubCell: 3
 		Facing: 0
 		TurretFacing: 0
-	cor_sardaukar2: sardaukar
-		Owner: Corrino
+	emp_sardaukar2: sardaukar
+		Owner: Emperor
 		Location: 30,85
 		SubCell: 3
 		Facing: 0
 		TurretFacing: 0
-	cor_sardaukar3: sardaukar
-		Owner: Corrino
+	emp_sardaukar3: sardaukar
+		Owner: Emperor
 		Location: 23,89
 		SubCell: 3
 		Facing: 128
 		TurretFacing: 128
-	cor_sardaukar4: sardaukar
-		Owner: Corrino
+	emp_sardaukar4: sardaukar
+		Owner: Emperor
 		Location: 30,91
 		SubCell: 3
 		Facing: 0
 		TurretFacing: 0
-	cor_sardaukar5: sardaukar
-		Owner: Corrino
+	emp_sardaukar5: sardaukar
+		Owner: Emperor
 		Location: 17,88
 		SubCell: 3
 		Facing: 0
 		TurretFacing: 0
-	cor_sardaukar6: sardaukar
-		Owner: Corrino
+	emp_sardaukar6: sardaukar
+		Owner: Emperor
 		Location: 33,81
 		SubCell: 3
 		Facing: 192
@@ -853,8 +853,8 @@ Actors:
 	har_wind7: wind_trap
 		Owner: Harkonnen
 		Location: 88,24
-	cor_wind7: wind_trap
-		Owner: Corrino
+	emp_wind7: wind_trap
+		Owner: Emperor
 		Location: 36,87
 	har_carry1: carryall
 		Owner: Harkonnen
@@ -879,8 +879,8 @@ Actors:
 		SubCell: 3
 		Facing: 0
 		TurretFacing: 0
-	cor_engi: engineer
-		Owner: Corrino
+	emp_engi: engineer
+		Owner: Emperor
 		Location: 35,89
 		SubCell: 3
 		Facing: 0
@@ -906,17 +906,17 @@ Actors:
 	atr_silo4: silo
 		Owner: Atreides
 		Location: 73,84
-	cor_silo1: silo
-		Owner: Corrino
+	emp_silo1: silo
+		Owner: Emperor
 		Location: 33,90
-	cor_silo2: silo
-		Owner: Corrino
+	emp_silo2: silo
+		Owner: Emperor
 		Location: 32,90
-	cor_silo3: silo
-		Owner: Corrino
+	emp_silo3: silo
+		Owner: Emperor
 		Location: 31,90
-	cor_quad: quad
-		Owner: Corrino
+	emp_quad: quad
+		Owner: Emperor
 		Location: 33,89
 		Facing: 0
 	har_silo1: silo
@@ -943,8 +943,8 @@ Actors:
 	ord_silo4: silo
 		Owner: Ordos
 		Location: 28,25
-	cor_silo4: silo
-		Owner: Corrino
+	emp_silo4: silo
+		Owner: Emperor
 		Location: 34,90
 	Actor281: wall
 		Owner: Atreides
@@ -971,20 +971,20 @@ Actors:
 		Location: 33,33
 		TurretFacing: 128
 	Actor287: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 38,86
 	Actor288: wall
-		Owner: Corrino
+		Owner: Emperor
 		Location: 40,86
-	cor_rckt3: large_gun_turret
-		Owner: Corrino
+	emp_rckt3: large_gun_turret
+		Owner: Emperor
 		Location: 39,86
 		TurretFacing: 0
-	cor_wind6: wind_trap
-		Owner: Corrino
+	emp_wind6: wind_trap
+		Owner: Emperor
 		Location: 25,88
-	cor_sport: starport
-		Owner: Corrino
+	emp_sport: starport
+		Owner: Emperor
 		Location: 27,88
 	smg_carry: carryall
 		Owner: Smugglers
@@ -999,8 +999,8 @@ Actors:
 	smg_harvcarry_1: waypoint
 		Owner: Smugglers
 		Location: 56,60
-	cor_harvcarry_1: waypoint
-		Owner: Corrino
+	emp_harvcarry_1: waypoint
+		Owner: Emperor
 		Location: 34,82
 	ord_harvcarry_1: waypoint
 		Owner: Ordos
@@ -1011,8 +1011,8 @@ Actors:
 	smg_harvcarry_2: waypoint
 		Owner: Smugglers
 		Location: 56,96
-	cor_harvcarry_2: waypoint
-		Owner: Corrino
+	emp_harvcarry_2: waypoint
+		Owner: Emperor
 		Location: 15,96
 	ord_harvcarry_2: waypoint
 		Owner: Ordos
@@ -1030,4 +1030,4 @@ Actors:
 		Owner: Neutral
 		Location: 50,65
 
-Rules: d2k|rules/campaign-palettes.yaml, rules.yaml
+Rules: rules.yaml

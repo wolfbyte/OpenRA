@@ -46,6 +46,7 @@ namespace OpenRA.Mods.Common.Traits
 	public class Passenger : IIssueOrder, IResolveOrder, IOrderVoice, INotifyRemovedFromWorld
 	{
 		public readonly PassengerInfo Info;
+		public Actor Transport;
 		public Passenger(PassengerInfo info)
 		{
 			Info = info;
@@ -58,7 +59,6 @@ namespace OpenRA.Mods.Common.Traits
 			};
 		}
 
-		public Actor Transport;
 		public Cargo ReservedCargo { get; private set; }
 
 		public IEnumerable<IOrderTargeter> Orders { get; private set; }
@@ -79,7 +79,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		bool CanEnter(Cargo cargo)
 		{
-			return cargo != null && cargo.HasSpace(Info.Weight);
+			return cargo != null && cargo.HasSpace(Info.Weight) && !cargo.IsTraitDisabled;
 		}
 
 		bool CanEnter(Actor target)

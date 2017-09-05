@@ -20,6 +20,11 @@ SendNodPatrol = function()
 	end)
 end
 
+SetGunboatPath = function(gunboat)
+	gunboat.AttackMove(gunboatLeft.Location)
+	gunboat.AttackMove(gunboatRight.Location)
+end
+
 ReinforceWithLandingCraft = function(units, transportStart, transportUnload, rallypoint)
 	local transport = Actor.Create("oldlst", true, { Owner = player, Facing = 0, Location = transportStart })
 	local subcell = 0
@@ -91,6 +96,8 @@ WorldLoaded = function()
 
 	ReinforceWithLandingCraft(MCVReinforcements, lstStart.Location + CVec.New(2, 0), lstEnd.Location + CVec.New(2, 0), mcvTarget.Location)
 	Reinforce(InfantryReinforcements)
+
+	Trigger.OnIdle(Gunboat, function() SetGunboatPath(Gunboat) end)
 
 	SendNodPatrol()
 

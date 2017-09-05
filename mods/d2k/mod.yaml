@@ -1,6 +1,6 @@
 Metadata:
 	Title: Dune 2000
-	Version: {DEV_VERSION}
+	Version: playtest-20170902
 
 PackageFormats: D2kSoundResources
 
@@ -15,13 +15,12 @@ Packages:
 
 	~SOUND.RS
 	d2k|bits
-	d2k|bits/scripts
 	d2k|bits/tex
 	d2k|uibits
 
 MapFolders:
 	d2k|maps: System
-	~^maps/d2k/{DEV_VERSION}: User
+	~^maps/d2k/playtest-20170902: User
 
 Rules:
 	d2k|rules/misc.yaml
@@ -78,7 +77,6 @@ ChromeLayout:
 	d2k|chrome/ingame-player.yaml
 	common|chrome/ingame-perf.yaml
 	common|chrome/ingame-debug.yaml
-	common|chrome/ingame-infochat.yaml
 	d2k|chrome/mainmenu.yaml
 	common|chrome/settings.yaml
 	common|chrome/credits.yaml

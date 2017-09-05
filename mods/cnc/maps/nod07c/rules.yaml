@@ -129,6 +129,14 @@ TRAN.IN:
 		Prerequisites: ~disabled
 	Interactable:
 
+Camera.Boat:
+	AlwaysVisible:
+	Mobile:
+		TerrainSpeeds:
+	RevealsShroud:
+		Range: 4c0
+	ScriptTriggers:
+
 HPAD.IN:
 	Inherits: HPAD
 	RenderSprites:

@@ -65,7 +65,6 @@ GAPOWR:
 
 GAPILE:
 	Inherits: ^Building
-	Inherits@SHAPE: ^2x2Shape
 	Buildable:
 		Queue: Building
 		BuildPaletteOrder: 30
@@ -124,7 +123,6 @@ GAPILE:
 
 GAWEAP:
 	Inherits: ^Building
-	Inherits@SHAPE: ^4x3FactoryWithBibShape
 	Valued:
 		Cost: 2000
 	Tooltip:
@@ -137,7 +135,7 @@ GAWEAP:
 		Prerequisites: proc, ~structures.gdi, ~techlevel.low
 		Description: Produces vehicles.
 	Building:
-		Footprint: xxX= xxX= xxX=
+		Footprint: xxx= xxx= xxx=
 		Dimensions: 4,3
 	Selectable:
 		Bounds: 154, 96, -2, -12
@@ -189,7 +187,6 @@ GAWEAP:
 
 GAHPAD:
 	Inherits: ^Building
-	Inherits@SHAPE: ^2x2Shape
 	Valued:
 		Cost: 500
 	Tooltip:
@@ -247,7 +244,6 @@ GAHPAD:
 
 GADEPT:
 	Inherits: ^Building
-	Inherits@SHAPE: ^3x3Shape
 	Valued:
 		Cost: 1200
 	Tooltip:

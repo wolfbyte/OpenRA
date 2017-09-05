@@ -6,7 +6,6 @@
 	MusicPlaylist:
 		VictoryMusic: win1
 		DefeatMusic: nod_map1
-	DebugVisualizations:
 	TerrainGeometryOverlay:
 	ShroudRenderer:
 		ShroudVariants: typea, typeb, typec, typed
@@ -55,7 +54,6 @@ World:
 	Inherits: ^BaseWorld
 	ChatCommands:
 	DevCommands:
-	DebugVisualizationCommands:
 	PlayerCommands:
 	HelpCommand:
 	ScreenShaker:
