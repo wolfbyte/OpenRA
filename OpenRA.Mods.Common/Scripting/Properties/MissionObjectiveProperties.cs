@@ -29,6 +29,7 @@ namespace OpenRA.Mods.Common.Scripting
 			shortGame = player.World.WorldActor.Trait<MapOptions>().ShortGame;
 		}
 
+		[ScriptContext(ScriptContextType.Mission)]
 		[ScriptActorPropertyActivity]
 		[Desc("Add a primary mission objective for this player. The function returns the " +
 			"ID of the newly created objective, so that it can be referred to later.")]
@@ -37,6 +38,7 @@ namespace OpenRA.Mods.Common.Scripting
 			return mo.Add(Player, description, ObjectiveType.Primary);
 		}
 
+		[ScriptContext(ScriptContextType.Mission)]
 		[ScriptActorPropertyActivity]
 		[Desc("Add a secondary mission objective for this player. The function returns the " +
 			"ID of the newly created objective, so that it can be referred to later.")]
@@ -45,6 +47,7 @@ namespace OpenRA.Mods.Common.Scripting
 			return mo.Add(Player, description, ObjectiveType.Secondary);
 		}
 
+		[ScriptContext(ScriptContextType.Mission)]
 		[ScriptActorPropertyActivity]
 		[Desc("Mark an objective as completed.  This needs the objective ID returned " +
 			"by AddObjective as argument.  When this player has completed all primary " +
@@ -57,6 +60,7 @@ namespace OpenRA.Mods.Common.Scripting
 			mo.MarkCompleted(Player, id);
 		}
 
+		[ScriptContext(ScriptContextType.Mission)]
 		[ScriptActorPropertyActivity]
 		[Desc("Mark an objective as failed.  This needs the objective ID returned " +
 			"by AddObjective as argument.  Secondary objectives do not have any " +
@@ -69,6 +73,7 @@ namespace OpenRA.Mods.Common.Scripting
 			mo.MarkFailed(Player, id);
 		}
 
+		[ScriptContext(ScriptContextType.Mission)]
 		[ScriptActorPropertyActivity]
 		[Desc("Returns true if the objective has been successfully completed, false otherwise.")]
 		public bool IsObjectiveCompleted(int id)
@@ -79,6 +84,7 @@ namespace OpenRA.Mods.Common.Scripting
 			return mo.Objectives[id].State == ObjectiveState.Completed;
 		}
 
+		[ScriptContext(ScriptContextType.Mission)]
 		[ScriptActorPropertyActivity]
 		[Desc("Returns true if the objective has been failed, false otherwise.")]
 		public bool IsObjectiveFailed(int id)
@@ -89,6 +95,7 @@ namespace OpenRA.Mods.Common.Scripting
 			return mo.Objectives[id].State == ObjectiveState.Failed;
 		}
 
+		[ScriptContext(ScriptContextType.Mission)]
 		[ScriptActorPropertyActivity]
 		[Desc("Returns the description of an objective.")]
 		public string GetObjectiveDescription(int id)
@@ -99,6 +106,7 @@ namespace OpenRA.Mods.Common.Scripting
 			return mo.Objectives[id].Description;
 		}
 
+		[ScriptContext(ScriptContextType.Mission)]
 		[ScriptActorPropertyActivity]
 		[Desc("Returns the type of an objective.")]
 		public string GetObjectiveType(int id)
@@ -109,6 +117,7 @@ namespace OpenRA.Mods.Common.Scripting
 			return mo.Objectives[id].Type == ObjectiveType.Primary ? "Primary" : "Secondary";
 		}
 
+		[ScriptContext(ScriptContextType.Mission)]
 		[ScriptActorPropertyActivity]
 		[Desc("Returns true if this player has lost all units/actors that have " +
 			"the MustBeDestroyed trait (according to the short game option).")]

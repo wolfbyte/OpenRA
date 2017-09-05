@@ -9,6 +9,8 @@
  */
 #endregion
 
+using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
@@ -16,7 +18,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
 {
-	public class HeliReturnToBase : Activity
+	public class HeliReturnToBase : Activity, IDockActivity
 	{
 		readonly Aircraft aircraft;
 		readonly bool alwaysLand;
@@ -31,6 +33,7 @@ namespace OpenRA.Mods.Common.Activities
 			this.dest = dest;
 		}
 
+<<<<<<< HEAD
 		public Actor ChooseResupplier(Actor self, bool unreservedOnly)
 		{
 			var rearmBuildings = aircraft.Info.RearmBuildings;
@@ -38,18 +41,48 @@ namespace OpenRA.Mods.Common.Activities
 				&& rearmBuildings.Contains(a.Info.Name)
 				&& (!unreservedOnly || !Reservable.IsReserved(a)))
 				.ClosestTo(self);
+=======
+		IEnumerable<Actor> GetHelipads(Actor self)
+		{
+			return self.World.ActorsHavingTrait<DockManager>().Where(a =>
+				a.Owner == self.Owner &&
+				heli.Info.RearmBuildings.Contains(a.Info.Name) &&
+				!a.IsDead &&
+				!a.Disposed);
+>>>>>>> Upload Engine for Generals Alpha
 		}
 
-		public override Activity Tick(Actor self)
+		IEnumerable<Actor> GetDockableHelipads(Actor self)
 		{
+<<<<<<< HEAD
 			// Refuse to take off if it would land immediately again.
 			// Special case: Don't kill other deploy hotkey activities.
 			if (aircraft.ForceLanding)
 				return NextActivity;
+=======
+			foreach (var pad in GetHelipads(self))
+			{
+				var dockManager = pad.Trait<DockManager>();
+				if (dockManager.HasFreeServiceDock(self))
+					yield return pad;
+			}
+		}
+>>>>>>> Upload Engine for Generals Alpha
 
+		protected override void OnFirstRun(Actor self)
+		{
+			// Release first, before trying to dock.
+			var dc = self.TraitOrDefault<DockClient>();
+			if (dc != null)
+				dc.Release();
+		}
+
+		public override Activity Tick(Actor self)
+		{
 			if (IsCanceled)
 				return NextActivity;
 
+<<<<<<< HEAD
 			if (dest == null || dest.IsDead || Reservable.IsReserved(dest))
 				dest = ChooseResupplier(self, true);
 
@@ -87,26 +120,67 @@ namespace OpenRA.Mods.Common.Activities
 
 					return this;
 				}
-			}
-
-			var exit = dest.Info.FirstExitOrDefault(null);
-			var offset = (exit != null) ? exit.SpawnOffset : WVec.Zero;
-
-			if (ShouldLandAtBuilding(self, dest))
+=======
+			// Check status and make dest correct.
+			// Priorities:
+			// 1. closest reloadable hpad
+			// 2. closest hpad
+			// 3. null
+			if (dest == null || dest.IsDead || dest.Disposed)
 			{
-				aircraft.MakeReservation(dest);
-
-				return ActivityUtils.SequenceActivities(
-					new HeliFly(self, Target.FromPos(dest.CenterPosition + offset)),
-					new Turn(self, initialFacing),
-					new HeliLand(self, false),
-					new ResupplyAircraft(self),
-					!abortOnResupply ? NextActivity : null);
+				var hpads = GetHelipads(self);
+				var dockableHpads = hpads.Where(p => p.Trait<DockManager>().HasFreeServiceDock(self));
+				if (dockableHpads.Any())
+					dest = dockableHpads.ClosestTo(self);
+				else if (hpads.Any())
+					dest = hpads.ClosestTo(self);
+				else
+					dest = null;
+>>>>>>> Upload Engine for Generals Alpha
 			}
 
-			return ActivityUtils.SequenceActivities(
-				new HeliFly(self, Target.FromPos(dest.CenterPosition + offset)),
-				NextActivity);
+			// Owner doesn't have any feasible helipad, in this case.
+			if (dest == null)
+			{
+<<<<<<< HEAD
+				aircraft.MakeReservation(dest);
+=======
+				// Probably the owner is having a crisis lol.
+				// Doesn't matter if the unit just sits there or do what ever NextActivity is.
+				return ActivityUtils.SequenceActivities(
+					new Turn(self, heli.Info.InitialFacing),
+					new HeliLand(self, true),
+					NextActivity);
+			}
+>>>>>>> Upload Engine for Generals Alpha
+
+			// Do we need to land and reload/repair?
+			if (!ShouldLandAtBuilding(self, dest))
+			{
+				// Move near the hpad then do next activity.
+				return ActivityUtils.SequenceActivities(
+					new HeliFly(self, Target.FromActor(dest), new WDist(2048), new WDist(4096)),
+					NextActivity);
+			}
+
+			// Can't dock :(
+			if (!dest.Trait<DockManager>().HasFreeServiceDock(self))
+			{
+				// If no pad is available, move near one and wait
+				var distanceLength = (dest.CenterPosition - self.CenterPosition).HorizontalLength;
+				var randomPosition = WVec.FromPDF(self.World.SharedRandom, 2) * distanceLength / 1024;
+				var target = Target.FromPos(dest.CenterPosition + randomPosition);
+
+				Queue(ActivityUtils.SequenceActivities(
+					new HeliFly(self, target, WDist.Zero, heli.Info.WaitDistanceFromResupplyBase),
+					new Wait(29),
+					new HeliReturnToBase(self, abortOnResupply, null, alwaysLand)));
+				return NextActivity;
+			}
+
+			// Do the docking.
+			dest.Trait<DockManager>().ReserveDock(dest, self, this);
+			return NextActivity;
 		}
 
 		bool ShouldLandAtBuilding(Actor self, Actor dest)
@@ -119,6 +193,41 @@ namespace OpenRA.Mods.Common.Activities
 
 			return aircraft.Info.RearmBuildings.Contains(dest.Info.Name) && self.TraitsImplementing<AmmoPool>()
 					.Any(p => !p.AutoReloads && !p.FullAmmo());
+		}
+
+		Activity IDockActivity.ApproachDockActivities(Actor host, Actor client, Dock dock)
+		{
+			return ActivityUtils.SequenceActivities(
+				new HeliFly(client, Target.FromPos(dock.CenterPosition)),
+				new Turn(client, dock.Info.DockAngle),
+				new HeliLand(client, false));
+		}
+
+		Activity IDockActivity.DockActivities(Actor host, Actor client, Dock dock)
+		{
+			client.SetTargetLine(Target.FromCell(client.World, dock.Location), Color.Green, false);
+
+			// Let's reload. The assumption here is that for aircrafts, there are no waiting docks.
+			return new ResupplyAircraft(client);
+		}
+
+		Activity IDockActivity.ActivitiesAfterDockDone(Actor host, Actor client, Dock dock)
+		{
+			var rp = host.Trait<RallyPoint>();
+
+			// Take off and move to RP.
+			// I know this depreciates AbortOnResupply activity but it is a bug to reuse NextActivity!
+			client.SetTargetLine(Target.FromCell(client.World, rp.Location), Color.Green, false);
+			return client.Trait<IMove>().MoveTo(rp.Location, 2);
+
+			// Old code:
+			// client.Info.TraitInfo<AircraftInfo>().AbortOnResupply ? null : client.CurrentActivity.NextActivity));
+		}
+
+		Activity IDockActivity.ActivitiesOnDockFail(Actor client)
+		{
+			// Stay idle
+			return null;
 		}
 	}
 }
