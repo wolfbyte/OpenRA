@@ -73,7 +73,7 @@ namespace OpenRA.Mods.Cnc.Traits
 	}
 
 	[Desc("Provides access to the disguise command, which makes the actor appear to be another player's actor.")]
-	class DisguiseInfo : ITraitInfo
+	class DisguiseInfo : ConditionalTraitInfo
 	{
 		[VoiceReference] public readonly string Voice = "Action";
 
@@ -98,11 +98,11 @@ namespace OpenRA.Mods.Cnc.Traits
 		[GrantedConditionReference]
 		public IEnumerable<string> LinterConditions { get { return DisguisedAsConditions.Values; } }
 
-		public object Create(ActorInitializer init) { return new Disguise(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new Disguise(init.Self, this); 
 	}
 
-	class Disguise : INotifyCreated, IEffectiveOwner, IIssueOrder, IResolveOrder, IOrderVoice, IRadarColorModifier, INotifyAttack,
-		INotifyDamage, INotifyUnload, INotifyDemolition, INotifyInfiltration, ITick
+	class Disguise : ConditionalTrait<DisguiseInfo>, INotifyCreated, IEffectiveOwner, IIssueOrder, IResolveOrder, IOrderVoice, IRadarColorModifier,
+		INotifyAttack, INotifyDamage, INotifyUnload, INotifyDemolition, INotifyInfiltration, ITick
 	{
 		public ActorInfo AsActor { get; private set; }
 		public Player AsPlayer { get; private set; }
@@ -120,6 +120,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		CPos? lastPos;
 
 		public Disguise(Actor self, DisguiseInfo info)
+			: base(info)
 		{
 			this.self = self;
 			this.info = info;
@@ -283,6 +284,9 @@ namespace OpenRA.Mods.Cnc.Traits
 
 		void ITick.Tick(Actor self)
 		{
+			if (IsTraitDisabled)
+				DisguiseAs(null);
+
 			if (info.RevealDisguiseOn.HasFlag(RevealDisguiseType.Move) && lastPos != null && lastPos.Value != self.Location)
 				DisguiseAs(null);
 
