@@ -68,7 +68,7 @@ namespace OpenRA.Mods.Cnc.Traits
 	}
 
 	[Desc("Provides access to the disguise command, which makes the actor appear to be another player's actor.")]
-	class DisguiseInfo : ITraitInfo
+	class DisguiseInfo : ConditionalTraitInfo
 	{
 		[VoiceReference] public readonly string Voice = "Action";
 
@@ -79,10 +79,10 @@ namespace OpenRA.Mods.Cnc.Traits
 		[Desc("Triggers which cause the actor to drop it's disguise. Possible values: None, Attack, Damaged.")]
 		public readonly RevealDisguiseType RevealDisguiseOn = RevealDisguiseType.Attack;
 
-		public object Create(ActorInitializer init) { return new Disguise(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new Disguise(init.Self, this); }
 	}
 
-	class Disguise : INotifyCreated, IEffectiveOwner, IIssueOrder, IResolveOrder, IOrderVoice, IRadarColorModifier, INotifyAttack, INotifyDamage
+	class Disguise : ConditionalTrait<DisguiseInfo>, INotifyCreated, IEffectiveOwner, IIssueOrder, IResolveOrder, IOrderVoice, IRadarColorModifier, INotifyAttack, INotifyDamage
 	{
 		public Player AsPlayer { get; private set; }
 		public string AsSprite { get; private set; }
@@ -98,6 +98,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		int disguisedToken = ConditionManager.InvalidConditionToken;
 
 		public Disguise(Actor self, DisguiseInfo info)
+			: base(info)
 		{
 			this.self = self;
 			this.info = info;
@@ -112,6 +113,9 @@ namespace OpenRA.Mods.Cnc.Traits
 		{
 			get
 			{
+				if (IsTraitDisabled)
+					yield break;
+
 				yield return new TargetTypeOrderTargeter(new HashSet<string> { "Disguise" }, "Disguise", 7, "ability", true, true) { ForceAttack = false };
 			}
 		}
@@ -218,6 +222,12 @@ namespace OpenRA.Mods.Cnc.Traits
 		void INotifyDamage.Damaged(Actor self, AttackInfo e)
 		{
 			if (info.RevealDisguiseOn.HasFlag(RevealDisguiseType.Damaged) && e.Damage.Value > 0)
+				DisguiseAs(null);
+		}
+
+		public void Tick(Actor self)
+		{
+			if (IsTraitDisabled)
 				DisguiseAs(null);
 		}
 	}

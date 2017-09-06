@@ -9,6 +9,8 @@
  */
 #endregion
 
+using System.Linq;
+using Eluant;
 using OpenRA.Mods.Cnc.Traits;
 using OpenRA.Scripting;
 using OpenRA.Traits;
@@ -18,25 +20,39 @@ namespace OpenRA.Mods.Cnc.Scripting
 	[ScriptPropertyGroup("Ability")]
 	public class DisguiseProperties : ScriptActorProperties, Requires<DisguiseInfo>
 	{
-		readonly Disguise disguise;
+		readonly Disguise[] disguise;
 
 		public DisguiseProperties(ScriptContext context, Actor self)
 			: base(context, self)
 		{
-			disguise = Self.Trait<Disguise>();
+			disguise = Self.TraitsImplementing<Disguise>().ToArray();
 		}
 
 		[Desc("Disguises as the target actor.")]
 		public void DisguiseAs(Actor target)
 		{
-			disguise.DisguiseAs(target);
+			if (disguise.Any(x => !x.IsTraitDisabled))
+			{
+				var activeDisguise = disguise.FirstOrDefault(c => !c.IsTraitDisabled);
+			
+				activeDisguise.DisguiseAs(target);
+			}
+			else
+				throw new LuaException("Actor '{0}' cannot disguise as actor '{1}'!".F(Self, target));
 		}
 
 		[Desc("Disguises as the target type with the specified owner.")]
 		public void DisguiseAsType(string actorType, Player newOwner)
 		{
-			var actorInfo = Self.World.Map.Rules.Actors[actorType];
-			disguise.DisguiseAs(actorInfo, newOwner);
+			if (disguise.Any(x => !x.IsTraitDisabled))
+			{
+				var activeDisguise = disguise.FirstOrDefault(c => !c.IsTraitDisabled);
+				var actorInfo = Self.World.Map.Rules.Actors[actorType];
+			
+				activeDisguise.DisguiseAs(actorInfo, newOwner);
+			}
+			else
+				throw new LuaException("Actor '{0}' cannot disguise as actor type '{1}'!".F(Self, actorType));
 		}
 	}
 }
