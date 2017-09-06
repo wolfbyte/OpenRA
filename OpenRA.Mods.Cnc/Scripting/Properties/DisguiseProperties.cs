@@ -25,7 +25,7 @@ namespace OpenRA.Mods.Cnc.Scripting
 		public DisguiseProperties(ScriptContext context, Actor self)
 			: base(context, self)
 		{
-			disguise = Self.TraitsImplementing<Disguise>.ToArray();
+			disguise = Self.TraitsImplementing<Disguise>().ToArray();
 		}
 
 		[ScriptContextAttribute(ScriptContextType.Mission)]
