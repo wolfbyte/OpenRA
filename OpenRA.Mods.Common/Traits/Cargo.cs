@@ -20,7 +20,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("This actor can transport Passenger actors.")]
-	public class CargoInfo : ConditionalTraitInfo, Requires<IOccupySpaceInfo>
+	public class CargoInfo : PausableConditionalTraitInfo, Requires<IOccupySpaceInfo>
 	{
 		[Desc("The maximum sum of Passenger.Weight that this actor can support.")]
 		public readonly int MaxWeight = 0;
@@ -74,7 +74,7 @@ namespace OpenRA.Mods.Common.Traits
 		public override object Create(ActorInitializer init) { return new Cargo(init, this); }
 	}
 
-	public class Cargo : ConditionalTrait<CargoInfo>, IPips, IIssueOrder, IResolveOrder, IOrderVoice, INotifyCreated, INotifyKilled,
+	public class Cargo : PausableConditionalTrait<CargoInfo>, IPips, IIssueOrder, IResolveOrder, IOrderVoice, INotifyCreated, INotifyKilled,
 		INotifyOwnerChanged, INotifyAddedToWorld, ITick, INotifySold, INotifyActorDisposing, IIssueDeployOrder
 	{
 		readonly Actor self;
@@ -214,13 +214,13 @@ namespace OpenRA.Mods.Common.Traits
 					return false;
 			}
 
-			return !IsEmpty(self) && (aircraft == null || aircraft.CanLand(self.Location))
+			return !IsEmpty(self) && (aircraft == null || aircraft.CanLand(self.Location)) && !IsTraitPaused
 				&& CurrentAdjacentCells != null && CurrentAdjacentCells.Any(c => Passengers.Any(p => p.Trait<IPositionable>().CanEnterCell(c)));
 		}
 
 		public bool CanLoad(Actor self, Actor a)
 		{
-			return (reserves.Contains(a) || HasSpace(GetWeight(a))) && self.IsAtGroundLevel() && !IsTraitDisabled;
+			return (reserves.Contains(a) || HasSpace(GetWeight(a))) && self.IsAtGroundLevel() && !IsTraitPaused;
 		}
 
 		internal bool ReserveSpace(Actor a)
