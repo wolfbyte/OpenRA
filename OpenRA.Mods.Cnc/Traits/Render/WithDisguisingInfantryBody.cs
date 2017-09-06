@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Traits.Render;
 using OpenRA.Traits;
@@ -23,35 +24,26 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 	class WithDisguisingInfantryBody : WithInfantryBody
 	{
 		readonly WithDisguisingInfantryBodyInfo info;
-		readonly Disguise disguise;
+		readonly Disguise[] disguise;
 		readonly RenderSprites rs;
-		ActorInfo disguiseActor;
-		Player disguisePlayer;
-		string disguiseImage;
+		readonly Disguise activeDisguise;
+		string intendedSprite;
 
 		public WithDisguisingInfantryBody(ActorInitializer init, WithDisguisingInfantryBodyInfo info)
 			: base(init, info)
 		{
 			this.info = info;
 			rs = init.Self.Trait<RenderSprites>();
-			disguise = init.Self.Trait<Disguise>();
+			disguise = init.Self.TraitsImplementing<Disguise>().ToArray();
+			activeDisguise = disguise.FirstOrDefault(c => !c.IsTraitDisabled);
+			intendedSprite = activeDisguise.AsSprite;
 		}
 
 		protected override void Tick(Actor self)
 		{
-			if (disguise.AsActor != disguiseActor || disguise.AsPlayer != disguisePlayer)
+			if (activeDisguise.AsSprite != intendedSprite)
 			{
-				disguiseActor = disguise.AsActor;
-				disguisePlayer = disguise.AsPlayer;
-				disguiseImage = null;
-
-				if (disguisePlayer != null)
-				{
-					var renderSprites = disguiseActor.TraitInfoOrDefault<RenderSpritesInfo>();
-					if (renderSprites != null)
-						disguiseImage = renderSprites.GetImage(disguiseActor, self.World.Map.Rules.Sequences, disguisePlayer.InternalName);
-				}
-
+				intendedSprite = activeDisguise.AsSprite;
 				var sequence = DefaultAnimation.GetRandomExistingSequence(info.StandSequences, Game.CosmeticRandom);
 				if (sequence != null)
 					DefaultAnimation.ChangeImage(disguiseImage ?? rs.GetImage(self), sequence);
