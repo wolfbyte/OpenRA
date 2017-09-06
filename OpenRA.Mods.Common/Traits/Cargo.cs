@@ -147,8 +147,13 @@ namespace OpenRA.Mods.Common.Traits
 
 		public IEnumerable<IOrderTargeter> Orders
 		{
-			get { yield return new DeployOrderTargeter("Unload", 10,
-				() => CanUnload() ? Info.UnloadCursor : Info.UnloadBlockedCursor); }
+			get 
+			{
+				if (IsTraitDisabled)
+					yield break;
+
+				yield return new DeployOrderTargeter("Unload", 10, () => CanUnload() ? Info.UnloadCursor : Info.UnloadBlockedCursor); 
+			}
 		}
 
 		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
@@ -194,7 +199,7 @@ namespace OpenRA.Mods.Common.Traits
 					return false;
 			}
 
-			return !IsEmpty(self) && (aircraft == null || aircraft.CanLand(self.Location)) && !IsTraitDisabled
+			return !IsEmpty(self) && (aircraft == null || aircraft.CanLand(self.Location))
 				&& CurrentAdjacentCells != null && CurrentAdjacentCells.Any(c => Passengers.Any(p => p.Trait<IPositionable>().CanEnterCell(c)));
 		}
 
