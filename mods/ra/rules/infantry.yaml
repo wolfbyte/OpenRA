@@ -246,6 +246,10 @@ SPY:
 	Disguise:
 		Voice: Move
 		DisguisedCondition: disguise
+		RequiresCondition: allied_tech
+	GrantConditionOnPrerequisite:
+		Condition: allied_tech
+		Prerequisites: atek
 	Infiltrates:
 		Types: SpyInfiltrate
 		PlayerExperience: 50
