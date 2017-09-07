@@ -20,7 +20,8 @@ namespace OpenRA.Mods.Common.Activities
 	{
 		readonly Actor actor;
 		readonly Building building;
-		readonly Capturable capturable;
+		readonly Capturable[] capturable;
+		readonly Capturable activeCapturable;
 		readonly Captures[] captures;
 		readonly Health health;
 
@@ -30,18 +31,19 @@ namespace OpenRA.Mods.Common.Activities
 			actor = target;
 			building = actor.TraitOrDefault<Building>();
 			captures = self.TraitsImplementing<Captures>().ToArray();
-			capturable = target.Trait<Capturable>();
+			capturable = target.TraitsImplementing<Capturable>().ToArray();
+			activeCapturable = capturable.FirstOrDefault(c => !c.IsTraitDisabled);
 			health = actor.Trait<Health>();
 		}
 
 		protected override bool CanReserve(Actor self)
 		{
-			return !capturable.BeingCaptured && capturable.CanBeTargetedBy(self, actor.Owner);
+			return !activeCapturable.BeingCaptured && activeCapturable.CanBeTargetedBy(self, actor.Owner);
 		}
 
 		protected override void OnInside(Actor self)
 		{
-			if (actor.IsDead || capturable.BeingCaptured || capturable.IsTraitDisabled)
+			if (actor.IsDead || activeCapturable.BeingCaptured || activeCapturable.IsTraitDisabled)
 				return;
 
 			if (building != null && !building.Lock())
@@ -54,11 +56,11 @@ namespace OpenRA.Mods.Common.Activities
 
 				var activeCaptures = captures.FirstOrDefault(c => !c.IsTraitDisabled);
 
-				if (actor.IsDead || capturable.BeingCaptured || activeCaptures == null)
+				if (actor.IsDead || activeCapturable.BeingCaptured || activeCaptures == null)
 					return;
 
 				var capturesInfo = activeCaptures.Info;
-				var lowEnoughHealth = health.HP <= capturable.Info.CaptureThreshold * health.MaxHP / 100;
+				var lowEnoughHealth = health.HP <= activeCapturable.Info.CaptureThreshold * health.MaxHP / 100;
 				if (!capturesInfo.Sabotage || lowEnoughHealth || actor.Owner.NonCombatant)
 				{
 					var oldOwner = actor.Owner;
