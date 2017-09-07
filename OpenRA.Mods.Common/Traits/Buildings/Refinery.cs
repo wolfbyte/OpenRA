@@ -57,7 +57,6 @@ namespace OpenRA.Mods.Common.Traits
 			this.info = info;
 			playerResources = self.Owner.PlayerActor.Trait<PlayerResources>();
 			currentDisplayTick = info.TickRate;
-
 			docks = self.Trait<DockManager>();
 		}
 
