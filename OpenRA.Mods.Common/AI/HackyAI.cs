@@ -884,7 +884,7 @@ namespace OpenRA.Mods.Common.AI
 					if (target.Info == null)
 						return false;
 
-					var capturable = target.Actor.TraitOrDefault<Capturable>();
+					var capturable = target.Actor.TraitsImplementing<Capturable>().ToArray().FirstOrDefault(c => !c.IsTraitDisabled);
 					if (capturable == null)
 						return false;
 
