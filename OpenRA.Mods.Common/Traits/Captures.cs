@@ -11,6 +11,7 @@
 
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Orders;
 using OpenRA.Traits;
@@ -101,17 +102,23 @@ namespace OpenRA.Mods.Common.Traits
 
 			public override bool CanTargetActor(Actor self, Actor target, TargetModifiers modifiers, ref string cursor)
 			{
-				var c = target.TraitOrDefault<Capturable>();
-				if (c == null || !c.CanBeTargetedBy(self, target.Owner))
+				var capturable = target.TraitsImplementing<Capturable>().ToArray();
+				var activeCapturable = capturable.FirstOrDefault(c => !c.IsTraitDisabled && c.CanBeTargetedBy(self, target.Owner));
+
+				if (activeCapturable == null)
 				{
 					cursor = capturesInfo.EnterBlockedCursor;
 					return false;
 				}
 
 				var health = target.Trait<Health>();
+<<<<<<< HEAD
 
 				// Cast to long to avoid overflow when multiplying by the health
 				var lowEnoughHealth = health.HP <= (int)(c.Info.CaptureThreshold * (long)health.MaxHP / 100);
+=======
+				var lowEnoughHealth = health.HP <= activeCapturable.Info.CaptureThreshold * health.MaxHP / 100;
+>>>>>>> Make Multipile Capturable: traits work
 
 				cursor = !capturesInfo.Sabotage || lowEnoughHealth || target.Owner.NonCombatant
 					? capturesInfo.EnterCursor : capturesInfo.SabotageCursor;
@@ -134,7 +141,7 @@ namespace OpenRA.Mods.Common.Traits
 				var health = target.Info.TraitInfoOrDefault<HealthInfo>();
 
 				// Cast to long to avoid overflow when multiplying by the health
-				var lowEnoughHealth = target.HP <= (int)(c.CaptureThreshold * (long)health.HP / 100);
+				var lowEnoughHealth = target.HP <= (int)activeCapturable.Info.CaptureThreshold * (long)health.HP / 100;
 
 				cursor = !capturesInfo.Sabotage || lowEnoughHealth || target.Owner.NonCombatant
 					? capturesInfo.EnterCursor : capturesInfo.SabotageCursor;
