@@ -62,11 +62,12 @@ namespace OpenRA.Mods.Yupgi_alert.Warheads
 				if (distance > Range)
 					continue;
 
-				var capturable = a.TraitOrDefault<Capturable>();
+				var capturable = a.TraitsImplementing<Capturable>().ToArray();
+				var activeCapturable = capturable.FirstOrDefault(c => !c.IsTraitDisabled);
 				var building = a.TraitOrDefault<Building>();
 				var health = a.Trait<Health>();
 
-				if (a.IsDead || capturable.BeingCaptured)
+				if (a.IsDead || activeCapturable.BeingCaptured)
 					continue;
 
 				if (building != null && !building.Lock())
@@ -77,10 +78,10 @@ namespace OpenRA.Mods.Yupgi_alert.Warheads
 					if (building != null && building.Locked)
 						building.Unlock();
 
-					if (a.IsDead || capturable.BeingCaptured)
+					if (a.IsDead || activeCapturable.BeingCaptured)
 						return;
 
-					var lowEnoughHealth = health.HP <= capturable.Info.CaptureThreshold * health.MaxHP / 100;
+					var lowEnoughHealth = health.HP <= activeCapturable.Info.CaptureThreshold * health.MaxHP / 100;
 					if (IgnoreCaptureThreshold || lowEnoughHealth || a.Owner.NonCombatant)
 					{
 						var oldOwner = a.Owner;
@@ -113,18 +114,19 @@ namespace OpenRA.Mods.Yupgi_alert.Warheads
 
 		public override bool IsValidAgainst(Actor victim, Actor firedBy)
 		{
-			var capturable = victim.TraitOrDefault<Capturable>();
-			if (capturable == null || !CaptureTypes.Contains(capturable.Info.Type))
+			var capturable = victim.TraitsImplementing<Capturable>().ToArray();
+			var activeCapturable = capturable.FirstOrDefault(c => !c.IsTraitDisabled);
+			if (activeCapturable == null || !CaptureTypes.Contains(activeCapturable.Info.Type))
 				return false;
 
 			var playerRelationship = victim.Owner.Stances[firedBy.Owner];
-			if (playerRelationship == Stance.Ally && !capturable.Info.AllowAllies)
+			if (playerRelationship == Stance.Ally && !activeCapturable.Info.AllowAllies)
 				return false;
 
-			if (playerRelationship == Stance.Enemy && !capturable.Info.AllowEnemies)
+			if (playerRelationship == Stance.Enemy && !activeCapturable.Info.AllowEnemies)
 				return false;
 
-			if (playerRelationship == Stance.Neutral && !capturable.Info.AllowNeutral)
+			if (playerRelationship == Stance.Neutral && !activeCapturable.Info.AllowNeutral)
 				return false;
 
 			return base.IsValidAgainst(victim, firedBy);
