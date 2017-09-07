@@ -9,7 +9,6 @@
  */
 #endregion
 
-using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Traits.Render;
 using OpenRA.Traits;
@@ -24,9 +23,8 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 	class WithDisguisingInfantryBody : WithInfantryBody
 	{
 		readonly WithDisguisingInfantryBodyInfo info;
-		readonly Disguise[] disguise;
+		readonly Disguise disguise;
 		readonly RenderSprites rs;
-		readonly Disguise activeDisguise;
 		string intendedSprite;
 
 		public WithDisguisingInfantryBody(ActorInitializer init, WithDisguisingInfantryBodyInfo info)
@@ -34,16 +32,15 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		{
 			this.info = info;
 			rs = init.Self.Trait<RenderSprites>();
-			disguise = init.Self.TraitsImplementing<Disguise>().ToArray();
-			activeDisguise = disguise.FirstOrDefault(c => !c.IsTraitDisabled);
-			intendedSprite = activeDisguise.AsSprite;
+			disguise = init.Self.Trait<Disguise>();
+			intendedSprite = disguise.AsSprite;
 		}
 
 		protected override void Tick(Actor self)
 		{
-			if (activeDisguise.AsSprite != intendedSprite)
+			if (disguise.AsSprite != intendedSprite)
 			{
-				intendedSprite = activeDisguise.AsSprite;
+				intendedSprite = disguise.AsSprite;
 				var sequence = DefaultAnimation.GetRandomExistingSequence(info.StandSequences, Game.CosmeticRandom);
 				if (sequence != null)
 					DefaultAnimation.ChangeImage(disguiseImage ?? rs.GetImage(self), sequence);
