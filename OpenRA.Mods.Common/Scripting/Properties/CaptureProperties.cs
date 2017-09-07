@@ -35,11 +35,12 @@ namespace OpenRA.Mods.Common.Scripting
 		[Desc("Captures the target actor.")]
 		public void Capture(Actor target)
 		{
-			var capturable = target.Info.TraitInfoOrDefault<CapturableInfo>();
+			var capturable = target.TraitsImplementing<Capturable>().ToArray();
+			var activeCapturable = capturable.FirstOrDefault(c => !c.IsTraitDisabled);
 
-			if (capturable != null)
+			if (activeCapturable != null)
 			{
-				if (captures.Any(x => !x.IsTraitDisabled && x.Info.CaptureTypes.Overlaps(capturable.Types)))
+				if (captures.Any(x => !x.IsTraitDisabled && x.Info.CaptureTypes.Overlaps(activeCapturable.Info.Types)))
 				{
 					Self.QueueActivity(new CaptureActor(Self, target));
 					return;
