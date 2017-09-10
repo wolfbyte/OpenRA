@@ -875,8 +875,7 @@ namespace OpenRA.Mods.Common.AI
 			var capturableTargetOptions = targetOptions
 				.Select(a => new CaptureTarget<CapturableInfo>(a, "CaptureActor"))
 				.Where(target => target.Info != null && capturers.Any(capturer =>
-					target.Actor.TraitsImplementing<Capturable>().ToArray().FirstOrDefault(c => !c.IsTraitDisabled) != null &&
-					target.Actor.TraitsImplementing<Capturable>().ToArray().FirstOrDefault(c => !c.IsTraitDisabled).CanBeTargetedBy(capturer, target.Actor.Owner)))
+					target.Actor.TraitsImplementing<Capturable>().ToArray().FirstOrDefault(c => !c.IsTraitDisabled && c.CanBeTargetedBy(capturer, target.Actor.Owner)) != null))
 				.OrderByDescending(target => target.Actor.GetSellValue())
 				.Take(maximumCaptureTargetOptions);
 
