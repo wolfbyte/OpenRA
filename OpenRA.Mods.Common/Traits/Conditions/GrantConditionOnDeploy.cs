@@ -55,7 +55,7 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly bool SkipMakeAnimation = false;
 
 		[Desc("Play MakeAnimation only when its DeployType matches one of these types")]
-		public readonly string[] MakeAnimationDeployTypes = { "make" };
+		public readonly HashSet<string> MakeAnimationDeployTypes = new HashSet<string> { "make" };
 
 		public override object Create(ActorInitializer init) { return new GrantConditionOnDeploy(init, this); }
 	}
@@ -291,10 +291,6 @@ namespace OpenRA.Mods.Common.Traits
 				deployedToken = conditionManager.GrantCondition(self, Info.DeployedCondition);
 
 			deployState = DeployState.Deployed;
-
-			var notis = self.TraitsImplementing<INotifyDeploy>();
-			foreach (var noti in notis)
-				noti.OnDeployed(self);
 		}
 
 		void OnUndeployStarted()
@@ -303,10 +299,6 @@ namespace OpenRA.Mods.Common.Traits
 				deployedToken = conditionManager.RevokeCondition(self, deployedToken);
 
 			deployState = DeployState.Deploying;
-
-			var notis = self.TraitsImplementing<INotifyDeploy>();
-			foreach (var noti in notis)
-				noti.OnUndeployed(self);
 		}
 
 		void OnUndeployCompleted()
