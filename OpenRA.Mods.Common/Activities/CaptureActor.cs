@@ -32,13 +32,13 @@ namespace OpenRA.Mods.Common.Activities
 			building = actor.TraitOrDefault<Building>();
 			captures = self.TraitsImplementing<Captures>().ToArray();
 			capturable = target.TraitsImplementing<Capturable>().ToArray();
-			activeCapturable = capturable.FirstOrDefault(c => !c.IsTraitDisabled);
+			activeCapturable = capturable.FirstOrDefault(c => !c.IsTraitDisabled && c.CanBeTargetedBy(self, target.Owner));
 			health = actor.Trait<Health>();
 		}
 
 		protected override bool CanReserve(Actor self)
 		{
-			return !activeCapturable.BeingCaptured && activeCapturable.CanBeTargetedBy(self, actor.Owner);
+			return !activeCapturable.BeingCaptured;
 		}
 
 		protected override void OnInside(Actor self)
@@ -95,7 +95,7 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
-			if (captures.All(c => c.IsTraitDisabled))
+			if (captures.All(c => c.IsTraitDisabled) || activeCapturable.IsTraitDisabled)
 				Cancel(self);
 
 			return base.Tick(self);
