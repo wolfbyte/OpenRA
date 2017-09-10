@@ -491,10 +491,4 @@ namespace OpenRA.Traits
 
 	[RequireExplicitImplementation]
 	public interface IUnlocksRenderPlayer { bool RenderPlayerUnlocked { get; } }
-
-	public interface INotifyDeploy
-	{
-		void OnDeployed(Actor self);
-		void OnUndeployed(Actor self);
-	}
 }
