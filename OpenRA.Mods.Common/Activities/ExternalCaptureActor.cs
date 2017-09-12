@@ -37,7 +37,6 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
-<<<<<<< HEAD
 			var activeExternalCaptures = externalCaptures.FirstOrDefault(c => !c.IsTraitDisabled);
 			if (IsCanceled || !self.IsInWorld || self.IsDead || target.Type != TargetType.Actor || !target.IsValidFor(self) || capturable.IsTraitDisabled || activeExternalCaptures == null || externalCaptures.All(c => c.IsTraitDisabled))
 			{
@@ -74,8 +73,6 @@ namespace OpenRA.Mods.Common.Activities
 
 						foreach (var t in target.Actor.TraitsImplementing<INotifyCapture>())
 							t.OnCapture(target.Actor, self, oldOwner, self.Owner);
-						foreach (var ini in notifiers)
-							ini.OnCaptured(target.Actor, self, target.Actor.Owner, self.Owner);
 
 						EndCapture(self);
 
@@ -97,6 +94,8 @@ namespace OpenRA.Mods.Common.Activities
 
 		void BeginCapture(Actor self)
 		{
+			var capturesInfo = externalCaptures.FirstOrDefault(c => !c.IsTraitDisabled).Info;
+
 			capturable.BeginCapture(self);
 			if (conditionManager != null && !string.IsNullOrEmpty(capturesInfo.CapturingCondition) && capturingToken == ConditionManager.InvalidConditionToken)
 				capturingToken = conditionManager.GrantCondition(self, capturesInfo.CapturingCondition);
