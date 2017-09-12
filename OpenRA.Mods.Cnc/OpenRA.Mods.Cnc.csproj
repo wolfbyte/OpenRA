@@ -136,6 +136,7 @@
     <Compile Include="Scripting\Properties\ChronosphereProperties.cs" />
     <Compile Include="Scripting\Properties\IonCannonProperties.cs" />
     <Compile Include="Traits\Render\WithDisguisingInfantryBody.cs" />
+    <Compile Include="Traits\Render\WithDisguisingFacingSpriteBody.cs" />
     <Compile Include="UtilityCommands\ImportRedAlertLegacyMapCommand.cs" />
     <Compile Include="Traits\Infiltration\InfiltrateForDecoration.cs" />
     <Compile Include="TraitsInterfaces.cs" />
