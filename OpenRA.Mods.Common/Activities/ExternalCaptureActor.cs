@@ -23,7 +23,8 @@ namespace OpenRA.Mods.Common.Activities
 		readonly ExternalCaptures[] externalCaptures;
 		readonly Mobile mobile;
 		readonly Target target;
-		readonly INotifyExternalCapture[] notifiers;
+		readonly ConditionManager conditionManager;
+		int capturingToken = ConditionManager.InvalidConditionToken;
 
 		public ExternalCaptureActor(Actor self, Target target)
 		{
@@ -31,7 +32,7 @@ namespace OpenRA.Mods.Common.Activities
 			capturable = target.Actor.Trait<ExternalCapturable>();
 			externalCaptures = self.TraitsImplementing<ExternalCaptures>().ToArray();
 			mobile = self.Trait<Mobile>();
-			notifiers = self.TraitsImplementing<INotifyExternalCapture>().ToArray();
+			conditionManager = self.TraitOrDefault<ConditionManager>();
 		}
 
 		public override Activity Tick(Actor self)
@@ -42,8 +43,7 @@ namespace OpenRA.Mods.Common.Activities
 			var activeExternalCaptures = externalCaptures.FirstOrDefault(c => !c.IsTraitDisabled);
 			if (IsCanceled || !self.IsInWorld || self.IsDead || !target.IsValidFor(self) || capturable.IsTraitDisabled || activeExternalCaptures == null || externalCaptures.All(c => c.IsTraitDisabled))
 			{
-				CancelCapture(self);
-
+				EndCapture(self);
 				return NextActivity;
 			}
 
@@ -53,10 +53,9 @@ namespace OpenRA.Mods.Common.Activities
 			if ((nearest - mobile.ToCell).LengthSquared > 2)
 				return ActivityUtils.SequenceActivities(new MoveAdjacentTo(self, target), this);
 
-			if (!capturable.CaptureInProgress) {
-				capturable.BeginCapture(self);
-				foreach (var ini in notifiers)
-					ini.OnCapturing(target.Actor, self, target.Actor.Owner, self.Owner);
+			if (!capturable.CaptureInProgress)
+			{
+				BeginCapture(self);
 			}
 			else
 			{
@@ -81,10 +80,8 @@ namespace OpenRA.Mods.Common.Activities
 
 						foreach (var t in target.Actor.TraitsImplementing<INotifyCapture>())
 							t.OnCapture(target.Actor, self, oldOwner, self.Owner);
-						foreach (var ini in notifiers)
-							ini.OnCaptured(target.Actor, self, target.Actor.Owner, self.Owner);
 
-						capturable.EndCapture();
+						EndCapture(self);
 
 						if (self.Owner.Stances[oldOwner].HasStance(capturesInfo.PlayerExperienceStances))
 						{
@@ -102,11 +99,21 @@ namespace OpenRA.Mods.Common.Activities
 			return this;
 		}
 
-		void CancelCapture(Actor self) {
+		void BeginCapture(Actor self)
+		{
+			var capturesInfo = externalCaptures.FirstOrDefault(c => !c.IsTraitDisabled).Info;
+			
+			capturable.BeginCapture(self);
+			if (conditionManager != null && !string.IsNullOrEmpty(capturesInfo.CapturingCondition) && capturingToken == ConditionManager.InvalidConditionToken)
+				capturingToken = conditionManager.GrantCondition(self, capturesInfo.CapturingCondition);
+		}
+
+		void EndCapture(Actor self)
+		{
 			if (capturable.CaptureInProgress)
 				capturable.EndCapture();
-			foreach (var ini in notifiers)
-				ini.OnCaptureCancelled(self);
+			if (capturingToken != ConditionManager.InvalidConditionToken)
+				capturingToken = conditionManager.RevokeCondition(self, capturingToken);
 		}
 	}
 }

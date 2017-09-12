@@ -70,6 +70,8 @@ namespace OpenRA.Mods.Cnc.Traits
 	[Desc("Provides access to the disguise command, which makes the actor appear to be another player's actor.")]
 	class DisguiseInfo : ConditionalTraitInfo
 	{
+		public readonly HashSet<string> Types = new HashSet<string>();
+
 		[VoiceReference] public readonly string Voice = "Action";
 
 		[GrantedConditionReference]
@@ -116,7 +118,7 @@ namespace OpenRA.Mods.Cnc.Traits
 				if (IsTraitDisabled)
 					yield break;
 
-				yield return new TargetTypeOrderTargeter(new HashSet<string> { "Disguise" }, "Disguise", 7, "ability", true, true) { ForceAttack = false };
+				yield return new TargetTypeOrderTargeter(info.Types, "Disguise", 7, "ability", true, true) { ForceAttack = false };
 			}
 		}
 

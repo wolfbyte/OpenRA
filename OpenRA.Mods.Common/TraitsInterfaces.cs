@@ -103,13 +103,6 @@ namespace OpenRA.Mods.Common.Traits
 	}
 
 	[RequireExplicitImplementation]
-	public interface INotifyExternalCapture {
-		void OnCapturing(Actor self, Actor captor, Player oldOwner, Player newOwner);
-		void OnCaptured(Actor self, Actor captor, Player oldOwner, Player newOwner);
-		void OnCaptureCancelled(Actor captor);
-	}
-
-	[RequireExplicitImplementation]
 	public interface INotifyInfiltrated { void Infiltrated(Actor self, Actor infiltrator); }
 
 	[RequireExplicitImplementation]
