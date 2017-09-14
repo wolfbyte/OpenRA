@@ -10,9 +10,7 @@
 #endregion
 
 using OpenRA.Activities;
-using OpenRA.Mods.Common.Effects;
 using OpenRA.Mods.Common.Traits;
-using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
 {
@@ -24,7 +22,7 @@ namespace OpenRA.Mods.Common.Activities
 		readonly int playerExperience;
 
 		public DonateExperience(Actor self, Actor target, int level, int playerExperience, GainsExperience targetGainsExperience)
-			: base(self, target, EnterBehaviour.Dispose)
+			: base(self, target, EnterBehaviour.Dispose, WDist.Zero)
 		{
 			this.target = target;
 			this.level = level;
