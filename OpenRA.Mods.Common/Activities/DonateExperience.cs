@@ -10,24 +10,24 @@
 #endregion
 
 using OpenRA.Activities;
-using OpenRA.Mods.Common.Effects;
 using OpenRA.Mods.Common.Traits;
-using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
 {
 	class DonateExperience : Enter
 	{
 		readonly Actor target;
+		readonly GainsExperience targetGainsExperience;
 		readonly int level;
 		readonly int playerExperience;
 
-		public DonateExperience(Actor self, Actor target, int level, int playerExperience)
+		public DonateExperience(Actor self, Actor target, int level, int playerExperience, GainsExperience targetGainsExperience)
 			: base(self, target, EnterBehaviour.Dispose, WDist.Zero)
 		{
 			this.target = target;
 			this.level = level;
 			this.playerExperience = playerExperience;
+			this.targetGainsExperience = targetGainsExperience;
 		}
 
 		protected override void OnInside(Actor self)
@@ -35,7 +35,7 @@ namespace OpenRA.Mods.Common.Activities
 			if (target.IsDead)
 				return;
 
-			target.Trait<GainsExperience>().GiveLevels(level);
+			targetGainsExperience.GiveLevels(level);
 
 			var exp = self.Owner.PlayerActor.TraitOrDefault<PlayerExperience>();
 			if (exp != null && target.Owner != self.Owner)
@@ -44,7 +44,7 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
-			if (target.IsDead || target.Trait<GainsExperience>().Level == target.Trait<GainsExperience>().MaxLevel)
+			if (target.IsDead || targetGainsExperience.Level == targetGainsExperience.MaxLevel)
 				Cancel(self);
 
 			return base.Tick(self);

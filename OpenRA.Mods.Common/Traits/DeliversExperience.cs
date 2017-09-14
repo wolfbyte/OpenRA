@@ -78,7 +78,8 @@ namespace OpenRA.Mods.Common.Traits
 			if (target.Type != TargetType.Actor)
 				return;
 
-			if (target.Actor.Trait<GainsExperience>().Level == target.Actor.Trait<GainsExperience>().MaxLevel)
+			var targetGainsExperience = target.Actor.Trait<GainsExperience>();
+			if (targetGainsExperience.Level == targetGainsExperience.MaxLevel)
 				return;
 
 			if (!order.Queued)
@@ -87,7 +88,7 @@ namespace OpenRA.Mods.Common.Traits
 			var level = gainsExperience.Level;
 
 			self.SetTargetLine(target, Color.Yellow);
-			self.QueueActivity(new DonateExperience(self, target.Actor, level, info.PlayerExperience));
+			self.QueueActivity(new DonateExperience(self, target.Actor, level, info.PlayerExperience, targetGainsExperience));
 		}
 
 		public class DeliversExperienceOrderTargeter : UnitOrderTargeter
