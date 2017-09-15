@@ -64,6 +64,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		void ITick.Tick(Actor self)
 		{
+
 			if (IsTraitDisabled)
 				Ticks = info.Interval;
 
