@@ -124,6 +124,12 @@ namespace OpenRA.Mods.Common.Traits
 
 			public override bool CanTargetFrozenActor(Actor self, FrozenActor target, TargetModifiers modifiers, ref string cursor)
 			{
+				if (target.Actor == null)
+				{
+					cursor = capturesInfo.EnterCursor;
+					return false;
+				}
+
 				var capturable = target.Actor.TraitsImplementing<Capturable>().ToArray();
 				var activeCapturable = capturable.FirstOrDefault(c => !c.IsTraitDisabled && c.CanBeTargetedBy(self, target.Actor.Owner));
 
