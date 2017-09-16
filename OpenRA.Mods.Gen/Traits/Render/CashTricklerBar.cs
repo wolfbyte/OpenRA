@@ -50,7 +50,7 @@ namespace OpenRA.Mods.yupgi_alert.Traits.Render
 			if (viewer != null && !info.DisplayStances.HasStance(self.Owner.Stances[viewer]))
 				return 0;
 
-			var complete = enabledCashTricklers.Max(ct => (float)ct.Ticks / ct.Info.Interval);
+			var complete = enabledCashTricklers.Min(ct => (float)ct.Ticks / ct.Info.Interval);
 			return 1 - complete;
 		}
 
