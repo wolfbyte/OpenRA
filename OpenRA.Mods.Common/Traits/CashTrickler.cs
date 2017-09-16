@@ -22,7 +22,7 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly int Interval = 50;
 
 		[Desc("Number of ticks to wait before giving first money.")]
-		public readonly int InitialDelay = -1;
+		public readonly int InitialDelay = 0;
 
 		[Desc("Amount of money to give each time.")]
 		public readonly int Amount = 15;
@@ -40,7 +40,7 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		readonly CashTricklerInfo info;
 		PlayerResources resources;
-		[Sync] public int Ticks;
+		[Sync] public int Ticks { get; private set; }
 
 		public CashTrickler(CashTricklerInfo info)
 			: base(info)

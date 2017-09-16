@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using OpenRA.Mods.Common.Traits;
@@ -31,26 +32,26 @@ namespace OpenRA.Mods.yupgi_alert.Traits.Render
 	{
 		readonly Actor self;
 		readonly CashTricklerBarInfo info;
-		readonly CashTrickler[] cashTrickler;
+		readonly IEnumerable<CashTrickler> enabledCashTricklers;
 
 		public CashTricklerBar(Actor self, CashTricklerBarInfo info)
 		{
 			this.self = self;
 			this.info = info;
-			cashTrickler = self.TraitsImplementing<CashTrickler>().ToArray();
+			enabledCashTricklers = self.TraitsImplementing<CashTrickler>().ToArray().Where(ct => !ct.IsTraitDisabled);
 		}
 
 		float ISelectionBar.GetValue()
 		{
-			var firstEnabledCashTrickler = cashTrickler.FirstOrDefault(ct => !ct.IsTraitDisabled);
-			if (firstEnabledCashTrickler == null)
+			if (enabledCashTricklers == null)
 				return 0;
 
 			var viewer = self.World.RenderPlayer ?? self.World.LocalPlayer;
 			if (viewer != null && !info.DisplayStances.HasStance(self.Owner.Stances[viewer]))
 				return 0;
 
-			return 1 - (float)firstEnabledCashTrickler.Ticks / firstEnabledCashTrickler.Info.Interval;
+			var complete = enabledCashTricklers.Max(ct => (float)ct.Ticks / ct.Info.Interval);
+			return 1 - complete;
 		}
 
 		Color ISelectionBar.GetColor() { return info.Color; }
