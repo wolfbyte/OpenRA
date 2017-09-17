@@ -20,7 +20,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		public override object Create(ActorInitializer init) { return new WithDisguisingFacingSpriteBody(init, this); }
 	}
 
-	class WithDisguisingFacingSpriteBody : WithFacingSpriteBody
+	class WithDisguisingFacingSpriteBody : WithFacingSpriteBody, ITick
 	{
 		readonly WithDisguisingFacingSpriteBodyInfo info;
 		readonly Disguise disguise;
@@ -41,7 +41,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 			if (disguise.AsSprite != intendedSprite)
 			{
 				intendedSprite = disguise.AsSprite;
-				DefaultAnimation.ChangeImage(intendedSprite ?? rs.GetImage(self), info.Sequence);
+				DefaultAnimation.ChangeImage(intendedSprite ?? rs.GetImage(self), DefaultAnimation.CurrentSequence.Name);
 				rs.UpdatePalette();
 			}
 		}
