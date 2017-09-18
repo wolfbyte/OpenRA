@@ -89,6 +89,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		public Player AsPlayer { get; private set; }
 		public string AsSprite { get; private set; }
 		public ITooltipInfo AsTooltipInfo { get; private set; }
+		public WVec AsTurretOffset { get; private set; }
 
 		public bool Disguised { get { return AsPlayer != null; } }
 		public Player Owner { get { return AsPlayer; } }
@@ -166,6 +167,7 @@ namespace OpenRA.Mods.Cnc.Traits
 				{
 					AsSprite = targetDisguise.AsSprite;
 					AsPlayer = targetDisguise.AsPlayer;
+					AsTurretOffset = targetDisguise.AsTurretOffset;
 					AsTooltipInfo = targetDisguise.AsTooltipInfo;
 				}
 				else
@@ -174,12 +176,19 @@ namespace OpenRA.Mods.Cnc.Traits
 					var tooltip = target.TraitsImplementing<ITooltip>().FirstOrDefault();
 					AsPlayer = tooltip.Owner;
 					AsTooltipInfo = tooltip.TooltipInfo;
+
+					var targetTurreted = target.TraitsImplementing<Turreted>();
+					if (targetTurreted != null)
+						AsTurretOffset = target.TraitsImplementing<Turreted>().FirstOrDefault().Offset;
+					else
+						AsTurretOffset = WVec.Zero;
 				}
 			}
 			else
 			{
 				AsTooltipInfo = null;
 				AsPlayer = null;
+				AsTurretOffset = WVec.Zero;
 				AsSprite = null;
 			}
 
@@ -195,6 +204,7 @@ namespace OpenRA.Mods.Cnc.Traits
 			AsSprite = renderSprites == null ? null : renderSprites.GetImage(actorInfo, self.World.Map.Rules.Sequences, newOwner.Faction.InternalName);
 			AsPlayer = newOwner;
 			AsTooltipInfo = actorInfo.TraitInfos<TooltipInfo>().FirstOrDefault();
+			AsTurretOffset = actorInfo.TraitInfos<TurretedInfo>().FirstOrDefault().Offset;
 
 			HandleDisguise(oldEffectiveOwner, oldDisguiseSetting);
 		}
