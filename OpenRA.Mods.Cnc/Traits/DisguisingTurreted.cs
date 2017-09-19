@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Traits.Render;
 using OpenRA.Traits;
@@ -31,14 +32,14 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		{
 			this.info = info;
 			disguise = init.Self.Trait<Disguise>();
-			intendedTurretOffset = disguise.AsTurretOffset;
+			intendedTurretOffset = disguise.TurretOffsets.First();
 		}
 
 		public override void Tick(Actor self)
 		{
-			if (disguise.AsTurretOffset != intendedTurretOffset)
+			if (disguise.TurretOffsets.First() != intendedTurretOffset)
 			{
-				intendedTurretOffset = disguise.AsTurretOffset;
+				intendedTurretOffset = disguise.TurretOffsets.First();
 				DisguiseOffset = intendedTurretOffset;
 			}
 		}
