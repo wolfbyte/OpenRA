@@ -111,8 +111,6 @@ namespace OpenRA.Mods.Cnc.Traits
 
 		public ITooltipInfo AsTooltipInfo { get; private set; }
 		public List<WVec> TurretOffsets = new List<WVec>() { WVec.Zero };
-		
-		string intendedActorName;
 
 		public bool Disguised { get { return AsPlayer != null; } }
 		public Player Owner { get { return AsPlayer; } }
@@ -263,7 +261,6 @@ namespace OpenRA.Mods.Cnc.Traits
 
 			if (conditionManager != null)
 			{
-<<<<<<< HEAD
 				if (Disguised != oldDisguiseSetting)
 				{
 					if (Disguised && disguisedToken == ConditionManager.InvalidConditionToken && !string.IsNullOrEmpty(info.DisguisedCondition))
