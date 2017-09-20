@@ -108,8 +108,6 @@ namespace OpenRA.Mods.Cnc.Traits
 		public ActorInfo AsActor { get; private set; }
 		public Player AsPlayer { get; private set; }
 		public ITooltipInfo AsTooltipInfo { get; private set; }
-		public WVec AsTurretOffset { get; private set; }
-		
 		public List<WVec> TurretOffsets = new List<WVec>() { WVec.Zero };
 
 		public bool Disguised { get { return AsPlayer != null; } }
@@ -238,7 +236,19 @@ namespace OpenRA.Mods.Cnc.Traits
 			AsPlayer = newOwner;
 			AsActor = actorInfo;
 			AsTooltipInfo = actorInfo.TraitInfos<TooltipInfo>().FirstOrDefault();
-			AsTurretOffset = actorInfo.TraitInfos<TurretedInfo>().FirstOrDefault().Offset;
+
+			var targetTurreted = actorInfo.TraitInfos<TurretedInfo>();
+			if (targetTurreted != null)
+			{
+				TurretOffsets.Clear();
+				foreach (var t in targetTurreted)
+					TurretOffsets.Add(t.Offset);
+			}
+			else
+			{
+				TurretOffsets.Clear();
+				TurretOffsets.Add(WVec.Zero);
+			}
 
 			HandleDisguise(oldEffectiveActor, oldEffectiveOwner, oldDisguiseSetting);
 		}
