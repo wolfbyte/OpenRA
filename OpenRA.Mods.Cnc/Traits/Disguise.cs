@@ -81,6 +81,10 @@ namespace OpenRA.Mods.Cnc.Traits
 		[Desc("Triggers which cause the actor to drop it's disguise. Possible values: None, Attack, Damaged.")]
 		public readonly RevealDisguiseType RevealDisguiseOn = RevealDisguiseType.Attack;
 
+		[Desc("Conditions to grant when disguised as specified actor.",
+			"A dictionary of [actor id]: [condition].")]
+		public readonly Dictionary<string, string> DisguisedAsConditions = new Dictionary<string, string>();
+
 		public override object Create(ActorInitializer init) { return new Disguise(init.Self, this); }
 	}
 
@@ -88,8 +92,11 @@ namespace OpenRA.Mods.Cnc.Traits
 	{
 		public Player AsPlayer { get; private set; }
 		public string AsSprite { get; private set; }
+		public string AsActorName { get; private set; }
 		public ITooltipInfo AsTooltipInfo { get; private set; }
 		public List<WVec> TurretOffsets = new List<WVec>() { WVec.Zero };
+		
+		string intendedActorName;
 
 		public bool Disguised { get { return AsPlayer != null; } }
 		public Player Owner { get { return AsPlayer; } }
@@ -99,12 +106,15 @@ namespace OpenRA.Mods.Cnc.Traits
 
 		ConditionManager conditionManager;
 		int disguisedToken = ConditionManager.InvalidConditionToken;
+		int disguisedAsToken = ConditionManager.InvalidConditionToken;
 
 		public Disguise(Actor self, DisguiseInfo info)
 			: base(info)
 		{
 			this.self = self;
 			this.info = info;
+			
+			intendedActorName = AsActorName;
 		}
 
 		void INotifyCreated.Created(Actor self)
@@ -167,6 +177,7 @@ namespace OpenRA.Mods.Cnc.Traits
 				{
 					AsSprite = targetDisguise.AsSprite;
 					AsPlayer = targetDisguise.AsPlayer;
+					AsActorName = targetDisguise.AsActorName;
 					TurretOffsets = targetDisguise.TurretOffsets;
 					AsTooltipInfo = targetDisguise.AsTooltipInfo;
 				}
@@ -175,6 +186,7 @@ namespace OpenRA.Mods.Cnc.Traits
 					AsSprite = target.Trait<RenderSprites>().GetImage(target);
 					var tooltip = target.TraitsImplementing<ITooltip>().FirstOrDefault();
 					AsPlayer = tooltip.Owner;
+					AsActorName = target.Info.Name;
 					AsTooltipInfo = tooltip.TooltipInfo;
 
 					var targetTurreted = target.TraitsImplementing<Turreted>();
@@ -193,13 +205,14 @@ namespace OpenRA.Mods.Cnc.Traits
 			{
 				AsTooltipInfo = null;
 				AsPlayer = null;
+				AsActorName = self.Info.Name;
 				AsSprite = null;
 
 				TurretOffsets.Clear();
 				TurretOffsets.Add(WVec.Zero);
 			}
 
-			HandleDisguise(oldEffectiveOwner, oldDisguiseSetting);
+			HandleDisguise(oldEffectiveOwner, oldDisguiseSetting, AsActorName);
 		}
 
 		public void DisguiseAs(ActorInfo actorInfo, Player newOwner)
@@ -210,6 +223,7 @@ namespace OpenRA.Mods.Cnc.Traits
 			var renderSprites = actorInfo.TraitInfoOrDefault<RenderSpritesInfo>();
 			AsSprite = renderSprites == null ? null : renderSprites.GetImage(actorInfo, self.World.Map.Rules.Sequences, newOwner.Faction.InternalName);
 			AsPlayer = newOwner;
+			AsActorName = actorInfo.Name;
 			AsTooltipInfo = actorInfo.TraitInfos<TooltipInfo>().FirstOrDefault();
 
 			var targetTurreted = actorInfo.TraitInfos<TurretedInfo>();
@@ -225,10 +239,10 @@ namespace OpenRA.Mods.Cnc.Traits
 				TurretOffsets.Add(WVec.Zero);
 			}
 
-			HandleDisguise(oldEffectiveOwner, oldDisguiseSetting);
+			HandleDisguise(oldEffectiveOwner, oldDisguiseSetting, AsActorName);
 		}
 
-		void HandleDisguise(Player oldEffectiveOwner, bool oldDisguiseSetting)
+		void HandleDisguise(Player oldEffectiveOwner, bool oldDisguiseSetting, string targetName)
 		{
 			foreach (var t in self.TraitsImplementing<INotifyEffectiveOwnerChanged>())
 				t.OnEffectiveOwnerChanged(self, oldEffectiveOwner, AsPlayer);
@@ -239,6 +253,18 @@ namespace OpenRA.Mods.Cnc.Traits
 					disguisedToken = conditionManager.GrantCondition(self, info.DisguisedCondition);
 				else if (!Disguised && disguisedToken != ConditionManager.InvalidConditionToken)
 					disguisedToken = conditionManager.RevokeCondition(self, disguisedToken);
+
+				if (AsActorName != intendedActorName)
+				{
+					intendedActorName = AsActorName;
+
+					if (disguisedAsToken != ConditionManager.InvalidConditionToken)
+						disguisedAsToken = conditionManager.RevokeCondition(self, disguisedAsToken);
+
+					string disguisedAsCondition;
+					if (info.DisguisedAsConditions.TryGetValue(targetName, out disguisedAsCondition))
+						disguisedAsToken = conditionManager.GrantCondition(self, disguisedAsCondition);
+				}
 			}
 		}
 
