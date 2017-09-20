@@ -99,7 +99,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		[GrantedConditionReference]
 		public IEnumerable<string> LinterConditions { get { return DisguisedAsConditions.Values; } }
 
-		public override object Create(ActorInitializer init) { return new Disguise(init.Self, this); 
+		public override object Create(ActorInitializer init) { return new Disguise(init.Self, this); }
 	}
 
 	class Disguise : ConditionalTrait<DisguiseInfo>, INotifyCreated, IEffectiveOwner, IIssueOrder, IResolveOrder, IOrderVoice, IRadarColorModifier,
@@ -107,8 +107,12 @@ namespace OpenRA.Mods.Cnc.Traits
 	{
 		public ActorInfo AsActor { get; private set; }
 		public Player AsPlayer { get; private set; }
+		public string AsSprite { get; private set; }
+
 		public ITooltipInfo AsTooltipInfo { get; private set; }
 		public List<WVec> TurretOffsets = new List<WVec>() { WVec.Zero };
+		
+		string intendedActorName;
 
 		public bool Disguised { get { return AsPlayer != null; } }
 		public Player Owner { get { return AsPlayer; } }
@@ -219,7 +223,6 @@ namespace OpenRA.Mods.Cnc.Traits
 				AsTooltipInfo = null;
 				AsPlayer = null;
 				AsActor = self.Info;
-
 				TurretOffsets.Clear();
 				TurretOffsets.Add(WVec.Zero);
 			}
@@ -260,6 +263,7 @@ namespace OpenRA.Mods.Cnc.Traits
 
 			if (conditionManager != null)
 			{
+<<<<<<< HEAD
 				if (Disguised != oldDisguiseSetting)
 				{
 					if (Disguised && disguisedToken == ConditionManager.InvalidConditionToken && !string.IsNullOrEmpty(info.DisguisedCondition))
@@ -274,6 +278,7 @@ namespace OpenRA.Mods.Cnc.Traits
 						disguisedAsToken = conditionManager.RevokeCondition(self, disguisedAsToken);
 
 					string disguisedAsCondition;
+
 					if (info.DisguisedAsConditions.TryGetValue(AsActor.Name, out disguisedAsCondition))
 						disguisedAsToken = conditionManager.GrantCondition(self, disguisedAsCondition);
 				}
