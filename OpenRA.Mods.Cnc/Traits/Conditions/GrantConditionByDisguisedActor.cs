@@ -26,7 +26,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		public object Create(ActorInitializer init) { return new GrantConditionByDisguisedActor(init.Self, this); }
 	}
 
-	class GrantConditionByDisguisedActor : ITick
+	class GrantConditionByDisguisedActor : INotifyCreated, ITick
 	{
 		readonly GrantConditionByDisguisedActorInfo info;
 		readonly Disguise disguise;
@@ -41,7 +41,10 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 			this.info = info;
 			disguise = self.Trait<Disguise>();
 			intendedActorName = disguise.AsActorName;
-			
+		}
+
+		void INotifyCreated.Created(Actor self)
+		{
 			conditionManager = self.TraitOrDefault<ConditionManager>();
 		}
 
