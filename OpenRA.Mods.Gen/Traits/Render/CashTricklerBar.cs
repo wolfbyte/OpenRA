@@ -32,25 +32,25 @@ namespace OpenRA.Mods.yupgi_alert.Traits.Render
 	{
 		readonly Actor self;
 		readonly CashTricklerBarInfo info;
-		readonly IEnumerable<CashTrickler> enabledCashTricklers;
+		readonly IEnumerable<CashTrickler> cashTricklers;
 
 		public CashTricklerBar(Actor self, CashTricklerBarInfo info)
 		{
 			this.self = self;
 			this.info = info;
-			enabledCashTricklers = self.TraitsImplementing<CashTrickler>().ToArray().Where(ct => !ct.IsTraitDisabled);
+			cashTricklers = self.TraitsImplementing<CashTrickler>().ToArray();
 		}
 
 		float ISelectionBar.GetValue()
 		{
-			if (enabledCashTricklers == null)
+			if (cashTricklers == null)
 				return 0;
 
 			var viewer = self.World.RenderPlayer ?? self.World.LocalPlayer;
 			if (viewer != null && !info.DisplayStances.HasStance(self.Owner.Stances[viewer]))
 				return 0;
 
-			var complete = enabledCashTricklers.Min(ct => (float)ct.Ticks / ct.Info.Interval);
+			var complete = cashTricklers.Min(ct => (float)ct.Ticks / ct.Info.Interval);
 			return 1 - complete;
 		}
 
