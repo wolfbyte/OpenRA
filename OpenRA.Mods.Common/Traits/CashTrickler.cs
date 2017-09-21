@@ -16,7 +16,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("Lets the actor generate cash in a set periodic time.")]
-	public class CashTricklerInfo : ConditionalTraitInfo
+	public class CashTricklerInfo : PausableConditionalTraitInfo
 	{
 		[Desc("Number of ticks to wait between giving money.")]
 		public readonly int Interval = 50;
@@ -36,7 +36,7 @@ namespace OpenRA.Mods.Common.Traits
 		public override object Create(ActorInitializer init) { return new CashTrickler(this); }
 	}
 
-	public class CashTrickler : ConditionalTrait<CashTricklerInfo>, ITick, ISync, INotifyCreated, INotifyOwnerChanged
+	public class CashTrickler : PausableConditionalTrait<CashTricklerInfo>, ITick, ISync, INotifyCreated, INotifyOwnerChanged
 	{
 		readonly CashTricklerInfo info;
 		PlayerResources resources;
@@ -63,8 +63,10 @@ namespace OpenRA.Mods.Common.Traits
 
 		void ITick.Tick(Actor self)
 		{
-
 			if (IsTraitDisabled)
+				Ticks = info.Interval;
+
+			if (IsTraitPaused || IsTraitDisabled)
 				return;
 
 			if (--Ticks < 0)
