@@ -1,6 +1,6 @@
 Metadata:
 	Title: Tiberian Dawn
-	Version: playtest-20170902
+	Version: playtest-20170923
 
 PackageFormats: Mix
 
@@ -31,7 +31,7 @@ Packages:
 
 MapFolders:
 	cnc|maps: System
-	~^maps/cnc/playtest-20170902: User
+	~^maps/cnc/playtest-20170923: User
 
 Rules:
 	cnc|rules/misc.yaml

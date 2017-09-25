@@ -22,7 +22,10 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		[Desc("Conditions to grant when disguised as specified actor.",
 			"A dictionary of [actor id]: [condition].")]
 		public readonly Dictionary<string, string> Conditions = new Dictionary<string, string>();
-		
+
+		[GrantedConditionReference]
+		public IEnumerable<string> LinterConditions { get { return Conditions.Values; } }
+
 		public object Create(ActorInitializer init) { return new GrantConditionByDisguisedActor(init.Self, this); }
 	}
 

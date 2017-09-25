@@ -1,6 +1,6 @@
 Metadata:
 	Title: Dune 2000
-	Version: playtest-20170902
+	Version: playtest-20170923
 
 PackageFormats: D2kSoundResources
 
@@ -20,7 +20,7 @@ Packages:
 
 MapFolders:
 	d2k|maps: System
-	~^maps/d2k/playtest-20170902: User
+	~^maps/d2k/playtest-20170923: User
 
 Rules:
 	d2k|rules/misc.yaml

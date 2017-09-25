@@ -38,7 +38,7 @@ namespace OpenRA.Mods.Common.AI
 		internal CaptureTarget(Actor actor, string orderString)
 		{
 			Actor = actor;
-			Info = actor.Info.TraitInfoOrDefault<TInfoType>();
+			Info = actor.Info.TraitInfos<TInfoType>().FirstOrDefault();
 			OrderString = orderString;
 		}
 	}

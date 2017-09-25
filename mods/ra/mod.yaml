@@ -1,6 +1,6 @@
 Metadata:
 	Title: Red Alert
-	Version: playtest-20170902
+	Version: playtest-20170923
 
 PackageFormats: Mix
 
@@ -34,7 +34,7 @@ Packages:
 
 MapFolders:
 	ra|maps: System
-	~^maps/ra/playtest-20170902: User
+	~^maps/ra/playtest-20170923: User
 
 Rules:
 	ra|rules/misc.yaml
