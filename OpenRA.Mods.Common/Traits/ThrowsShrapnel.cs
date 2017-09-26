@@ -22,6 +22,8 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("The weapons used for shrapnel.")]
 		public readonly string[] Weapons = { };
 
+		public readonly string WeaponName = "primary";
+
 		[Desc("The amount of pieces of shrapnel to expel. Two values indicate a range.")]
 		public readonly int[] Pieces = { 3, 10 };
 
@@ -70,7 +72,7 @@ namespace OpenRA.Mods.Common.Traits
 						Facing = self.World.SharedRandom.Next(-1, 255),
 
 						DamageModifiers = self.TraitsImplementing<IFirepowerModifier>()
-							.Select(a => a.GetFirepowerModifier()).ToArray(),
+							.Select(a => a.GetFirepowerModifier(info.WeaponName)).ToArray(),
 
 						InaccuracyModifiers = self.TraitsImplementing<IInaccuracyModifier>()
 							.Select(a => a.GetInaccuracyModifier()).ToArray(),
