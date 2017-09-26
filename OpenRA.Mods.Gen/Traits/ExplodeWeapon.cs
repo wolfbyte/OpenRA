@@ -26,6 +26,8 @@ namespace OpenRA.Mods.AS.Traits
 		[Desc("Has to be defined in weapons.yaml as well.")]
 		public readonly string Weapon = null;
 
+		public readonly string WeaponName = "primary";
+
 		public readonly bool ResetReloadWhenEnabled = true;
 
 		public WeaponInfo WeaponInfo { get; private set; }
@@ -78,7 +80,7 @@ namespace OpenRA.Mods.AS.Traits
 					: info.LocalOffset;
 
 				weapon.Impact(Target.FromPos(self.CenterPosition + localoffset), self,
-					self.TraitsImplementing<IFirepowerModifier>().Select(a => a.GetFirepowerModifier()).ToArray());
+					self.TraitsImplementing<IFirepowerModifier>().Select(a => a.GetFirepowerModifier(info.WeaponName)).ToArray());
 
 				if (weapon.Report != null && weapon.Report.Any())
 					Game.Sound.Play(SoundType.World, weapon.Report.Random(self.World.SharedRandom), self.CenterPosition);
@@ -88,7 +90,7 @@ namespace OpenRA.Mods.AS.Traits
 				else
 				{
 					var modifiers = self.TraitsImplementing<IReloadModifier>()
-						.Select(m => m.GetReloadModifier());
+						.Select(m => m.GetReloadModifier(info.WeaponName));
 					fireDelay = Util.ApplyPercentageModifiers(weapon.ReloadDelay, modifiers);
 					burst = weapon.Burst;
 				}
