@@ -18,6 +18,8 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Percentage modifier to apply.")]
 		public readonly int Modifier = 100;
 
+		public readonly string Type = "primary";
+
 		public override object Create(ActorInitializer init) { return new ReloadDelayMultiplier(this); }
 	}
 
@@ -26,6 +28,9 @@ namespace OpenRA.Mods.Common.Traits
 		public ReloadDelayMultiplier(ReloadDelayMultiplierInfo info)
 			: base(info) { }
 
-		int IReloadModifier.GetReloadModifier() { return IsTraitDisabled ? 100 : Info.Modifier; }
+		int IReloadModifier.GetReloadModifier(string ArmamentName)
+		{
+			return IsTraitDisabled || ArmamentName != Info.Type ? 100 : Info.Modifier;
+		}
 	}
 }
