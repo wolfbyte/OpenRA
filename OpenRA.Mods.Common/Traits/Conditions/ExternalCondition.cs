@@ -36,7 +36,7 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("If > 0, restrict the number of times that this condition can be granted by any source.")]
 		public readonly int TotalCap = 0;
 
-		public object Create(ActorInitializer init) { return new ExternalCondition(init.Self, this); }
+		public virtual object Create(ActorInitializer init) { return new ExternalCondition(init.Self, this); }
 	}
 
 	public class ExternalCondition : ITick, INotifyCreated
