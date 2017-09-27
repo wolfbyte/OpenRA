@@ -918,8 +918,8 @@ namespace OpenRA.Mods.Common.AI
 			if (!capturableTargetOptions.Any() && !externalCapturableTargetOptions.Any())
 				return;
 
-			var externalCapturers = capturers.Where(a => a.Info.HasTraitInfo<ExternalCapturesInfo>());
-			var capturesCapturers = capturers.Except(externalCapturers).Where(a => a.Info.HasTraitInfo<CapturesInfo>());
+			var externalCapturers = capturers.Where(a => a.TraitsImplementing<ExternalCaptures>().ToArray().FirstOrDefault(c => !c.IsTraitDisabled) != null);
+			var capturesCapturers = capturers.Except(externalCapturers).Where(a => a.TraitsImplementing<Captures>().ToArray().FirstOrDefault(c => !c.IsTraitDisabled) != null);
 
 			foreach (var capturer in capturesCapturers)
 				QueueCaptureOrderFor(capturer, GetCapturerTargetClosestToOrDefault(capturer, capturableTargetOptions));
