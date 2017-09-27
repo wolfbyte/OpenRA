@@ -147,11 +147,13 @@ namespace OpenRA.Mods.Common.Traits
 		public bool TryRevokeCondition(Actor self)
 		{
 			// First priority is to remove one of the permanent ones.
+			if (!permanentTokens.Any())
+				return false;
+
 			if (permanentTokens.Any())
-			{
-				var pair = permanentTokens.First();
-				return TryRevokeCondition(self, pair.Key, pair.Value.First());
-			}
+			foreach (var pair in permanentTokens)
+				foreach (var tt in pair.Value)
+					return TryRevokeCondition(self, pair.Key, tt);
 
 			if (!timedTokens.Any())
 				return false;
