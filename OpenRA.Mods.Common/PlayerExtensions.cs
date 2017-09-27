@@ -20,8 +20,8 @@ namespace OpenRA.Mods.Common
 		{
 			var mapOptions = player.World.WorldActor.Trait<MapOptions>();
 			if (mapOptions.ShortGame)
-				return !player.World.ActorsHavingTrait<MustBeDestroyed>(t => t.Info.RequiredForShortGame).Any(a => a.Owner == player);
-			return !player.World.ActorsHavingTrait<MustBeDestroyed>().Any(a => a.Owner == player && a.IsInWorld);
+				return !player.World.ActorsHavingTrait<MustBeDestroyed>(t => !t.IsTraitDisabled && t.Info.RequiredForShortGame).Any(a => a.Owner == player);
+			return !player.World.ActorsHavingTrait<MustBeDestroyed>(t => !t.IsTraitDisabled).Any(a => a.Owner == player && a.IsInWorld);
 		}
 	}
 }
