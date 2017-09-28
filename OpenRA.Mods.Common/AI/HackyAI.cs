@@ -887,11 +887,11 @@ namespace OpenRA.Mods.Common.AI
 				.OrderByDescending(target => target.Actor.GetSellValue())
 				.Take(maximumCaptureTargetOptions);
 
-			// if (Info.CapturableActorTypes.Any())
-			// {
+			if (Info.CapturableActorTypes.Any())
+			{
 				// capturableTargetOptions = capturableTargetOptions.Where(target => Info.CapturableActorTypes.Contains(target.Actor.Info.Name.ToLowerInvariant()));
-				// externalCapturableTargetOptions = externalCapturableTargetOptions.Where(target => Info.CapturableActorTypes.Contains(target.Actor.Info.Name.ToLowerInvariant()));
-			// }
+				externalCapturableTargetOptions = externalCapturableTargetOptions.Where(target => Info.CapturableActorTypes.Contains(target.Actor.Info.Name.ToLowerInvariant()));
+			}
 
 			// if (!capturableTargetOptions.Any() && !externalCapturableTargetOptions.Any())
 				// return;
