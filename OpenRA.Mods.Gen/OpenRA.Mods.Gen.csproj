@@ -109,6 +109,7 @@
     <Compile Include="Traits\PaletteEffects\IronCurtainPaletteEffect.cs" />
     <Compile Include="Traits\SpawnedExplodes.cs" />
     <Compile Include="Traits\ShootableBallisticMissile.cs" />
+    <Compile Include="Traits\EmitInfantryOnDeath.cs" />
     <Compile Include="Traits\Air\BlimpFallsToEarth.cs" />
     <Compile Include="Traits\CargoCashTrickler.cs" />
     <Compile Include="Traits\CargoTransformer.cs" />
