@@ -23,13 +23,8 @@ namespace OpenRA.Mods.Common.Traits
 
 	class ExternalConditionThatRevokedOnCapture : ExternalCondition, INotifyCapture
 	{
-		readonly ExternalConditionThatRevokedOnCaptureInfo info;
-
 		public ExternalConditionThatRevokedOnCapture(Actor self, ExternalConditionThatRevokedOnCaptureInfo info)
-			: base(self, info)
-		{
-			this.info = info;
-		}
+			: base(self, info) { }
 
 		public void OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner)
 		{
