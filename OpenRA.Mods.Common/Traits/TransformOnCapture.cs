@@ -9,9 +9,12 @@
  */
 #endregion
 
+<<<<<<< HEAD
 using System;
 using System.Collections.Generic;
 using System.Linq;
+=======
+>>>>>>> Update TransformOnCapture
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Traits;
 
