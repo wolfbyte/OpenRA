@@ -150,7 +150,7 @@ namespace OpenRA.Mods.Common.Traits
 					foreach (var nbp in producer.Actor.TraitsImplementing<INotifyBuildingPlaced>())
 						nbp.BuildingPlaced(producer.Actor);
 
-				queue.FinishProduction();
+				queue.FinishProduction(order.TargetString);
 
 				if (buildingInfo.RequiresBaseProvider)
 				{
