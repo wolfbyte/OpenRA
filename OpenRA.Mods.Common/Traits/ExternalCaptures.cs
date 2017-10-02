@@ -34,6 +34,8 @@ namespace OpenRA.Mods.Common.Traits
 
 		[VoiceReference] public readonly string Voice = "Action";
 
+		[VoiceReference] public readonly string CaptureCompleteVoice = null;
+
 		[GrantedConditionReference]
 		[Desc("Condition granted when capturing.")]
 		public readonly string CapturingCondition = null;
