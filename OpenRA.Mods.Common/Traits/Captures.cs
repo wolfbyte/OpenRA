@@ -53,6 +53,8 @@ namespace OpenRA.Mods.Common.Traits
 
 		[VoiceReference] public readonly string Voice = "Action";
 
+		[VoiceReference] public readonly string CaptureCompleteVoice = null;
+
 		public override object Create(ActorInitializer init) { return new Captures(init.Self, this); }
 	}
 

@@ -99,6 +99,9 @@ namespace OpenRA.Mods.Common.Activities
 				foreach (var t in actor.TraitsImplementing<INotifyCapture>())
 					t.OnCapture(actor, self, oldOwner, self.Owner, captures.Info.CaptureTypes);
 
+				if (captures.Info.CaptureCompleteVoice != null)
+					self.PlayVoice(captures.Info.CaptureCompleteVoice);
+
 				if (self.Owner.Stances[oldOwner].HasStance(captures.Info.PlayerExperienceStances))
 				{
 					var exp = self.Owner.PlayerActor.TraitOrDefault<PlayerExperience>();
