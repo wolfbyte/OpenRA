@@ -400,8 +400,8 @@ namespace OpenRA.Mods.Common.Widgets
 				{
 					var first = icon.Queued[0];
 					clock.PlayFetchIndex(ClockSequence,
-						() => (first.TotalTime - (int)first.RemainingTime)
-							* (clock.CurrentSequence.Length - 1) / first.TotalTime);
+						() => (first.TotalTimeActual  - first.RemainingTimeActual)
+							* (clock.CurrentSequence.Length - 1) / first.TotalTimeActual);
 					clock.Tick();
 
 					WidgetUtils.DrawSHPCentered(clock.Image, icon.Pos + iconOffset, icon.IconClockPalette);
@@ -420,7 +420,7 @@ namespace OpenRA.Mods.Common.Widgets
 					var waiting = first != CurrentQueue.CurrentItem() && !first.Done;
 					var multiplier = 1f;
 
-					if (CurrentQueue.Info.SynchronousBuild)
+					if (CurrentQueue.Info.ParallelBuild)
 					{
 						waiting = false;
 						var progressingQueue = new List<ProductionItem>();

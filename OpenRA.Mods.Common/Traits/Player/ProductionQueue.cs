@@ -40,8 +40,8 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("The build time is multiplied with this value on low power.")]
 		public readonly int LowPowerSlowdown = 3;
 
-		[Desc("Wether this queue tries to build synchronously.")]
-		public readonly bool SynchronousBuild = false;
+		[Desc("Whether this queue tries to build in parallel.")]
+		public readonly bool ParallelBuild = false;
 
 		[Desc("Notification played when production is complete.",
 			"The filename of the audio is defined per faction in notifications.yaml.")]
@@ -233,7 +233,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public virtual void Tick(Actor self)
 		{
-			foreach (var item in queue)
+			foreach (var item in queue.ToArray())
 			{
 				if (BuildableItems().All(b => b.Name != item.Item))
 				{
@@ -245,9 +245,9 @@ namespace OpenRA.Mods.Common.Traits
 
 			if (queue.Count > 0)
 			{
-				if (!Info.SynchronousBuild)
+				if (!Info.ParallelBuild)
 				{
-					queue[0].Tick(playerResources, 1);
+					queue[0].Tick(playerResources, ProductionItem.TimeFactor);
 					return;
 				}
 
@@ -263,7 +263,8 @@ namespace OpenRA.Mods.Common.Traits
 
 				if (progressingQueue.Count > 0)
 				{
-					var progress = 1f / progressingQueue.FindAll(a => !a.Done).Count;
+					var factor = progressingQueue.FindAll(a => !a.Done).Count;
+					var progress = ProductionItem.TimeFactor / (factor == 0 ? 1 : factor);
 
 					foreach (var q in progressingQueue)
 					{
@@ -428,20 +429,28 @@ namespace OpenRA.Mods.Common.Traits
 
 	public class ProductionItem
 	{
+		public const int TimeFactor = 100;
+
 		public readonly string Item;
 		public readonly ProductionQueue Queue;
-		public readonly int TotalCost;
 		public readonly Action OnComplete;
 
-		public int TotalTime { get; private set; }
-		public float RemainingTime { get; private set; }
+		public readonly int TotalCost;
 		public int RemainingCost { get; private set; }
+
+		int totalTime;
+		public int TotalTimeActual
+		{
+			get { return totalTime / TimeFactor; }
+		}
+
+		int remainingTime;
 		public int RemainingTimeActual
 		{
 			get
 			{
-				return (pm.PowerState == PowerState.Normal) ? (int)RemainingTime :
-					(int)RemainingTime * Queue.Info.LowPowerSlowdown;
+				return (pm.PowerState == PowerState.Normal) ? remainingTime / TimeFactor :
+					remainingTime / TimeFactor * Queue.Info.LowPowerSlowdown;
 			}
 		}
 
@@ -457,7 +466,7 @@ namespace OpenRA.Mods.Common.Traits
 		public ProductionItem(ProductionQueue queue, string item, int cost, PowerManager pm, Action onComplete)
 		{
 			Item = item;
-			RemainingTime = TotalTime = 1;
+			remainingTime = totalTime = TimeFactor;
 			RemainingCost = TotalCost = cost;
 			OnComplete = onComplete;
 			Queue = queue;
@@ -466,13 +475,13 @@ namespace OpenRA.Mods.Common.Traits
 			bi = ai.TraitInfo<BuildableInfo>();
 		}
 
-		public void Tick(PlayerResources pr, float multiplicator)
+		public void Tick(PlayerResources pr, int tickProgress)
 		{
 			if (!Started)
 			{
 				var time = Queue.GetBuildTime(ai, bi);
 				if (time > 0)
-					RemainingTime = TotalTime = time;
+					remainingTime = totalTime = time * TimeFactor;
 
 				Started = true;
 			}
@@ -496,18 +505,18 @@ namespace OpenRA.Mods.Common.Traits
 					return;
 			}
 
-			var elapsedTime = TotalTime - RemainingTime;
-			var elapsedCost = TotalCost * elapsedTime / TotalTime;
-			var paidTooMuch = (TotalCost - RemainingCost) - elapsedCost;
-			var moneyToTake = RemainingCost / RemainingTime * multiplicator;
+			tickProgress = Math.Min(tickProgress, remainingTime);
 
-			var costThisFrame = (int)Math.Min(Math.Ceiling(moneyToTake - paidTooMuch), RemainingCost);
-			if (costThisFrame != 0 && !pr.TakeCash(costThisFrame, true))
+			var targetTime = remainingTime - tickProgress;
+			var targetCost = TotalCost * targetTime / totalTime;
+			var costThisFrame = RemainingCost - targetCost;
+
+			if (!pr.TakeCash(costThisFrame, true))
 				return;
 
-			RemainingCost -= costThisFrame;
-			RemainingTime -= multiplicator;
-			if (RemainingTime > 0)
+			RemainingCost = targetCost;
+			remainingTime = targetTime;
+			if (remainingTime > 0)
 				return;
 
 			Done = true;
