@@ -323,6 +323,9 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 
 		public void Activate(Squad owner)
 		{
+			if (!owner.IsValid)
+				return;
+
 			escapeDest = RandomBuildingLocation(owner);
 			safePoint = CalcSafePoint(owner, escapeDest, EnemyStaticAAs(owner));
 		}
