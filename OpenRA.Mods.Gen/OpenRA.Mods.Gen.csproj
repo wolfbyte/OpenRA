@@ -114,6 +114,7 @@
     <Compile Include="Traits\CargoCashTrickler.cs" />
     <Compile Include="Traits\CargoTransformer.cs" />
     <Compile Include="Traits\Conditions\GrantTimedConditionOnDeploy.cs" />
+    <Compile Include="Traits\SupportPowers\CashHackPower.cs" />
     <Compile Include="Traits\Player\BotProvidesPrerequisite.cs" />
     <Compile Include="Traits\BaseSpawnerSlave.cs" />
     <Compile Include="Traits\CarrierSlave.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="Traits\MobSpawnerMaster.cs" />
     <Compile Include="Traits\SpawnerHarvesterMaster.cs" />
     <Compile Include="Traits\CarrierMaster.cs" />
+    <Compile Include="Traits\CashHackable.cs" />
     <Compile Include="Traits\StructureChrono.cs" />
     <Compile Include="Traits\BaseSpawnerMaster.cs" />
     <Compile Include="Traits\Warheads\CreateRadioactivityWarhead.cs" />
