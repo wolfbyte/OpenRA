@@ -526,6 +526,7 @@
     <Compile Include="Traits\SupportPowers\SupportPower.cs" />
     <Compile Include="Traits\SupportPowers\SupportPowerManager.cs" />
     <Compile Include="Traits\SupportPowers\SpawnActorPower.cs" />
+    <Compile Include="Traits\TakesBounty.cs" />
     <Compile Include="Traits\Targetable.cs" />
     <Compile Include="Traits\ThrowsParticle.cs" />
     <Compile Include="Traits\Tooltip.cs" />
