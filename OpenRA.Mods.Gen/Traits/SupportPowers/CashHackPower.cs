@@ -33,7 +33,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		[Desc("Maximum amount of funds which will be stolen.")]
 		public readonly int Maximum = int.MaxValue;
 
-		[Desc("Maximum amount of funds which will be stolen.")]
+		[Desc("Type of support power. Used for targerting along with 'CashHackable' trait on actors.")]
 		public readonly string Type = "Cash-Hack";
 
 		[Desc("Sound to instantly play at the targeted area.")]
