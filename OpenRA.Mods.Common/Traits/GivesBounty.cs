@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Mods.Common.Effects;
 using OpenRA.Primitives;
@@ -19,8 +20,8 @@ namespace OpenRA.Mods.Common.Traits
 	[Desc("When killed, this actor causes the attacking player to receive money.")]
 	class GivesBountyInfo : ConditionalTraitInfo
 	{
-		[Desc("Percentage of the killed actor's Cost or CustomSellValue to be given.")]
-		public readonly int Percentage = 10;
+		[Desc("Type of bounty. Used for targerting along with 'TakesBounty' trait on actors.")]
+		public readonly string Type = "Bounty";
 
 		[Desc("Stance the attacking player needs to receive the bounty.")]
 		public readonly Stance ValidStances = Stance.Neutral | Stance.Enemy;
@@ -49,14 +50,14 @@ namespace OpenRA.Mods.Common.Traits
 			cargo = self.TraitOrDefault<Cargo>();
 		}
 
-		int GetBountyValue(Actor self)
+		int GetBountyValue(Actor self, TakesBounty activeAttackerTakesBounty)
 		{
-			return self.GetSellValue() * Info.Percentage / 100;
+			return self.GetSellValue() * activeAttackerTakesBounty.Info.Percentage / 100;
 		}
 
-		int GetDisplayedBountyValue(Actor self)
+		int GetDisplayedBountyValue(Actor self, TakesBounty activeAttackerTakesBounty)
 		{
-			var bounty = GetBountyValue(self);
+			var bounty = GetBountyValue(self, activeAttackerTakesBounty);
 			if (cargo == null)
 				return bounty;
 
@@ -64,7 +65,7 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				var givesBounties = a.TraitsImplementing<GivesBounty>().Where(gb => !gb.IsTraitDisabled);
 				foreach (var givesBounty in givesBounties)
-					bounty += givesBounty.GetDisplayedBountyValue(a);
+					bounty += givesBounty.GetDisplayedBountyValue(a, activeAttackerTakesBounty);
 			}
 
 			return bounty;
@@ -75,17 +76,22 @@ namespace OpenRA.Mods.Common.Traits
 			if (e.Attacker == null || e.Attacker.Disposed || IsTraitDisabled)
 				return;
 
-			if (!Info.ValidStances.HasStance(e.Attacker.Owner.Stances[self.Owner]))
+			var attackerTakesBounty = e.Attacker.TraitsImplementing<TakesBounty>().ToArray();
+			var activeAttackerTakesBounty =	attackerTakesBounty.FirstOrDefault(tb => !tb.IsTraitDisabled && tb.Info.ValidTypes.Contains(info.Type));
+			if (activeAttackerTakesBounty == null)
+				return;
+
+			if (!info.ValidStances.HasStance(e.Attacker.Owner.Stances[self.Owner]))
 				return;
 
 			if (!Info.DeathTypes.IsEmpty && !e.Damage.DamageTypes.Overlaps(Info.DeathTypes))
 				return;
 
-			var displayedBounty = GetDisplayedBountyValue(self);
-			if (Info.ShowBounty && self.IsInWorld && displayedBounty != 0 && e.Attacker.Owner.IsAlliedWith(self.World.RenderPlayer))
+			var displayedBounty = GetDisplayedBountyValue(self, activeAttackerTakesBounty);
+			if (info.ShowBounty && self.IsInWorld && displayedBounty > 0 && e.Attacker.Owner.IsAlliedWith(self.World.RenderPlayer))
 				e.Attacker.World.AddFrameEndTask(w => w.Add(new FloatingText(self.CenterPosition, e.Attacker.Owner.Color.RGB, FloatingText.FormatCashTick(displayedBounty), 30)));
 
-			e.Attacker.Owner.PlayerActor.Trait<PlayerResources>().ChangeCash(GetBountyValue(self));
+			e.Attacker.Owner.PlayerActor.Trait<PlayerResources>().ChangeCash(GetBountyValue(self, activeAttackerTakesBounty));
 		}
 	}
 }
