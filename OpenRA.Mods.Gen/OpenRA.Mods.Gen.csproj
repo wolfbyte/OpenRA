@@ -111,6 +111,7 @@
     <Compile Include="Traits\ShootableBallisticMissile.cs" />
     <Compile Include="Traits\EmitInfantryOnDeath.cs" />
     <Compile Include="Traits\Air\BlimpFallsToEarth.cs" />
+    <Compile Include="Traits\Air\AutoTakesOff.cs" />
     <Compile Include="Traits\CargoCashTrickler.cs" />
     <Compile Include="Traits\CargoTransformer.cs" />
     <Compile Include="Traits\Conditions\GrantTimedConditionOnDeploy.cs" />
