@@ -1348,7 +1348,7 @@ namespace OpenRA.Mods.Common.AI
 				return;
 
 			// No construction yards - Build a new MCV
-			if (!HasAdequateFact() && !self.World.Actors.Any(a => a.Owner == Player &&
+			if (Info.UnitsCommonNames.Mcv != null && !HasAdequateFact() && !self.World.Actors.Any(a => a.Owner == Player &&
 				Info.UnitsCommonNames.Mcv.Contains(a.Info.Name)))
 				BuildUnit("Vehicle", GetInfoByCommonName(Info.UnitsCommonNames.Mcv, Player).Name);
 
