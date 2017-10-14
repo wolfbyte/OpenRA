@@ -9,16 +9,12 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Orders;
 using OpenRA.Traits;
-
-/*
-// Modifications for Mod.yupgi_alert:
-// Add sound effect parameter and INotifyCashTransfer.
-*/
 
 namespace OpenRA.Mods.Common.Traits
 {

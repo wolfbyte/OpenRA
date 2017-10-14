@@ -400,7 +400,7 @@ namespace OpenRA.Mods.Common.Widgets
 				{
 					var first = icon.Queued[0];
 					clock.PlayFetchIndex(ClockSequence,
-						() => (first.TotalTimeActual  - first.RemainingTimeActual)
+						() => (first.TotalTimeActual - first.RemainingTimeActual)
 							* (clock.CurrentSequence.Length - 1) / first.TotalTimeActual);
 					clock.Tick();
 
