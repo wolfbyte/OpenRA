@@ -76,6 +76,8 @@ namespace OpenRA.Mods.Common.Activities
 					return NextActivity;
 				}
 
+				harv.LastSearchFailed = true;
+
 				var unblockCell = harv.LastHarvestedCell ?? (self.Location + harvInfo.UnblockCell);
 				var moveTo = mobile.NearestMoveableCell(unblockCell, 2, 5);
 				self.QueueActivity(mobile.MoveTo(moveTo, 1));
@@ -102,6 +104,8 @@ namespace OpenRA.Mods.Common.Activities
 				// Attempt to claim the target cell
 				if (!claimLayer.TryClaimCell(self, closestHarvestablePosition.Value))
 					return ActivityUtils.SequenceActivities(new Wait(25), this);
+
+				harv.LastSearchFailed = false;
 
 				// If not given a direct order, assume ordered to the first resource location we find:
 				if (!harv.LastOrderLocation.HasValue)

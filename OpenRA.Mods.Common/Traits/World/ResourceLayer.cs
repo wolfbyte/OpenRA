@@ -36,6 +36,8 @@ namespace OpenRA.Mods.Common.Traits
 		protected readonly CellLayer<CellContents> Content;
 		protected readonly CellLayer<CellContents> RenderContent;
 
+		int resCells;
+
 		public ResourceLayer(Actor self)
 		{
 			world = self.World;
@@ -215,6 +217,7 @@ namespace OpenRA.Mods.Common.Traits
 		CellContents CreateResourceCell(ResourceType t, CPos cell)
 		{
 			world.Map.CustomTerrain[cell] = world.Map.Rules.TileSet.GetTerrainIndex(t.Info.TerrainType);
+			++resCells;
 
 			return new CellContents
 			{
@@ -253,6 +256,8 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				Content[cell] = EmptyCell;
 				world.Map.CustomTerrain[cell] = byte.MaxValue;
+
+				--resCells;
 			}
 			else
 				Content[cell] = c;
@@ -267,6 +272,8 @@ namespace OpenRA.Mods.Common.Traits
 			// Don't break other users of CustomTerrain if there are no resources
 			if (Content[cell].Type == null)
 				return;
+
+			--resCells;
 
 			// Clear cell
 			Content[cell] = EmptyCell;
@@ -284,6 +291,11 @@ namespace OpenRA.Mods.Common.Traits
 				return 0;
 
 			return Content[cell].Type.Info.MaxDensity;
+		}
+
+		public bool IsResourceLayerEmpty()
+		{
+			return resCells <= 0;
 		}
 
 		bool disposed;

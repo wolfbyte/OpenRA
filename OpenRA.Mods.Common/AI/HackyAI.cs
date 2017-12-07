@@ -287,6 +287,7 @@ namespace OpenRA.Mods.Common.AI
 		public Player Player { get; private set; }
 
 		readonly DomainIndex domainIndex;
+		readonly ResourceLayer resLayer;
 		readonly ResourceClaimLayer claimLayer;
 		readonly IPathFinder pathfinder;
 
@@ -338,6 +339,7 @@ namespace OpenRA.Mods.Common.AI
 				return;
 
 			domainIndex = World.WorldActor.Trait<DomainIndex>();
+			resLayer = World.WorldActor.TraitOrDefault<ResourceLayer>();
 			claimLayer = World.WorldActor.TraitOrDefault<ResourceClaimLayer>();
 			pathfinder = World.WorldActor.Trait<IPathFinder>();
 
@@ -811,7 +813,8 @@ namespace OpenRA.Mods.Common.AI
 			{
 				assignRolesTicks = Info.AssignRolesInterval;
 				////KillOutOfMapAircrafts();
-				GiveOrdersToIdleHarvesters();
+				if (resLayer != null && !resLayer.IsResourceLayerEmpty())
+					GiveOrdersToIdleHarvesters();
 				FindNewUnits(self);
 				FindAndDeployBackupMcv(self);
 			}
@@ -963,15 +966,15 @@ namespace OpenRA.Mods.Common.AI
 				if (harv == null)
 					continue;
 
+				if (!harv.IsEmpty)
+					continue;
+
 				if (!harvester.IsIdle)
 				{
 					var act = harvester.CurrentActivity;
-					if (act.NextActivity == null || act.NextActivity.GetType() != typeof(FindResources))
+					if (!harv.LastSearchFailed || act.NextActivity == null || act.NextActivity.GetType() != typeof(FindResources))
 						continue;
 				}
-
-				if (!harv.IsEmpty)
-					continue;
 
 				// Tell the idle harvester to quit slacking:
 				var newSafeResourcePatch = FindNextResource(harvester, harv);
