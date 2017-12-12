@@ -237,7 +237,6 @@ namespace OpenRA.Mods.Common.Widgets
 			{
 				// Queue a new item
 				Game.Sound.Play(SoundType.UI, TabClick);
-				Game.Sound.PlayNotification(World.Map.Rules, World.LocalPlayer, "Speech", CurrentQueue.Info.QueuedAudio, World.LocalPlayer.Faction.InternalName);
 				World.IssueOrder(Order.StartProduction(CurrentQueue.Actor, icon.Name, handleCount));
 				return true;
 			}
@@ -255,13 +254,11 @@ namespace OpenRA.Mods.Common.Widgets
 			if (item.Paused || item.Done || item.TotalCost == item.RemainingCost)
 			{
 				// Instant cancel of things we have not started yet and things that are finished
-				Game.Sound.PlayNotification(World.Map.Rules, World.LocalPlayer, "Speech", CurrentQueue.Info.CancelledAudio, World.LocalPlayer.Faction.InternalName);
 				World.IssueOrder(Order.CancelProduction(CurrentQueue.Actor, icon.Name, handleCount));
 			}
 			else
 			{
 				// Pause an existing item
-				Game.Sound.PlayNotification(World.Map.Rules, World.LocalPlayer, "Speech", CurrentQueue.Info.OnHoldAudio, World.LocalPlayer.Faction.InternalName);
 				World.IssueOrder(Order.PauseProduction(CurrentQueue.Actor, icon.Name, true));
 			}
 
@@ -275,7 +272,6 @@ namespace OpenRA.Mods.Common.Widgets
 
 			// Directly cancel, skipping "on-hold"
 			Game.Sound.Play(SoundType.UI, TabClick);
-			Game.Sound.PlayNotification(World.Map.Rules, World.LocalPlayer, "Speech", CurrentQueue.Info.CancelledAudio, World.LocalPlayer.Faction.InternalName);
 			World.IssueOrder(Order.CancelProduction(CurrentQueue.Actor, icon.Name, handleCount));
 
 			return true;
@@ -400,8 +396,8 @@ namespace OpenRA.Mods.Common.Widgets
 				{
 					var first = icon.Queued[0];
 					clock.PlayFetchIndex(ClockSequence,
-						() => (first.TotalTimeActual - first.RemainingTimeActual)
-							* (clock.CurrentSequence.Length - 1) / first.TotalTimeActual);
+						() => (first.TotalTime - first.RemainingTime)
+							* (clock.CurrentSequence.Length - 1) / first.TotalTime);
 					clock.Tick();
 
 					WidgetUtils.DrawSHPCentered(clock.Image, icon.Pos + iconOffset, icon.IconClockPalette);
@@ -414,52 +410,32 @@ namespace OpenRA.Mods.Common.Widgets
 			foreach (var icon in icons.Values)
 			{
 				var total = icon.Queued.Count;
-				if (total > 0)
+
+				if (total <= 0)
+					continue;
+
+				var first = icon.Queued[0];
+				var waiting = !CurrentQueue.IsProducing(first) && !first.Done;
+				if (first.Done)
 				{
-					var first = icon.Queued[0];
-					var waiting = first != CurrentQueue.CurrentItem() && !first.Done;
-					var multiplier = 1f;
-
-					if (CurrentQueue.Info.ParallelBuild)
-					{
-						waiting = false;
-						var progressingQueue = new List<ProductionItem>();
-
-						foreach (var q in CurrentQueue.AllQueued())
-						{
-							if (progressingQueue.Find(i => i.Item == q.Item) == null && !q.Paused && !q.Done)
-							{
-								progressingQueue.Add(q);
-							}
-						}
-
-						if (progressingQueue.Count > 0)
-						{
-							multiplier = 1f / progressingQueue.Count;
-						}
-					}
-
-					if (first.Done)
-					{
-						if (ReadyTextStyle == ReadyTextStyleOptions.Solid || orderManager.LocalFrameNumber * worldRenderer.World.Timestep / 360 % 2 == 0)
-							overlayFont.DrawTextWithContrast(ReadyText, icon.Pos + readyOffset, Color.White, Color.Black, 1);
-						else if (ReadyTextStyle == ReadyTextStyleOptions.AlternatingColor)
-							overlayFont.DrawTextWithContrast(ReadyText, icon.Pos + readyOffset, ReadyTextAltColor, Color.Black, 1);
-					}
-					else if (first.Paused)
-						overlayFont.DrawTextWithContrast(HoldText,
-							icon.Pos + holdOffset,
-							Color.White, Color.Black, 1);
-					else if (!waiting)
-						overlayFont.DrawTextWithContrast(WidgetUtils.FormatTime((int)(first.RemainingTimeActual / multiplier), World.Timestep),
-							icon.Pos + timeOffset,
-							Color.White, Color.Black, 1);
-
-					if (total > 1 || waiting)
-						overlayFont.DrawTextWithContrast(total.ToString(),
-							icon.Pos + queuedOffset,
-							Color.White, Color.Black, 1);
+					if (ReadyTextStyle == ReadyTextStyleOptions.Solid || orderManager.LocalFrameNumber * worldRenderer.World.Timestep / 360 % 2 == 0)
+						overlayFont.DrawTextWithContrast(ReadyText, icon.Pos + readyOffset, Color.White, Color.Black, 1);
+					else if (ReadyTextStyle == ReadyTextStyleOptions.AlternatingColor)
+						overlayFont.DrawTextWithContrast(ReadyText, icon.Pos + readyOffset, ReadyTextAltColor, Color.Black, 1);
 				}
+				else if (first.Paused)
+					overlayFont.DrawTextWithContrast(HoldText,
+						icon.Pos + holdOffset,
+						Color.White, Color.Black, 1);
+				else if (!waiting)
+					overlayFont.DrawTextWithContrast(WidgetUtils.FormatTime(first.Queue.RemainingTimeActual(first), World.Timestep),
+						icon.Pos + timeOffset,
+						Color.White, Color.Black, 1);
+
+				if (total > 1 || waiting)
+					overlayFont.DrawTextWithContrast(total.ToString(),
+						icon.Pos + queuedOffset,
+						Color.White, Color.Black, 1);
 			}
 		}
 
