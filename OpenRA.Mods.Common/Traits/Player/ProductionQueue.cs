@@ -388,8 +388,11 @@ namespace OpenRA.Mods.Common.Traits
 				new FactionInit(BuildableInfo.GetInitialFaction(unit, Faction))
 			};
 
+			var bi = unit.TraitInfo<BuildableInfo>();
+			var type = (bi.BuildAtProductionType ?? Info.Type);
+
 			var sp = self.TraitsImplementing<Production>().FirstOrDefault(p => p.Info.Produces.Contains(Info.Type));
-			if (sp != null && !self.IsDisabled() && sp.Produce(self, unit, developerMode.AllTech ? null : Info.Type, inits))
+			if (sp != null && !self.IsDisabled() && sp.Produce(self, unit, type, inits))
 			{
 				FinishProduction();
 				return true;

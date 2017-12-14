@@ -112,7 +112,7 @@ namespace OpenRA.Mods.Common.Traits
 					new FactionInit(BuildableInfo.GetInitialFaction(unit, p.Trait.Faction))
 				};
 
-				if (p.Trait.Produce(p.Actor, unit, type, inits))
+				if (p.Trait.Produce(p.Actor, unit, (bi.BuildAtProductionType ?? Info.Type), inits))
 				{
 					FinishProduction();
 					return true;
