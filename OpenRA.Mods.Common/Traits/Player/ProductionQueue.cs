@@ -396,8 +396,11 @@ namespace OpenRA.Mods.Common.Traits
 				return true;
 			}
 
+			var bi = unit.TraitInfo<BuildableInfo>();
+			var type = (bi.BuildAtProductionType ?? Info.Type);
+
 			var sp = self.TraitsImplementing<Production>().FirstOrDefault(p => p.Info.Produces.Contains(Info.Type));
-			if (sp != null && !self.IsDisabled() && sp.Produce(self, unit, Faction))
+			if (sp != null && !self.IsDisabled() && sp.Produce(self, unit, type, Faction))
 			{
 				var item = Queue.FirstOrDefault(i => i.Item == unit.Name);
 

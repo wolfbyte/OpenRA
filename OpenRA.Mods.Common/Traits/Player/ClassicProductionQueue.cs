@@ -89,7 +89,7 @@ namespace OpenRA.Mods.Common.Traits
 			var bi = unit.TraitInfo<BuildableInfo>();
 
 			// Some units may request a specific production type, which is ignored if the AllTech cheat is enabled
-			var type = developerMode.AllTech ? Info.Type : bi.BuildAtProductionType ?? Info.Type;
+			var type = developerMode.AllTech ? null : (bi.BuildAtProductionType ?? Info.Type);
 
 			var producers = self.World.ActorsWithTrait<Production>()
 				.Where(x => x.Actor.Owner == self.Owner
@@ -105,7 +105,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			foreach (var p in producers.Where(p => !p.Actor.IsDisabled()))
 			{
-				if (p.Trait.Produce(p.Actor, unit, p.Trait.Faction))
+				if (p.Trait.Produce(p.Actor, unit, (bi.BuildAtProductionType ?? Info.Type), p.Trait.Faction))
 				{
 					var item = Queue.FirstOrDefault(i => i.Item == unit.Name);
 
