@@ -35,9 +35,8 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
-			// Conditional fixes being able to stop aircraft from resupplying.
-			if (IsCanceled && NextInQueue == null)
-				OnFirstRun(self);
+			if (resupplyActivities == null)
+				return NextActivity;
 
 			int cnt = 0;
 			for (int i = 0; i < resupplyActivities.Length; i++)
