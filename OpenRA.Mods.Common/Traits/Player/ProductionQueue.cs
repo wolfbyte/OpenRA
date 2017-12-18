@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -396,11 +397,17 @@ namespace OpenRA.Mods.Common.Traits
 				return true;
 			}
 
+			var inits = new TypeDictionary
+			{
+				new OwnerInit(self.Owner),
+				new FactionInit(BuildableInfo.GetInitialFaction(unit, Faction))
+			};
+
 			var bi = unit.TraitInfo<BuildableInfo>();
 			var type = (bi.BuildAtProductionType ?? Info.Type);
 
 			var sp = self.TraitsImplementing<Production>().FirstOrDefault(p => p.Info.Produces.Contains(Info.Type));
-			if (sp != null && !self.IsDisabled() && sp.Produce(self, unit, type, Faction))
+			if (sp != null && !self.IsDisabled() && sp.Produce(self, unit, type, inits))
 			{
 				var item = Queue.FirstOrDefault(i => i.Item == unit.Name);
 

@@ -12,6 +12,7 @@ using System.Drawing;
 using System.Linq;
 using OpenRA.Mods.Common;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.AS.Traits
@@ -76,8 +77,19 @@ namespace OpenRA.Mods.AS.Traits
 				var activated = false;
 
 				if (sp != null)
+				{
 					foreach (var name in info.Actors)
-						activated |= sp.Produce(self, self.World.Map.Rules.Actors[name.ToLowerInvariant()], info.Type, faction);
+					{
+						var ai = self.World.Map.Rules.Actors[name];
+						var inits = new TypeDictionary
+						{
+							new OwnerInit(self.Owner),
+							new FactionInit(BuildableInfo.GetInitialFaction(ai, faction))
+						};
+
+						activated |= sp.Produce(self, ai, info.Type, inits);
+					}
+				}
 
 				if (activated)
 					Game.Sound.PlayNotification(self.World.Map.Rules, self.Owner, "Speech", info.ReadyAudio, self.Owner.Faction.InternalName);

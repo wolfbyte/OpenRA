@@ -71,6 +71,12 @@ namespace OpenRA.Mods.Common.Traits
 			"The filename of the audio is defined per faction in notifications.yaml.",
 			"Defaults to what is set for the Queue actor built from.")]
 		public readonly string CancelledAudio = null;
+
+		public static string GetInitialFaction(ActorInfo ai, string defaultFaction)
+		{
+			var bi = ai.TraitInfoOrDefault<BuildableInfo>();
+			return bi != null ? bi.ForceFaction ?? defaultFaction : defaultFaction;
+		}
 	}
 
 	public class Buildable { }
