@@ -46,8 +46,8 @@ namespace OpenRA.Mods.Common.Graphics
 		{
 			var iz = 1 / wr.Viewport.Zoom;
 			var screenPos = wr.Screen3DPxPosition(pos);
-			var tl = screenPos + new float2(visualBounds.Left, visualBounds.Top);
-			var br = screenPos + new float2(visualBounds.Right, visualBounds.Bottom);
+			var tl = screenPos + new float3(visualBounds.Left, visualBounds.Top, 0);
+			var br = screenPos + new float3(visualBounds.Right, visualBounds.Bottom, 0);
 			var tr = new float3(br.X, tl.Y, screenPos.Z);
 			var bl = new float3(tl.X, br.Y, screenPos.Z);
 			var u = new float2(4 * iz, 0);

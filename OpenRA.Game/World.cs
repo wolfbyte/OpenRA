@@ -391,7 +391,7 @@ namespace OpenRA
 				// Hash fields marked with the ISync interface.
 				foreach (var actor in ActorsHavingTrait<ISync>())
 					foreach (var syncHash in actor.SyncHashes)
-						ret += n++ * (int)(1 + actor.ActorID) * syncHash.Hash;
+						ret += n++ * (int)(1 + actor.ActorID) * syncHash.Hash();
 
 				// Hash game state relevant effects such as projectiles.
 				foreach (var sync in SyncedEffects)
@@ -467,6 +467,6 @@ namespace OpenRA
 		public bool Equals(TraitPair<T> other) { return this == other; }
 		public override bool Equals(object obj) { return obj is TraitPair<T> && Equals((TraitPair<T>)obj); }
 
-		public override string ToString() { return "{0}->{1}".F(Actor.Info.Name, Trait.GetType().Name); }
+		public override string ToString() { return Actor.Info.Name + "->" + Trait.GetType().Name; }
 	}
 }
