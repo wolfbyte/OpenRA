@@ -29,7 +29,7 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Whether to prevent autotargeting this actor while it is being captured by an ally.")]
 		public readonly bool PreventsAutoTarget = true;
 
-		public bool FrozenCanBeTargetedBy(Actor captor, Player owner)
+		public bool CanBeTargetedBy(Actor captor, Player owner)
 		{
 			var c = captor.Info.TraitInfoOrDefault<ExternalCapturesInfo>();
 			if (c == null)
