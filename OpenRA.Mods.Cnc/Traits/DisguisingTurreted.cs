@@ -35,7 +35,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 			intendedTurretOffset = disguise.TurretOffsets.First();
 		}
 
-		public override void Tick(Actor self)
+		protected override void Tick(Actor self)
 		{
 			if (disguise.TurretOffsets.First() != intendedTurretOffset)
 			{
