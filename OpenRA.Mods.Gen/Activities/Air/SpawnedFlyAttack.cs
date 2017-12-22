@@ -29,8 +29,8 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 		readonly Target target;
 		readonly Aircraft aircraft;
 		readonly AttackPlane attackPlane;
-		readonly AmmoPool[] ammoPools;
 
+		readonly bool autoReloads;
 		int ticksUntilTurn;
 
 		public SpawnedFlyAttack(Actor self, Target target)
@@ -38,8 +38,8 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 			this.target = target;
 			aircraft = self.Trait<Aircraft>();
 			attackPlane = self.TraitOrDefault<AttackPlane>();
-			ammoPools = self.TraitsImplementing<AmmoPool>().ToArray();
 			ticksUntilTurn = attackPlane.AttackPlaneInfo.AttackTurnDelay;
+			autoReloads = self.TraitsImplementing<AmmoPool>().All(p => p.AutoReloads);
 		}
 
 		public override Activity Tick(Actor self)
@@ -47,13 +47,9 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 			if (!target.IsValidFor(self))
 				return NextActivity;
 
-			// TODO: This should check whether there is ammo left that is actually suitable for the target
-			if (ammoPools.All(x => !x.Info.SelfReloads && !x.HasAmmo()))
-			{
-				// We let the spawned to move closer then Enter.
-				// If we just let it enter, it "slides on the ground", targetable by ground units.
-				self.Trait<CarrierSlave>().EnterSpawner(self);
-			}
+			// If all valid weapons have depleted their ammo and RearmBuilding is defined, return to RearmBuilding to reload and then resume the activity
+			if (!autoReloads && aircraft.Info.RearmBuildings.Any() && attackPlane.Armaments.All(x => x.IsTraitPaused || !x.Weapon.IsValidAgainst(target, self.World, self)))
+				return ActivityUtils.SequenceActivities(new ReturnToBase(self, aircraft.Info.AbortOnResupply), this);
 
 			if (attackPlane != null)
 				attackPlane.DoAttack(self, target);

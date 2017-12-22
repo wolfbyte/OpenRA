@@ -279,7 +279,6 @@ namespace OpenRA.Mods.Common.Widgets
 			{
 				// Queue a new item
 				Game.Sound.Play(SoundType.UI, TabClick);
-				Game.Sound.PlayNotification(World.Map.Rules, World.LocalPlayer, "Speech", CurrentQueue.Info.QueuedAudio, World.LocalPlayer.Faction.InternalName);
 				World.IssueOrder(Order.StartProduction(CurrentQueue.Actor, icon.Name, handleCount));
 				return true;
 			}
@@ -297,13 +296,11 @@ namespace OpenRA.Mods.Common.Widgets
 			if (item.Paused || item.Done || item.TotalCost == item.RemainingCost)
 			{
 				// Instant cancel of things we have not started yet and things that are finished
-				Game.Sound.PlayNotification(World.Map.Rules, World.LocalPlayer, "Speech", CurrentQueue.Info.CancelledAudio, World.LocalPlayer.Faction.InternalName);
 				World.IssueOrder(Order.CancelProduction(CurrentQueue.Actor, icon.Name, handleCount));
 			}
 			else
 			{
 				// Pause an existing item
-				Game.Sound.PlayNotification(World.Map.Rules, World.LocalPlayer, "Speech", CurrentQueue.Info.OnHoldAudio, World.LocalPlayer.Faction.InternalName);
 				World.IssueOrder(Order.PauseProduction(CurrentQueue.Actor, icon.Name, true));
 			}
 
@@ -317,7 +314,6 @@ namespace OpenRA.Mods.Common.Widgets
 
 			// Directly cancel, skipping "on-hold"
 			Game.Sound.Play(SoundType.UI, TabClick);
-			Game.Sound.PlayNotification(World.Map.Rules, World.LocalPlayer, "Speech", CurrentQueue.Info.CancelledAudio, World.LocalPlayer.Faction.InternalName);
 			World.IssueOrder(Order.CancelProduction(CurrentQueue.Actor, icon.Name, handleCount));
 
 			return true;
@@ -440,8 +436,8 @@ namespace OpenRA.Mods.Common.Widgets
 				{
 					var first = icon.Queued[0];
 					clock.PlayFetchIndex(ClockSequence,
-						() => (first.TotalTimeActual - first.RemainingTimeActual)
-							* (clock.CurrentSequence.Length - 1) / first.TotalTimeActual);
+						() => (first.TotalTime - first.RemainingTime)
+							* (clock.CurrentSequence.Length - 1) / first.TotalTime);
 					clock.Tick();
 
 					WidgetUtils.DrawSHPCentered(clock.Image, icon.Pos + iconOffset, icon.IconClockPalette);
@@ -470,7 +466,7 @@ namespace OpenRA.Mods.Common.Widgets
 							icon.Pos + holdOffset,
 							Color.White, Color.Black, 1);
 					else if (!waiting && DrawTime)
-						overlayFont.DrawTextWithContrast(WidgetUtils.FormatTime(first.RemainingTimeActual, World.Timestep),
+						overlayFont.DrawTextWithContrast(WidgetUtils.FormatTime(first.RemainingTime, World.Timestep),
 							icon.Pos + timeOffset,
 							Color.White, Color.Black, 1);
 

@@ -116,17 +116,17 @@ namespace OpenRA.Mods.Yupgi_alert.Warheads
 		{
 			var capturable = victim.TraitsImplementing<Capturable>().ToArray();
 			var activeCapturable = capturable.FirstOrDefault(c => !c.IsTraitDisabled);
-			if (activeCapturable == null || !CaptureTypes.Contains(activeCapturable.Info.Type))
+			if (activeCapturable == null || !CaptureTypes.Overlaps(activeCapturable.Info.Types))
 				return false;
 
 			var playerRelationship = victim.Owner.Stances[firedBy.Owner];
-			if (playerRelationship == Stance.Ally && !activeCapturable.Info.AllowAllies)
+			if (playerRelationship == Stance.Ally && !activeCapturable.Info.ValidStances.HasStance(Stance.Ally))
 				return false;
 
-			if (playerRelationship == Stance.Enemy && !activeCapturable.Info.AllowEnemies)
+			if (playerRelationship == Stance.Enemy && !activeCapturable.Info.ValidStances.HasStance(Stance.Enemy))
 				return false;
 
-			if (playerRelationship == Stance.Neutral && !activeCapturable.Info.AllowNeutral)
+			if (playerRelationship == Stance.Neutral && !activeCapturable.Info.ValidStances.HasStance(Stance.Neutral))
 				return false;
 
 			return base.IsValidAgainst(victim, firedBy);
