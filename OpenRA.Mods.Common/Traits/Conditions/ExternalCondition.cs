@@ -211,15 +211,14 @@ namespace OpenRA.Mods.Common.Traits
 				return false;
 
 			object longestObject = null;
-			TimedToken longestToken = null;
+			TimedToken longestToken = timedTokens.FirstOrDefault();
 
-			foreach (var pair in timedTokens)
-				foreach (var tt in pair.Value)
-					if (longestObject == null || longestToken.Expires < tt.Expires)
-					{
-						longestObject = pair.Key;
-						longestToken = tt;
-					}
+			foreach (var tt in timedTokens)
+				if (longestObject == null || longestToken.Expires < tt.Expires)
+				{
+					longestObject = tt.Source;
+					longestToken = tt;
+				}
 
 			// Second, we remove timed token, with the longest life span.
 			return TryRevokeCondition(self, longestObject, longestToken.Token);

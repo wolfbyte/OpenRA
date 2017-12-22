@@ -377,6 +377,10 @@ namespace OpenRA.Mods.Common.Traits
 							return;
 					}
 
+					var queuedAudio = bi.QueuedAudio != null ? bi.QueuedAudio : Info.QueuedAudio;
+
+					Game.Sound.PlayNotification(rules, self.Owner, "Speech", queuedAudio, self.Owner.Faction.InternalName);
+
 					var valued = unit.TraitInfoOrDefault<ValuedInfo>();
 					var cost = valued != null ? valued.Cost : 0;
 					var time = GetBuildTime(unit, bi);
@@ -387,13 +391,14 @@ namespace OpenRA.Mods.Common.Traits
 						BeginProduction(new ProductionItem(this, order.TargetString, cost, playerPower, () => self.World.AddFrameEndTask(_ =>
 						{
 							var isBuilding = unit.HasTraitInfo<BuildingInfo>();
+							var readyAudio = bi.ReadyAudio != null ? bi.ReadyAudio : Info.ReadyAudio;
 
 							if (isBuilding && !hasPlayedSound)
-								hasPlayedSound = Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.ReadyAudio, self.Owner.Faction.InternalName);
+								hasPlayedSound = Game.Sound.PlayNotification(rules, self.Owner, "Speech", readyAudio, self.Owner.Faction.InternalName);
 							else if (!isBuilding)
 							{
 								if (BuildUnit(unit))
-									Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.ReadyAudio, self.Owner.Faction.InternalName);
+									Game.Sound.PlayNotification(rules, self.Owner, "Speech", readyAudio, self.Owner.Faction.InternalName);
 								else if (!hasPlayedSound && time > 0)
 									hasPlayedSound = Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.BlockedAudio, self.Owner.Faction.InternalName);
 							}
@@ -402,11 +407,24 @@ namespace OpenRA.Mods.Common.Traits
 
 					break;
 				case "PauseProduction":
+
+					var unit2 = rules.Actors[order.TargetString];
+					var bi2 = unit2.TraitInfo<BuildableInfo>();
+
+					var onHoldAudio = bi2.OnHoldAudio != null ? bi2.OnHoldAudio : Info.OnHoldAudio; 
+
+					Game.Sound.PlayNotification(rules, self.Owner, "Speech", onHoldAudio, self.Owner.Faction.InternalName);
 					if (queue.Count > 0 && queue[0].Item == order.TargetString)
 						queue[0].Pause(order.ExtraData != 0);
 
 					break;
 				case "CancelProduction":
+					var unit3 = rules.Actors[order.TargetString];
+					var bi3 = unit3.TraitInfo<BuildableInfo>();
+
+					var cancelledAudio = bi3.CancelledAudio != null ? bi3.CancelledAudio : Info.CancelledAudio; 
+
+					Game.Sound.PlayNotification(rules, self.Owner, "Speech", cancelledAudio, self.Owner.Faction.InternalName);
 					CancelProduction(order.TargetString, order.ExtraData);
 					break;
 			}

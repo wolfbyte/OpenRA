@@ -148,7 +148,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (target.Type == TargetType.FrozenActor)
 				return null;
 
-			return new Order(order.OrderID, self, queued) { TargetActor = target.Actor };
+			return new Order(order.OrderID, self, target, queued);
 		}
 
 		// Does the player own enough nydus canals?
