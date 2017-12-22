@@ -124,16 +124,17 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				// TODO: This doesn't account for disabled traits.
 				// Actors with FrozenUnderFog should not disable the Capturable trait.
-				var c = target.Info.TraitInfoOrDefault<CapturableInfo>();
+				var capturable = target.Info.TraitInfos<CapturableInfo>().ToArray();
+				var activeCapturable = capturable.FirstOrDefault(c => c.CanBeTargetedBy(self, target.Owner));
 
-				if (c == null || !c.CanBeTargetedBy(self, target.Owner))
+				if (activeCapturable == null)
 				{
 					cursor = capturesInfo.EnterCursor;
 					return false;
 				}
 
 				var health = target.Info.TraitInfoOrDefault<HealthInfo>();
-				var lowEnoughHealth = target.HP <= activeCapturable.Info.CaptureThreshold * health.HP / 100;
+				var lowEnoughHealth = target.HP <= activeCapturable.CaptureThreshold * health.HP / 100;
 
 				cursor = !capturesInfo.Sabotage || lowEnoughHealth || target.Owner.NonCombatant
 					? capturesInfo.EnterCursor : capturesInfo.SabotageCursor;
