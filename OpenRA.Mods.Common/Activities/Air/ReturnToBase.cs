@@ -156,7 +156,7 @@ namespace OpenRA.Mods.Common.Activities
 			{
 				Queue(ActivityUtils.SequenceActivities(
 					new Fly(self, Target.FromActor(dest), WDist.Zero, aircraft.Info.WaitDistanceFromResupplyBase),
-					new FlyCircleTimed(self, aircraft.Info.NumberOfTicksToVerifyAvailableAirport),
+					new FlyCircle(self, aircraft.Info.NumberOfTicksToVerifyAvailableAirport),
 					new ReturnToBase(self, abortOnResupply, null, alwaysLand)));
 				return NextActivity;
 			}

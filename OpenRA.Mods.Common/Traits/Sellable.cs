@@ -88,7 +88,7 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				if (first)
 				{
-					ma.Reverse(self, new Sell(self), false);
+					ma.Reverse(self, new Sell(self, info.ShowTicks), false);
 					first = false;
 				}
 				else

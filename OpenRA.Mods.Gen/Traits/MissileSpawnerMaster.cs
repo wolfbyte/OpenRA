@@ -13,6 +13,8 @@
 #endregion
 
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Yupgi_alert.Activities;
 using OpenRA.Traits;
@@ -53,13 +55,9 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 	public class MissileSpawnerMaster : BaseSpawnerMaster, IPips, ITick, INotifyAttack
 	{
-		// readonly Dictionary<string, Stack<int>> spawnContainTokens = new Dictionary<string, Stack<int>>();
-
 		public new MissileSpawnerMasterInfo Info { get; private set; }
 
-		ConditionManager conditionManager;
-
-		// Stack<int> loadedTokens = new Stack<int>();
+		ExternalCondition[] externalConditions;
 
 		int respawnTicks = 0;
 
@@ -71,7 +69,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		protected override void Created(Actor self)
 		{
 			base.Created(self);
-			conditionManager = self.Trait<ConditionManager>();
+
+			externalConditions = self.TraitsImplementing<ExternalCondition>().ToArray();
 		}
 
 		public override void OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)
@@ -102,8 +101,17 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				return;
 
 			// Launching condition is timed, so not saving the token.
+
 			if (Info.LaunchingCondition != null)
-				conditionManager.GrantCondition(self, Info.LaunchingCondition, Info.LaunchingTicks);
+			{
+				var external = externalConditions
+					.FirstOrDefault(t => t.Info.Condition == Info.LaunchingCondition && t.CanGrantCondition(self, this));
+
+				if (external == null)
+					throw new InvalidDataException("Condition `{0}` has not been listed on an enabled ExternalCondition trait".F(Info.LaunchingCondition));
+
+				external.GrantCondition(self, Info.LaunchingCondition, Info.LaunchingTicks);
+			}
 
 			// Program the trajectory.
 			var sbm = se.Actor.Trait<ShootableBallisticMissile>();

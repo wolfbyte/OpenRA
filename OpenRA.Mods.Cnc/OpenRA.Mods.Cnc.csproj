@@ -114,7 +114,6 @@
     <Compile Include="Traits\Cloneable.cs" />
     <Compile Include="Traits\Disguise.cs" />
     <Compile Include="Traits\DisguisingTurreted.cs" />
-    <Compile Include="Traits\Conditions\GrantConditionByDisguisedActor.cs" />
     <Compile Include="Traits\EnergyWall.cs" />
     <Compile Include="Traits\FrozenUnderFogUpdatedByGps.cs" />
     <Compile Include="Traits\HarvesterHuskModifier.cs" />

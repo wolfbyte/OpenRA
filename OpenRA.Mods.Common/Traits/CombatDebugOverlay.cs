@@ -30,7 +30,7 @@ namespace OpenRA.Mods.Common.Traits
 		static readonly WVec TargetPosHLine = new WVec(0, 128, 0);
 		static readonly WVec TargetPosVLine = new WVec(128, 0, 0);
 
-		readonly DeveloperMode devMode;
+		readonly DebugVisualizations debugVis;
 		readonly IHealthInfo healthInfo;
 		readonly Lazy<BodyOrientation> coords;
 
@@ -43,7 +43,7 @@ namespace OpenRA.Mods.Common.Traits
 			coords = Exts.Lazy(self.Trait<BodyOrientation>);
 
 			var localPlayer = self.World.LocalPlayer;
-			devMode = localPlayer != null ? localPlayer.PlayerActor.Trait<DeveloperMode>() : null;
+			debugVis = self.World.WorldActor.TraitOrDefault<DebugVisualizations>();
 		}
 
 		void INotifyCreated.Created(Actor self)
@@ -54,7 +54,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		void IRenderAboveWorld.RenderAboveWorld(Actor self, WorldRenderer wr)
 		{
-			if (devMode == null || !devMode.ShowCombatGeometry)
+			if (debugVis == null || !debugVis.CombatGeometry)
 				return;
 
 			var wcr = Game.Renderer.WorldRgbaColorRenderer;
@@ -135,7 +135,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		void INotifyDamage.Damaged(Actor self, AttackInfo e)
 		{
-			if (devMode == null || !devMode.ShowCombatGeometry || e.Damage.Value == 0)
+			if (debugVis == null || !debugVis.CombatGeometry || e.Damage.Value == 0)
 				return;
 
 			if (healthInfo == null)

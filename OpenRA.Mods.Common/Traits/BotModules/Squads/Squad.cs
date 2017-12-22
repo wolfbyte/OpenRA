@@ -99,7 +99,7 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 			CPos cdest = World.Map.CellContaining(dest);
 
 			foreach (var a in Units)
-				Bot.QueueOrder(new Order("Move", a, false) { TargetLocation = cdest });
+				Bot.QueueOrder(new Order("Move", a, Target.FromCell(World, cdest), false));
 		}
 
 		internal void Damage(AttackInfo e)

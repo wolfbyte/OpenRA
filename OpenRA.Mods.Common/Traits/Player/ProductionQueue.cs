@@ -393,6 +393,10 @@ namespace OpenRA.Mods.Common.Traits
 							return;
 					}
 
+					var queuedAudio = bi.QueuedAudio != null ? bi.QueuedAudio : Info.QueuedAudio;
+
+					Game.Sound.PlayNotification(rules, self.Owner, "Speech", queuedAudio, self.Owner.Faction.InternalName);
+
 					var valued = unit.TraitInfoOrDefault<ValuedInfo>();
 					var cost = valued != null ? valued.Cost : 0;
 					var time = GetBuildTime(unit, bi);
@@ -403,13 +407,14 @@ namespace OpenRA.Mods.Common.Traits
 						BeginProduction(new ProductionItem(this, order.TargetString, cost, playerPower, () => self.World.AddFrameEndTask(_ =>
 						{
 							var isBuilding = unit.HasTraitInfo<BuildingInfo>();
+							var readyAudio = bi.ReadyAudio != null ? bi.ReadyAudio : Info.ReadyAudio;
 
 							if (isBuilding && !hasPlayedSound)
-								hasPlayedSound = Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.ReadyAudio, self.Owner.Faction.InternalName);
+								hasPlayedSound = Game.Sound.PlayNotification(rules, self.Owner, "Speech", readyAudio, self.Owner.Faction.InternalName);
 							else if (!isBuilding)
 							{
 								if (BuildUnit(unit))
-									Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.ReadyAudio, self.Owner.Faction.InternalName);
+									Game.Sound.PlayNotification(rules, self.Owner, "Speech", readyAudio, self.Owner.Faction.InternalName);
 								else if (!hasPlayedSound && time > 0)
 									hasPlayedSound = Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.BlockedAudio, self.Owner.Faction.InternalName);
 							}
@@ -419,7 +424,6 @@ namespace OpenRA.Mods.Common.Traits
 					break;
 				case "PauseProduction":
 					PauseProduction(order.TargetString, order.ExtraData != 0);
-
 					break;
 				case "CancelProduction":
 					CancelProduction(order.TargetString, order.ExtraData);
@@ -445,6 +449,13 @@ namespace OpenRA.Mods.Common.Traits
 
 		protected void PauseProduction(string itemName, bool paused)
 		{
+			var rules = self.World.Map.Rules;
+			var unit = rules.Actors[itemName];
+			var bi = unit.TraitInfo<BuildableInfo>();
+
+			var onHoldAudio = bi.OnHoldAudio != null ? bi.OnHoldAudio : Info.OnHoldAudio; 
+
+			Game.Sound.PlayNotification(rules, self.Owner, "Speech", onHoldAudio, self.Owner.Faction.InternalName);
 			var item = Queue.FirstOrDefault(a => a.Item == itemName);
 			if (item != null)
 				item.Pause(paused);
@@ -452,6 +463,13 @@ namespace OpenRA.Mods.Common.Traits
 
 		protected void CancelProduction(string itemName, uint numberToCancel)
 		{
+			var rules = self.World.Map.Rules;
+			var unit = rules.Actors[itemName];
+			var bi = unit.TraitInfo<BuildableInfo>();
+
+			var cancelledAudio = bi.CancelledAudio != null ? bi.CancelledAudio : Info.CancelledAudio; 
+
+			Game.Sound.PlayNotification(rules, self.Owner, "Speech", cancelledAudio, self.Owner.Faction.InternalName);
 			for (var i = 0; i < numberToCancel; i++)
 				if (!CancelProductionInner(itemName))
 					break;
