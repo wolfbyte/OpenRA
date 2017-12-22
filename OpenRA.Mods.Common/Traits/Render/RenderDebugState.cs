@@ -28,7 +28,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 
 	class RenderDebugState : INotifyAddedToWorld, INotifyOwnerChanged, INotifyCreated, IRenderAboveShroudWhenSelected
 	{
-		readonly DeveloperMode devMode;
+		readonly DebugVisualizations debugVis;
 		readonly SpriteFont font;
 		readonly Actor self;
 		readonly WVec offset;
@@ -47,8 +47,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 			color = GetColor();
 			font = Game.Renderer.Fonts[info.Font];
 
-			var localPlayer = self.World.LocalPlayer;
-			devMode = localPlayer != null ? localPlayer.PlayerActor.Trait<DeveloperMode>() : null;
+			debugVis = self.World.WorldActor.TraitOrDefault<DebugVisualizations>();
 		}
 
 		void INotifyCreated.Created(Actor self)
@@ -73,7 +72,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 
 		IEnumerable<IRenderable> IRenderAboveShroudWhenSelected.RenderAboveShroud(Actor self, WorldRenderer wr)
 		{
-			if (devMode == null || !devMode.ShowActorTags)
+			if (debugVis == null || !debugVis.ActorTags)
 				yield break;
 
 			yield return new TextRenderable(font, self.CenterPosition - offset, 0, color, tagString);

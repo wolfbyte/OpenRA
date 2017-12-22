@@ -309,7 +309,7 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 		void Flee(Squad owner, Actor a)
 		{
 			var safePoint = AirFleeState.CalcSafePoint(owner, owner.CenterLocation, EnemyStaticAAs(owner));
-			owner.Bot.QueueOrder(new Order("Move", a, false) { TargetLocation = safePoint });
+			owner.Bot.QueueOrder(new Order("Move", a, Target.FromCell(owner.World, safePoint), false));
 			owner.Bot.QueueOrder(new Order("ReturnToBase", a, true));
 		}
 

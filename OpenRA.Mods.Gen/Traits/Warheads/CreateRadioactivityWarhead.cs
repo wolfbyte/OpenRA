@@ -80,8 +80,8 @@ namespace OpenRA.Mods.Yupgi_alert.Warheads
 
 			if (world.LocalPlayer != null)
 			{
-				var devMode = world.LocalPlayer.PlayerActor.TraitOrDefault<DeveloperMode>();
-				if (devMode != null && devMode.ShowCombatGeometry)
+				var debugVis = world.LocalPlayer.PlayerActor.TraitOrDefault<DebugVisualizations>();
+				if (debugVis != null && debugVis.CombatGeometry)
 				{
 					WDist[] rng = Exts.MakeArray(Range.Length, i => WDist.FromCells(Range[i]));
 					world.WorldActor.Trait<WarheadDebugOverlay>().AddImpact(pos, rng, DebugOverlayColor);

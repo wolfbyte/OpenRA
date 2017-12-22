@@ -89,8 +89,8 @@ namespace OpenRA.Mods.Common.Traits
 
 		public WVec DisguiseOffset = WVec.Zero;
 
-		public WVec Offset { get { return info.Offset + DisguiseOffset + localOffset; } }
-		public string Name { get { return info.Turret; } }
+		public WVec Offset { get { return Info.Offset + DisguiseOffset + localOffset; } }
+		public string Name { get { return Info.Turret; } }
 
 		public static Func<int> TurretFacingFromInit(IActorInitializer init, int def, string turret = null)
 		{
