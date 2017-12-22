@@ -141,6 +141,9 @@ namespace OpenRA.Mods.Cnc.Traits
 		{
 			get
 			{
+				if (IsTraitDisabled)
+					yield break;
+
 				yield return new DisguiseOrderTargeter(info);
 			}
 		}
