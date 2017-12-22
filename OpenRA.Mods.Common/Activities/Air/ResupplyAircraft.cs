@@ -30,7 +30,22 @@ namespace OpenRA.Mods.Common.Activities
 			if (host == null)
 				return;
 
-			resupplyActivities = aircraft.GetResupplyActivities(host).ToArray();
+			if (!aircraft.Info.TakeOffOnResupply)
+			{
+				resupplyActivities = aircraft.GetResupplyActivities(host)
+					.Append(new AllowYieldingReservation(self))
+					.Append(new WaitFor(() => NextInQueue != null || aircraft.ReservedActor == null))
+					.ToArray();
+			}
+			else
+			{
+				// HACK: Append NextInQueue to TakeOff to avoid moving to the Rallypoint (if NextInQueue is non-null).
+				resupplyActivities = aircraft.GetResupplyActivities(host)
+					.Append(new AllowYieldingReservation(self))
+					.Append(new TakeOff(self))
+					.Append(NextInQueue)
+					.ToArray();
+			}
 		}
 
 		public override Activity Tick(Actor self)
