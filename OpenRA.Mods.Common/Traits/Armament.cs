@@ -209,9 +209,6 @@ namespace OpenRA.Mods.Common.Traits
 		public virtual Barrel CheckFire(Actor self, IFacing facing, Target target)
 		{
 			if (IsReloading || IsTraitPaused)
-				return false;
-
-			if (ammoPool != null && !ammoPool.HasAmmo())
 				return null;
 
 			if (turret != null && !turret.HasAchievedDesiredFacing)

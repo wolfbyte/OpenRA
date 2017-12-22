@@ -52,16 +52,19 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public object Create(ActorInitializer init) { return new StructureChrono(this); }
 	}
 
-	class StructureChrono : IIssueOrder, IResolveOrder, ITick, ISelectionBar, IOrderVoice, ISync
+	class StructureChrono : IIssueOrder, IResolveOrder, ITick, ISelectionBar, IOrderVoice, ISync, IWorldLoaded
 	{
 		[Sync]
 		int chargeTick = 0;
 		public readonly StructureChronoInfo Info;
+		WorldRenderer worldRenderer;
 
 		public StructureChrono(StructureChronoInfo info)
 		{
 			Info = info;
 		}
+		
+		void IWorldLoaded.WorldLoaded(World w, WorldRenderer wr) { worldRenderer = wr; }
 
 		public void Tick(Actor self)
 		{
@@ -83,13 +86,13 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (order.OrderID == "StructureChronoDeploy" && CanTeleport)
 			{
 				// Assuming I'm a building.
-				self.World.OrderGenerator = new StructureChronoOrderGenerator(self, Info);
+				self.World.OrderGenerator = new StructureChronoOrderGenerator(self, Info, worldRenderer);
 			}
 
 			if (order.OrderID == "StructureChronoTeleport")
-				return new Order(order.OrderID, self, queued) { TargetLocation = self.World.Map.CellContaining(target.CenterPosition) };
+				return new Order(order.OrderID, self, Target.FromCell(self.World, self.World.Map.CellContaining(target.CenterPosition)), queued);
 
-			return new Order(order.OrderID, self, queued) { TargetActor = target.Actor };
+			return new Order(order.OrderID, self, target, queued);
 		}
 
 		public void ResolveOrder(Actor self, Order order)
@@ -194,6 +197,9 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 	{
 		readonly string building; // name in rules definition
 		readonly BuildingInfo buildingInfo;
+		readonly Viewport viewport;
+		readonly WVec centerOffset;
+		readonly int2 topLeftScreenOffset;
 		readonly Sprite buildOk;
 		readonly Sprite buildBlocked;
 		readonly Actor self;
@@ -202,13 +208,16 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		IActorPreview[] preview;
 		bool initialized;
 
-		public StructureChronoOrderGenerator(Actor self, StructureChronoInfo info)
+		public StructureChronoOrderGenerator(Actor self, StructureChronoInfo info, WorldRenderer worldRenderer)
 		{
 			var world = self.World;
 			this.self = self;
 			this.info = info;
 
 			buildingInfo = self.Info.TraitInfo<BuildingInfo>();
+			viewport = worldRenderer.Viewport;
+			centerOffset = buildingInfo.CenterOffset(world);
+			topLeftScreenOffset = -worldRenderer.ScreenPxOffset(centerOffset);
 			var map = world.Map;
 			var tileset = world.Map.Tileset.ToLowerInvariant();
 			buildOk = map.Rules.Sequences.GetSequence("overlay", "build-valid-{0}".F(tileset)).GetSprite(0);
@@ -238,7 +247,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				&& self.Trait<StructureChrono>().CanTeleport && self.Owner.Shroud.IsExplored(cell))
 			{
 				world.CancelInputMode();
-				yield return new Order("StructureChronoTeleport", self, mi.Modifiers.HasModifier(Modifiers.Shift)) { TargetLocation = cell };
+				yield return new Order("StructureChronoTeleport", self, Target.FromCell(world, cell), mi.Modifiers.HasModifier(Modifiers.Shift));
 			}
 		}
 
@@ -250,7 +259,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			var owner = self.Owner;
 			if (mi.Button == MouseButton.Left)
 			{
-				var topLeft = cell - buildingInfo.LocationOffset();
+				var topLeft = viewport.ViewToWorld(Viewport.LastMousePos + topLeftScreenOffset);
 				var selfPos = self.Trait<IOccupySpace>().TopLeft;
 				var isCloseEnough = (topLeft - selfPos).Length <= info.MaxDistance;
 
@@ -287,14 +296,13 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				Color.FromArgb(128, Color.LawnGreen),
 				Color.FromArgb(96, Color.Black));
 
-			var xy = wr.Viewport.ViewToWorld(Viewport.LastMousePos);
-			var topLeft = xy - buildingInfo.LocationOffset();
-			var offset = world.Map.CenterOfCell(topLeft) + buildingInfo.CenterOffset(world);
+			var topLeft = viewport.ViewToWorld(Viewport.LastMousePos + topLeftScreenOffset);
+			var centerPosition = world.Map.CenterOfCell(topLeft) + centerOffset;
 			var rules = world.Map.Rules;
 
 			var actorInfo = self.Info; // rules.Actors[building];
 			foreach (var dec in actorInfo.TraitInfos<IPlaceBuildingDecorationInfo>())
-				foreach (var r in dec.Render(wr, world, actorInfo, offset))
+				foreach (var r in dec.Render(wr, world, actorInfo, centerPosition))
 					yield return r;
 
 			// Cells, we are about to construct and occupy.
@@ -321,7 +329,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			}
 
 			var previewRenderables = preview
-				.SelectMany(p => p.Render(wr, offset))
+				.SelectMany(p => p.Render(wr, centerPosition))
 				.OrderBy(WorldRenderer.RenderableScreenZPositionComparisonKey);
 
 			foreach (var r in previewRenderables)
@@ -367,9 +375,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				if (availableCells.Count == 0)
 					continue;
 
-				yield return new Order("Move", blocker.Actor, false)
+				yield return new Order("Move", blocker.Actor, Target.FromCell(world, blocker.Actor.ClosestCell(availableCells)), false)
 				{
-					TargetLocation = blocker.Actor.ClosestCell(availableCells),
 					SuppressVisualFeedback = true
 				};
 			}
