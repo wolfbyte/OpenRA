@@ -121,7 +121,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			get { return Util.ApplyPercentageModifiers(Info.Speed, speedModifiers); }
 		}
 
-		public IEnumerable<Pair<CPos, SubCell>> OccupiedCells() { return NoCells; }
+		public Pair<CPos, SubCell>[] OccupiedCells() { return NoCells; }
 
 		public WVec FlyStep(int facing)
 		{
@@ -272,10 +272,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
 		{
 			if (order.OrderID == "Enter")
-				return new Order(order.OrderID, self, queued) { TargetActor = target.Actor };
+				return new Order(order.OrderID, self, target, queued );
 
 			if (order.OrderID == "Move")
-				return new Order(order.OrderID, self, queued) { TargetLocation = self.World.Map.CellContaining(target.CenterPosition) };
+				return new Order(order.OrderID, self, Target.FromCell(self.World, self.World.Map.CellContaining(target.CenterPosition)), queued );
 
 			return null;
 		}

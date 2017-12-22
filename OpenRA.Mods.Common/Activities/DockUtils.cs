@@ -24,7 +24,7 @@ namespace OpenRA.Mods.Common.Activities
 			var air = client.TraitOrDefault<Aircraft>();
 			if (air != null)
 			{
-				if (air.IsPlane)
+				if (!air.Info.VTOL)
 				{
 					// Let's reload. The assumption here is that for aircrafts, there are no waiting docks.
 					System.Diagnostics.Debug.Assert(requester is ReturnToBase, "Wrong parameter for landing");
@@ -55,7 +55,7 @@ namespace OpenRA.Mods.Common.Activities
 			var air = client.TraitOrDefault<Aircraft>();
 			if (air != null)
 			{
-				if (air.IsPlane)
+				if (!air.Info.VTOL)
 				{
 					// ResupplyAircraft handles this.
 					// Take off and move to RP.
