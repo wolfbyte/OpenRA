@@ -9,12 +9,9 @@
  */
 #endregion
 
-<<<<<<< HEAD
 using System;
 using System.Collections.Generic;
 using System.Linq;
-=======
->>>>>>> Update TransformOnCapture
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Traits;
 
@@ -67,6 +64,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			var externalCapturesInfo = captor.Info.TraitInfoOrDefault<ExternalCapturesInfo>();
 			if (externalCapturesInfo != null && info.CaptureTypes.Overlaps(externalCapturesInfo.CaptureTypes))
+				return true;
 
 			return false;
 		}

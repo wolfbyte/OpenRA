@@ -29,7 +29,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public override object Create(ActorInitializer init) { return new Capturable(this); }
 
-		public bool FrozenCanBeTargetedBy(Actor captor, Player owner)
+		public bool CanBeTargetedBy(Actor captor, Player owner)
 		{
 			var c = captor.Info.TraitInfoOrDefault<CapturesInfo>();
 			if (c == null)
