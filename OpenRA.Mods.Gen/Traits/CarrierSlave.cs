@@ -86,7 +86,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (ammoPools.Length == 0)
 				return false;
 
-			return ammoPools.All(x => !x.Info.SelfReloads && !x.HasAmmo());
+			return ammoPools.All(x => !x.AutoReloads && !x.HasAmmo());
 		}
 
 		public virtual void OnBecomingIdle(Actor self)

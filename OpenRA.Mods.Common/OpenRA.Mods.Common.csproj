@@ -328,6 +328,7 @@
     <Compile Include="Traits\TooltipDescription.cs" />
     <Compile Include="Traits\Health.cs" />
     <Compile Include="Traits\HitShape.cs" />
+    <Compile Include="Traits\Player\DeveloperMode.cs" />
     <Compile Include="Traits\PowerTooltip.cs" />
     <Compile Include="Traits\Render\VeteranProductionIconOverlay.cs" />
     <Compile Include="Traits\Capturable.cs" />
@@ -459,7 +460,6 @@
     <Compile Include="Traits\Render\SupportPowerChargeBar.cs" />
     <Compile Include="Traits\Render\TimedConditionBar.cs" />
     <Compile Include="Traits\Render\WithSpriteBarrel.cs" />
-    <Compile Include="Traits\Render\WithAcceptDeliveredCashAnimation.cs" />
     <Compile Include="Traits\Render\WithAttackAnimation.cs" />
     <Compile Include="Traits\Render\WithAttackOverlay.cs" />
     <Compile Include="Traits\Render\WithMoveAnimation.cs" />

@@ -109,7 +109,6 @@ namespace OpenRA.Mods.Cnc.Traits
 		public ActorInfo AsActor { get; private set; }
 		public Player AsPlayer { get; private set; }
 		public string AsSprite { get; private set; }
-
 		public ITooltipInfo AsTooltipInfo { get; private set; }
 		public List<WVec> TurretOffsets = new List<WVec>() { WVec.Zero };
 
@@ -167,12 +166,12 @@ namespace OpenRA.Mods.Cnc.Traits
 			}
 		}
 
-		string IOrderVoice.VoicePhraseForOrder(Actor self, Order order)
+		public string VoicePhraseForOrder(Actor self, Order order)
 		{
 			return order.OrderString == "Disguise" ? info.Voice : null;
 		}
 
-		Color IRadarColorModifier.RadarColorOverride(Actor self, Color color)
+		public Color RadarColorOverride(Actor self, Color color)
 		{
 			if (!Disguised || self.Owner.IsAlliedWith(self.World.RenderPlayer))
 				return color;
@@ -193,13 +192,14 @@ namespace OpenRA.Mods.Cnc.Traits
 				var targetDisguise = target.TraitOrDefault<Disguise>();
 				if (targetDisguise != null && targetDisguise.Disguised)
 				{
+					AsSprite = targetDisguise.AsSprite;
 					AsPlayer = targetDisguise.AsPlayer;
 					AsActor = targetDisguise.AsActor;
-					TurretOffsets = targetDisguise.TurretOffsets;
 					AsTooltipInfo = targetDisguise.AsTooltipInfo;
 				}
 				else
 				{
+					AsSprite = target.Trait<RenderSprites>().GetImage(target);
 					var tooltip = target.TraitsImplementing<ITooltip>().FirstOrDefault();
 					AsPlayer = tooltip.Owner;
 					AsActor = target.Info;
@@ -222,6 +222,8 @@ namespace OpenRA.Mods.Cnc.Traits
 				AsTooltipInfo = null;
 				AsPlayer = null;
 				AsActor = self.Info;
+				AsSprite = null;
+
 				TurretOffsets.Clear();
 				TurretOffsets.Add(WVec.Zero);
 			}
@@ -235,6 +237,8 @@ namespace OpenRA.Mods.Cnc.Traits
 			var oldEffectiveOwner = AsPlayer;
 			var oldDisguiseSetting = Disguised;
 
+			var renderSprites = actorInfo.TraitInfoOrDefault<RenderSpritesInfo>();
+			AsSprite = renderSprites == null ? null : renderSprites.GetImage(actorInfo, self.World.Map.Rules.Sequences, newOwner.Faction.InternalName);
 			AsPlayer = newOwner;
 			AsActor = actorInfo;
 			AsTooltipInfo = actorInfo.TraitInfos<TooltipInfo>().FirstOrDefault();
@@ -276,7 +280,6 @@ namespace OpenRA.Mods.Cnc.Traits
 						disguisedAsToken = conditionManager.RevokeCondition(self, disguisedAsToken);
 
 					string disguisedAsCondition;
-
 					if (info.DisguisedAsConditions.TryGetValue(AsActor.Name, out disguisedAsCondition))
 						disguisedAsToken = conditionManager.GrantCondition(self, disguisedAsCondition);
 				}
