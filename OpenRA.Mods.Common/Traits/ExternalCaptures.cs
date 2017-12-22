@@ -76,7 +76,7 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				var frozen = order.Target.FrozenActor;
 				var ci = frozen.Info.TraitInfoOrDefault<ExternalCapturableInfo>();
-				return ci != null && ci.FrozenCanBeTargetedBy(self, frozen.Owner);
+				return ci != null && ci.CanBeTargetedBy(self, frozen.Owner);
 			}
 
 			if (order.Target.Type == TargetType.Actor)
@@ -131,7 +131,7 @@ namespace OpenRA.Mods.Common.Traits
 			// Actors with FrozenUnderFog should not disable the ExternalCapturable trait.
 			var c = target.Info.TraitInfoOrDefault<ExternalCapturableInfo>();
 
-			var canTargetActor = c != null && c.FrozenCanBeTargetedBy(self, target.Owner);
+			var canTargetActor = c != null && c.CanBeTargetedBy(self, target.Owner);
 			var capturesInfo = self.Trait<ExternalCaptures>().Info;
 			cursor = canTargetActor ? capturesInfo.CaptureCursor : capturesInfo.CaptureBlockedCursor;
 			return canTargetActor;

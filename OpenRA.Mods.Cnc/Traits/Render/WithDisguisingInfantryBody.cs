@@ -43,7 +43,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 				intendedSprite = disguise.AsSprite;
 				var sequence = DefaultAnimation.GetRandomExistingSequence(info.StandSequences, Game.CosmeticRandom);
 				if (sequence != null)
-					DefaultAnimation.ChangeImage(disguiseImage ?? rs.GetImage(self), sequence);
+					DefaultAnimation.ChangeImage(intendedSprite ?? rs.GetImage(self), sequence);
 				rs.UpdatePalette();
 			}
 

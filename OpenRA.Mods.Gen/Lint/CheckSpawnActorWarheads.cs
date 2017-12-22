@@ -12,6 +12,7 @@ using System;
 using System.Linq;
 using OpenRA.Mods.Yupgi_alert.Warheads;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Mods.Common.Lint;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Yupgi_alert.Lint

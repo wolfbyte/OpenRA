@@ -99,7 +99,7 @@ namespace OpenRA.Mods.Common.Traits
 				if (IsCanceled || !target.IsValidFor(self))
 					return NextActivity;
 
-				if (attack.IsTraitPaused)
+				if (attackFollows.All(attack => attack.IsTraitPaused))
 					return this;
 
 				var weapon = GetFirstFeasibleWeapon(target, forceAttack);

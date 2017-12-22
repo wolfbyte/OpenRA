@@ -38,7 +38,7 @@ namespace OpenRA.Mods.Common.AI
 		internal CaptureTarget(Actor actor, string orderString)
 		{
 			Actor = actor;
-			Info = actor.Info.TraitInfoOrDefault<TInfoType>();
+			Info = actor.Info.TraitInfos<TInfoType>().ToArray().FirstOrDefault();
 			OrderString = orderString;
 		}
 	}
@@ -375,11 +375,6 @@ namespace OpenRA.Mods.Common.AI
 		bool UnitCannotBeOrdered(Actor a)
 		{
 			if (a.Owner != Player || a.IsDead || !a.IsInWorld)
-				return true;
-
-			// Don't make aircrafts land and take off like crazy
-			var pool = a.TraitOrDefault<AmmoPool>();
-			if (pool != null && pool.Info.SelfReloads == false && pool.HasAmmo() == false)
 				return true;
 
 			// Actors in luaOccupiedActors are under control of scripted actions and
@@ -900,7 +895,7 @@ namespace OpenRA.Mods.Common.AI
 					if (target.Info == null)
 						return false;
 
-					var externalCapturable = target.Actor.TraitOrDefault<ExternalCapturable>();
+					var externalCapturable = target.Actor.TraitsImplementing<ExternalCapturable>().ToArray().FirstOrDefault(c => !c.IsTraitDisabled);
 					if (externalCapturable == null)
 						return false;
 
@@ -1194,7 +1189,7 @@ namespace OpenRA.Mods.Common.AI
 				var restrictToBase = Info.RestrictMCVDeploymentFallbackToBase &&
 					CountBuildingByCommonName(Info.BuildingCommonNames.ConstructionYard, Player) > 0;
 
-				var desiredLocation = ChooseBuildLocation(transformsInfo.IntoActor, restrictToBase, BuildingType.Building);
+				var desiredLocation = ChooseBuildLocation(transformsInfo.IntoActor, restrictToBase, BuildingPlacementType.Building);
 				if (desiredLocation == null)
 					continue;
 
