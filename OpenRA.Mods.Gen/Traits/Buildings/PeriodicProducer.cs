@@ -12,12 +12,13 @@ using System.Drawing;
 using System.Linq;
 using OpenRA.Mods.Common;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.AS.Traits
 {
 	[Desc("Produces an actor without using the standard production queue.")]
-	public class PeriodicProducerInfo : ConditionalTraitInfo
+	public class PeriodicProducerInfo : PausableConditionalTraitInfo
 	{
 		[ActorReference, FieldLoader.Require]
 		[Desc("Actors to produce.")]
@@ -38,17 +39,13 @@ namespace OpenRA.Mods.AS.Traits
 		[Desc("Duration between productions.")]
 		public readonly int ChargeDuration = 1000;
 
-		public readonly bool ResetTraitOnEnable = false;
-
 		public readonly bool ShowSelectionBar = false;
 		public readonly Color ChargeColor = Color.DarkOrange;
-
-		public readonly bool PauseOnLowPower = false;
 
 		public override object Create(ActorInitializer init) { return new PeriodicProducer(init, this); }
 	}
 
-	public class PeriodicProducer : ConditionalTrait<PeriodicProducerInfo>, ISelectionBar, ITick, ISync
+	public class PeriodicProducer : PausableConditionalTrait<PeriodicProducerInfo>, ISelectionBar, ITick, ISync
 	{
 		readonly string faction;
 		readonly PeriodicProducerInfo info;
@@ -65,19 +62,29 @@ namespace OpenRA.Mods.AS.Traits
 
 		void ITick.Tick(Actor self)
 		{
-			if (info.PauseOnLowPower && self.IsDisabled())
+			if (IsTraitPaused || IsTraitDisabled)
 				return;
 
-			if (!IsTraitDisabled && --ticks < 0)
+			if (--ticks < 0)
 			{
 				var sp = self.TraitsImplementing<Production>()
 				.FirstOrDefault(p => p.Info.Produces.Contains(info.Type));
 
 				var activated = false;
-
 				if (sp != null)
+				{
 					foreach (var name in info.Actors)
-						activated |= sp.Produce(self, self.World.Map.Rules.Actors[name.ToLowerInvariant()], faction);
+					{
+						var ai = self.World.Map.Rules.Actors[name];
+						var inits = new TypeDictionary
+						{
+							new OwnerInit(self.Owner),
+							new FactionInit(BuildableInfo.GetInitialFaction(ai, faction))
+						};
+
+						activated |= sp.Produce(self, ai, info.Type, inits);
+					}
+				}
 
 				if (activated)
 					Game.Sound.PlayNotification(self.World.Map.Rules, self.Owner, "Speech", info.ReadyAudio, self.Owner.Faction.InternalName);
@@ -90,8 +97,7 @@ namespace OpenRA.Mods.AS.Traits
 
 		protected override void TraitEnabled(Actor self)
 		{
-			if (info.ResetTraitOnEnable)
-				ticks = info.ChargeDuration;
+			ticks = info.ChargeDuration;
 		}
 
 		float ISelectionBar.GetValue()
