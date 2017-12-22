@@ -512,7 +512,7 @@ namespace OpenRA.Mods.Common.Traits
 			};
 
 			var bi = unit.TraitInfo<BuildableInfo>();
-			var type = developerMode.AllTech ? Info.Type : (bi.BuildAtProductionType ?? Info.Type);
+			var type = (bi.BuildAtProductionType ?? Info.Type);
 
 			if (!mostLikelyProducerTrait.IsTraitPaused && mostLikelyProducerTrait.Produce(self, unit, type, inits))
 			{
