@@ -33,12 +33,9 @@ namespace OpenRA.Mods.Common.Warheads
 			var world = firedBy.World;
 			var debugOverlayRange = new[] { WDist.Zero, new WDist(128) };
 
-			if (world.LocalPlayer != null)
-			{
-				var devMode = world.LocalPlayer.PlayerActor.TraitOrDefault<DeveloperMode>();
-				if (devMode != null && devMode.ShowCombatGeometry)
-					world.WorldActor.Trait<WarheadDebugOverlay>().AddImpact(pos, debugOverlayRange, DebugOverlayColor);
-			}
+			var debugVis = world.WorldActor.TraitOrDefault<DebugVisualizations>();
+			if (debugVis != null && debugVis.CombatGeometry)
+				world.WorldActor.Trait<WarheadDebugOverlay>().AddImpact(pos, debugOverlayRange, DebugOverlayColor);
 		}
 
 		public override void DoImpact(Actor victim, Actor firedBy, IEnumerable<int> damageModifiers)
@@ -53,8 +50,9 @@ namespace OpenRA.Mods.Common.Warheads
 			if (world.LocalPlayer != null)
 			{
 				var debugOverlayRange = new[] { WDist.Zero, new WDist(128) };
-				var devMode = world.LocalPlayer.PlayerActor.TraitOrDefault<DeveloperMode>();
-				if (devMode != null && devMode.ShowCombatGeometry)
+
+				var debugVis = world.WorldActor.TraitOrDefault<DebugVisualizations>();
+				if (debugVis != null && debugVis.CombatGeometry)
 					world.WorldActor.Trait<WarheadDebugOverlay>().AddImpact(victim.CenterPosition, debugOverlayRange, DebugOverlayColor);
 			}
 		}

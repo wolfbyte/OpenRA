@@ -91,10 +91,10 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 				}
 
 				// Insta re-arm. (Delayed launching is handled at spawner.)
-				var ammoPools = self.TraitsImplementing<AmmoPool>().Where(p => !p.Info.SelfReloads).ToArray();
+				var ammoPools = self.TraitsImplementing<AmmoPool>().Where(p => !p.AutoReloads).ToArray();
 				if (ammoPools != null)
 					foreach (var pool in ammoPools)
-						while (pool.GiveAmmo()); // fill 'er up.
+						while (pool.GiveAmmo(self, pool.Info.Ammo)); // fill 'er up.
 			});
 		}
 	}

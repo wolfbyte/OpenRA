@@ -218,7 +218,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				if (attackStances == OpenRA.Traits.Stance.Enemy && !actor.AppearsHostileTo(self))
 					continue;
 
-				if (PreventsAutoTarget(self, actor) || !self.Owner.CanTargetActor(actor))
+				if (PreventsAutoTarget(self, actor) || !actor.CanBeViewedByPlayer(self.Owner))
 					continue;
 
 				// Select only the first compatible armament for each actor: if this actor is selected

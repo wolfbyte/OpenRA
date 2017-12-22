@@ -112,13 +112,9 @@ namespace OpenRA.Mods.Common.Traits
 				}
 
 				var health = target.Trait<Health>();
-<<<<<<< HEAD
 
 				// Cast to long to avoid overflow when multiplying by the health
-				var lowEnoughHealth = health.HP <= (int)(c.Info.CaptureThreshold * (long)health.MaxHP / 100);
-=======
-				var lowEnoughHealth = health.HP <= activeCapturable.Info.CaptureThreshold * health.MaxHP / 100;
->>>>>>> Make Multipile Capturable: traits work
+				var lowEnoughHealth = health.HP <= (int)activeCapturable.Info.CaptureThreshold * (long)health.MaxHP / 100;
 
 				cursor = !capturesInfo.Sabotage || lowEnoughHealth || target.Owner.NonCombatant
 					? capturesInfo.EnterCursor : capturesInfo.SabotageCursor;
@@ -130,9 +126,10 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				// TODO: This doesn't account for disabled traits.
 				// Actors with FrozenUnderFog should not disable the Capturable trait.
-				var c = target.Info.TraitInfoOrDefault<CapturableInfo>();
+				var capturable = target.Info.TraitInfos<CapturableInfo>().ToArray();
+				var activeCapturable = capturable.FirstOrDefault(c => c.CanBeTargetedBy(self, target.Owner));
 
-				if (c == null || !c.CanBeTargetedBy(self, target.Owner))
+				if (activeCapturable == null)
 				{
 					cursor = capturesInfo.EnterCursor;
 					return false;
@@ -141,7 +138,7 @@ namespace OpenRA.Mods.Common.Traits
 				var health = target.Info.TraitInfoOrDefault<HealthInfo>();
 
 				// Cast to long to avoid overflow when multiplying by the health
-				var lowEnoughHealth = target.HP <= (int)activeCapturable.Info.CaptureThreshold * (long)health.HP / 100;
+				var lowEnoughHealth = target.HP <= (int)activeCapturable.CaptureThreshold * (long)health.HP / 100;
 
 				cursor = !capturesInfo.Sabotage || lowEnoughHealth || target.Owner.NonCombatant
 					? capturesInfo.EnterCursor : capturesInfo.SabotageCursor;
