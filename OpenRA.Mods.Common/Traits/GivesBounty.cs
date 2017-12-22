@@ -90,18 +90,18 @@ namespace OpenRA.Mods.Common.Traits
 				return;
 
 			var attackerTakesBounty = e.Attacker.TraitsImplementing<TakesBounty>().ToArray();
-			var activeAttackerTakesBounty =	attackerTakesBounty.FirstOrDefault(tb => !tb.IsTraitDisabled && tb.Info.ValidTypes.Contains(info.Type));
+			var activeAttackerTakesBounty =	attackerTakesBounty.FirstOrDefault(tb => !tb.IsTraitDisabled && tb.Info.ValidTypes.Contains(Info.Type));
 			if (activeAttackerTakesBounty == null)
 				return;
 
-			if (!info.ValidStances.HasStance(e.Attacker.Owner.Stances[self.Owner]))
+			if (!Info.ValidStances.HasStance(e.Attacker.Owner.Stances[self.Owner]))
 				return;
 
 			if (Info.DeathTypes.Count > 0 && !e.Damage.DamageTypes.Overlaps(Info.DeathTypes))
 				return;
 
 			var displayedBounty = GetDisplayedBountyValue(self, activeAttackerTakesBounty);
-			if (info.ShowBounty && self.IsInWorld && displayedBounty > 0 && e.Attacker.Owner.IsAlliedWith(self.World.RenderPlayer))
+			if (Info.ShowBounty && self.IsInWorld && displayedBounty > 0 && e.Attacker.Owner.IsAlliedWith(self.World.RenderPlayer))
 				e.Attacker.World.AddFrameEndTask(w => w.Add(new FloatingText(self.CenterPosition, e.Attacker.Owner.Color.RGB, FloatingText.FormatCashTick(displayedBounty), 30)));
 
 			e.Attacker.Owner.PlayerActor.Trait<PlayerResources>().ChangeCash(GetBountyValue(self, activeAttackerTakesBounty));
