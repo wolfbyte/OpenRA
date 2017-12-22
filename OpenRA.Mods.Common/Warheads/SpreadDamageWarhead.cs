@@ -47,12 +47,9 @@ namespace OpenRA.Mods.Common.Warheads
 		{
 			var world = firedBy.World;
 
-			if (world.LocalPlayer != null)
-			{
-				var devMode = world.LocalPlayer.PlayerActor.TraitOrDefault<DeveloperMode>();
-				if (devMode != null && devMode.ShowCombatGeometry)
-					world.WorldActor.Trait<WarheadDebugOverlay>().AddImpact(pos, Range, DebugOverlayColor);
-			}
+			var debugVis = world.WorldActor.TraitOrDefault<DebugVisualizations>();
+			if (debugVis != null && debugVis.CombatGeometry)
+				world.WorldActor.Trait<WarheadDebugOverlay>().AddImpact(pos, Range, DebugOverlayColor);
 
 			var hitActors = world.FindActorsOnCircle(pos, Range[Range.Length - 1]);
 

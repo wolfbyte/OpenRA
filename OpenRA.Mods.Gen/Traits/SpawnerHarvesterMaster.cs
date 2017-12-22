@@ -173,7 +173,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
 		{
 			if (order.OrderID == "SpawnerHarvest")
-				return new Order(order.OrderID, self, queued) { TargetLocation = self.World.Map.CellContaining(target.CenterPosition) };
+				return new Order(order.OrderID, self, Target.FromCell(self.World, self.World.Map.CellContaining(target.CenterPosition)), queued);
 			return null;
 		}
 

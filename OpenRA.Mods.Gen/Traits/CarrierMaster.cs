@@ -14,6 +14,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.IO;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
 
@@ -88,6 +90,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public new CarrierMasterInfo Info { get; private set; }
 
 		CarrierSlaveEntry[] slaveEntries;
+		ExternalCondition[] externalConditions;
 		ConditionManager conditionManager;
 
 		Stack<int> loadedTokens = new Stack<int>();
@@ -102,7 +105,9 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		protected override void Created(Actor self)
 		{
 			base.Created(self);
-			conditionManager = self.Trait<ConditionManager>();
+
+			conditionManager = self.TraitOrDefault<ConditionManager>();
+			externalConditions = self.TraitsImplementing<ExternalCondition>().ToArray();
 		}
 
 		public override BaseSpawnerSlaveEntry[] CreateSlaveEntries(BaseSpawnerMasterInfo info)
@@ -150,7 +155,15 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 			// Launching condition is timed, so not saving the token.
 			if (Info.LaunchingCondition != null)
-				conditionManager.GrantCondition(self, Info.LaunchingCondition, Info.LaunchingTicks);
+			{
+				var external = externalConditions
+					.FirstOrDefault(t => t.Info.Condition == Info.LaunchingCondition && t.CanGrantCondition(self, this));
+
+				if (external == null)
+					throw new InvalidDataException("Condition `{0}` has not been listed on an enabled ExternalCondition trait".F(Info.LaunchingCondition));
+
+				external.GrantCondition(self, Info.LaunchingCondition, Info.LaunchingTicks);
+			}
 
 			SpawnIntoWorld(self, se.Actor, self.CenterPosition);
 
