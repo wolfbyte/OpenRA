@@ -107,14 +107,20 @@ namespace OpenRA.Mods.Common.Traits
 
 		protected override void TraitEnabled(Actor self)
 		{
-			Update();
-			techTree.ActorChanged(self);
+			self.World.AddFrameEndTask(__ =>
+			{
+				Update();
+				techTree.ActorChanged(self);
+			});
 		}
 
 		protected override void TraitDisabled(Actor self)
 		{
-			Update();
-			techTree.ActorChanged(self);
+			self.World.AddFrameEndTask(__ =>
+			{
+				Update();
+				techTree.ActorChanged(self);
+			});
 		}
 	}
 }
