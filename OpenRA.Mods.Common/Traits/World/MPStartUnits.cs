@@ -41,6 +41,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Initial facing of BaseActor. -1 means random.")]
 		public readonly int BaseActorFacing = 128;
 
+		[Desc("Offset of base actor from actual spawn position.")]
+		public readonly CVec BaseActorOffset = CVec.Zero;
+
 		[Desc("Initial facing of SupportActors. -1 means random.")]
 		public readonly int SupportActorsFacing = -1;
 	}
