@@ -23,14 +23,12 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 
 	class DisguisingTurreted : Turreted
 	{
-		readonly DisguisingTurretedInfo info;
 		readonly Disguise disguise;
 		WVec intendedTurretOffset;
 
 		public DisguisingTurreted(ActorInitializer init, DisguisingTurretedInfo info)
 			: base(init, info)
 		{
-			this.info = info;
 			disguise = init.Self.Trait<Disguise>();
 			intendedTurretOffset = disguise.TurretOffsets.First();
 		}
