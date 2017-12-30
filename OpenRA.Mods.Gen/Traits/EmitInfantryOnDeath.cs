@@ -54,7 +54,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			var valued = self.Info.TraitInfoOrDefault<ValuedInfo>();
 			var cost = csv != null ? csv.Value : (valued != null ? valued.Cost : 0);
 
-			var health = self.TraitOrDefault<Health>();
 			var dudesValue = info.ValuePercent * cost / 100;
 
 			var buildingInfo = self.Info.TraitInfoOrDefault<BuildingInfo>();
