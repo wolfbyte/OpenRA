@@ -22,7 +22,6 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 
 	class WithDisguisingSpriteTurret : WithSpriteTurret
 	{
-		readonly WithDisguisingSpriteTurretInfo info;
 		readonly Disguise disguise;
 		readonly RenderSprites rs;
 		string intendedSprite;
@@ -30,7 +29,6 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		public WithDisguisingSpriteTurret(Actor self, WithDisguisingSpriteTurretInfo info)
 			: base(self, info)
 		{
-			this.info = info;
 			rs = self.Trait<RenderSprites>();
 			disguise = self.Trait<Disguise>();
 			intendedSprite = disguise.AsSprite;
