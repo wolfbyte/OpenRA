@@ -158,8 +158,8 @@ PROGRAMS += mod_d2k
 mod_d2k: $(mod_d2k_TARGET)
 
 # Generals Alpha
-mod_gen_SRCS := $(shell find OpenRA.Mods.gen/ -iname '*.cs')
-mod_gen_TARGET = mods/common/OpenRA.Mods.gen.dll
+mod_gen_SRCS := $(shell find OpenRA.Mods.Gen/ -iname '*.cs')
+mod_gen_TARGET = mods/common/OpenRA.Mods.Gen.dll
 mod_gen_KIND = library
 mod_gen_DEPS = $(STD_MOD_DEPS) $(mod_common_TARGET)
 mod_gen_LIBS = $(COMMON_LIBS) $(STD_MOD_LIBS) $(mod_cnc_TARGET) $(mod_common_TARGET)
