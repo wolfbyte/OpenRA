@@ -22,7 +22,6 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 
 	class WithDisguisingFacingSpriteBody : WithFacingSpriteBody, ITick
 	{
-		readonly WithDisguisingFacingSpriteBodyInfo info;
 		readonly Disguise disguise;
 		readonly RenderSprites rs;
 		string intendedSprite;
@@ -30,7 +29,6 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		public WithDisguisingFacingSpriteBody(ActorInitializer init, WithDisguisingFacingSpriteBodyInfo info)
 			: base(init, info)
 		{
-			this.info = info;
 			rs = init.Self.Trait<RenderSprites>();
 			disguise = init.Self.Trait<Disguise>();
 			intendedSprite = disguise.AsSprite;
