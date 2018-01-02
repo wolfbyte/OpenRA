@@ -41,8 +41,8 @@ namespace OpenRA.Mods.Common.Traits
 		Activity INotifyHarvesterAction.MovingToResources(Actor self, CPos targetCell, Activity next) { return RequestTransport(self, targetCell, next); }
 		Activity INotifyHarvesterAction.MovingToRefinery(Actor self, Actor refineryActor, Activity next)
 		{
-			var iao = refineryActor.Trait<IAcceptResources>();
-			return RequestTransport(self, refineryActor.Location + iao.DeliveryOffset, next);
+			var dm = refineryActor.Trait<DockManager>();
+			return RequestTransport(self, dm.DockLocations.FirstOrDefault(), next);
 		}
 
 		void INotifyHarvesterAction.MovementCancelled(Actor self) { MovementCancelled(self); }

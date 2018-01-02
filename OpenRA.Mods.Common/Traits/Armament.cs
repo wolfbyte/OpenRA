@@ -295,7 +295,10 @@ namespace OpenRA.Mods.Common.Traits
 			});
 
 			if (--Burst > 0)
-				FireDelay = Weapon.BurstDelay;
+				if (Weapon.BurstDelays.Length == 1)
+					FireDelay = Weapon.BurstDelays[0];
+				else
+					FireDelay = Weapon.BurstDelays[Weapon.Burst - (Burst + 1)];
 			else
 			{
 				var modifiers = reloadModifiers.ToArray();

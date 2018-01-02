@@ -70,7 +70,7 @@ namespace OpenRA.GameRules
 		public readonly HashSet<string> InvalidTargets = new HashSet<string>();
 
 		[Desc("Delay in ticks between firing shots from the same ammo magazine.")]
-		public readonly int BurstDelay = 5;
+		public readonly int[] BurstDelays = { 5 };
 
 		[Desc("The minimum range the weapon can fire.")]
 		public readonly WDist MinRange = WDist.Zero;
