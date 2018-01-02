@@ -81,5 +81,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				self.CenterPosition + info.Offset,
 				info.Angle, info.Color, info.Segments);
 		}
+
+		bool IRenderAboveShroudWhenSelected.SpatiallyPartitionable { get { return true; } }
 	}
 }
