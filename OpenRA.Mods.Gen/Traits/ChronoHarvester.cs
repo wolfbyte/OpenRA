@@ -12,6 +12,7 @@
  */
 #endregion
 
+using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Cnc.Traits;
 using OpenRA.Mods.Yupgi_alert.Activities;
@@ -51,9 +52,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		void INotifyHarvesterAction.Undocked() { }
 
-		Activity INotifyHarvesterAction.MovingToRefinery(Actor self, CPos targetCell, Activity next)
+		Activity INotifyHarvesterAction.MovingToRefinery(Actor self, Actor refineryActor, Activity next)
 		{
-			return new OpportunityTeleport(self, pchronoInfo, targetCell, next);
+			return new OpportunityTeleport(self, pchronoInfo, refineryActor.Trait<DockManager>().DockLocations.FirstOrDefault(), next);
 		}
 
 		Activity INotifyHarvesterAction.MovingToResources(Actor self, CPos targetCell, Activity next)
