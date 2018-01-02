@@ -86,7 +86,10 @@ namespace OpenRA.Mods.AS.Traits
 					Game.Sound.Play(SoundType.World, weapon.Report.Random(self.World.SharedRandom), self.CenterPosition);
 
 				if (--burst > 0)
-					fireDelay = weapon.BurstDelay;
+					if (weapon.BurstDelays.Length == 1)
+						fireDelay = weapon.BurstDelays[0];
+					else
+						fireDelay = weapon.BurstDelays[weapon.Burst - (burst + 1)];
 				else
 				{
 					var modifiers = self.TraitsImplementing<IReloadModifier>()
