@@ -62,15 +62,18 @@ namespace OpenRA.Mods.Common.Activities
 			}
 
 			var proc = harv.LinkedProc;
+			var dm = proc.Trait<DockManager>();
+
 			self.SetTargetLine(Target.FromActor(proc), Color.Green, false);
-			if (self.Location != proc.Location + iao.DeliveryOffset)
+			if (self.Location != dm.DockLocations.FirstOrDefault())
 			{
 				var notify = self.TraitsImplementing<INotifyHarvesterAction>();
 				foreach (var n in notify)
 					n.MovingToRefinery(self, proc, this);
+			}
 
 			if (!self.Info.TraitInfo<HarvesterInfo>().OreTeleporter)
-				proc.Trait<DockManager>().ReserveDock(proc, self, this);
+				dm.ReserveDock(proc, self, this);
 			else
 			{
 				var dock = proc.TraitsImplementing<Dock>().First();
@@ -89,7 +92,7 @@ namespace OpenRA.Mods.Common.Activities
 			var notify = client.TraitsImplementing<INotifyHarvesterAction>();
 			foreach (var n in notify)
 			{
-				var extra = n.MovingToRefinery(client, dock.Location, moveToDock);
+				var extra = n.MovingToRefinery(client, host, moveToDock);
 
 				// We have multiple MovingToRefinery actions to do!
 				// Don't know which one to perform.
