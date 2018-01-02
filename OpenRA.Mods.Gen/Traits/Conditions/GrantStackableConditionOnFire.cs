@@ -30,7 +30,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		[Desc("The condition type to grant.")]
 		public readonly string Condition = null;
 
-		[WeaponReference]
 		[Desc("Name of the armament that grants this condition.")]
 		public readonly string ArmamentName = null;
 
