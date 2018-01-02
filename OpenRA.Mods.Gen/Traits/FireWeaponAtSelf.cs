@@ -22,7 +22,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 	[Desc("Fires one of its armament at the actor's position when enabled.")]
 	public class FireWeaponAtSelfInfo : ConditionalTraitInfo, Requires<ArmamentInfo>
 	{
-		[WeaponReference]
 		[Desc("The name of the weapon, one of its armament. Must be specified with \"Name:\" field.")]
 		public readonly string Name = "primary";
 
