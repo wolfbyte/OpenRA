@@ -122,6 +122,7 @@
     <Compile Include="Traits\Doctrine.cs" />
     <Compile Include="Traits\DamagedByRadioactivity.cs" />
     <Compile Include="Traits\ExplodeWeapon.cs" />
+    <Compile Include="Traits\ExperienceTrickler.cs" />
     <Compile Include="Traits\Nydus.cs" />
     <Compile Include="Traits\NydusPrimaryExit.cs" />
     <Compile Include="Traits\MobSpawnerMaster.cs" />
