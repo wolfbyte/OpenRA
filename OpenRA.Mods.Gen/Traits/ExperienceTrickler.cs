@@ -33,7 +33,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 	public class ExperienceTrickler : PausableConditionalTrait<ExperienceTricklerInfo>, ITick, ISync, INotifyCreated
 	{
-		Actor self;
 		readonly ExperienceTricklerInfo info;
 		GainsExperience gainsExperience;
 		[Sync] public int Ticks { get; private set; }
@@ -42,7 +41,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			: base(info)
 		{
 			this.info = info;
-			this.self = self;
 			Ticks = info.InitialDelay;
 			gainsExperience = self.Trait<GainsExperience>();
 		}
