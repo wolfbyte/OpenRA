@@ -18,7 +18,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("This actor can capture other actors which have the ExternalCapturable: trait.")]
-	class ExternalCapturesInfo : ConditionalTraitInfo
+	public class ExternalCapturesInfo : ConditionalTraitInfo
 	{
 		[Desc("Types of actors that it can capture, as long as the type also exists in the ExternalCapturable Type: trait.")]
 		public readonly HashSet<string> CaptureTypes = new HashSet<string> { "building" };
