@@ -10,6 +10,8 @@
 #endregion
 
 using System.Linq;
+using OpenRA.Activities;
+using OpenRA.Mods.Common.Activities;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -23,6 +25,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("Apply condition on straight vertical movement as well.")]
 		public readonly bool ConsiderVerticalMovement = false;
+
+		[Desc("Apply condition on turning as well.")]
+		public readonly bool ConsiderTurning = false;
 
 		public override object Create(ActorInitializer init) { return new GrantConditionOnMovement(init.Self, this); }
 	}
@@ -52,7 +57,8 @@ namespace OpenRA.Mods.Common.Traits
 				return;
 
 			var isMovingVertically = Info.ConsiderVerticalMovement ? movement.IsMovingVertically : false;
-			var isMoving = !IsTraitDisabled && !self.IsDead && (movement.IsMoving || isMovingVertically);
+			var isTurning = Info.ConsiderTurning ? self.CurrentActivity is Move : false;
+			var isMoving = !IsTraitDisabled && !self.IsDead && (movement.IsMoving || isMovingVertically || isTurning);
 			if (isMoving && conditionToken == ConditionManager.InvalidConditionToken)
 				conditionToken = conditionManager.GrantCondition(self, Info.Condition);
 			else if (!isMoving && conditionToken != ConditionManager.InvalidConditionToken)
