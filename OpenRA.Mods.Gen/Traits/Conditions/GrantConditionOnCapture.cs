@@ -33,7 +33,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 	public class GrantConditionOnCapture : INotifyCreated, INotifyCapture
 	{
-		readonly Actor self;
 		readonly GrantConditionOnCaptureInfo info;
 		ConditionManager manager;
 
@@ -41,7 +40,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public GrantConditionOnCapture(Actor self, GrantConditionOnCaptureInfo info)
 		{
-			this.self = self;
 			this.info = info;
 		}
 		
