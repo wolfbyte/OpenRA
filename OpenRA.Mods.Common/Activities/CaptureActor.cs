@@ -99,7 +99,7 @@ namespace OpenRA.Mods.Common.Activities
 				foreach (var t in actor.TraitsImplementing<INotifyCapture>())
 					t.OnCapture(actor, self, oldOwner, self.Owner, captures.Info.CaptureTypes);
 
-				if (captures.Info.CaptureCompleteVoice != null)
+				if (captures.Info.CaptureCompleteVoice != null && self.Owner == self.World.LocalPlayer && self.IsInWorld)
 					self.PlayVoice(captures.Info.CaptureCompleteVoice);
 
 				if (self.Owner.Stances[oldOwner].HasStance(captures.Info.PlayerExperienceStances))
