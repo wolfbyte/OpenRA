@@ -47,7 +47,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public readonly int InitialActorCount = -1;
 
 		[Desc("The armament which will trigger the slaves to attack the target. (== \"Name:\" tag of Armament, not @tag!)")]
-		[WeaponReference]
 		public readonly string SpawnerArmamentName = "primary";
 
 		[Desc("What happens to the slaves when the master is killed?")]
