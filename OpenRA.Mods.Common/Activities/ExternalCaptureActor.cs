@@ -74,7 +74,7 @@ namespace OpenRA.Mods.Common.Activities
 
 						EndCapture(self);
 
-						if (capturesInfo.CaptureCompleteVoice != null)
+						if (capturesInfo.CaptureCompleteVoice != null || self.Owner != self.World.LocalPlayer || !self.IsInWorld)
 							self.PlayVoice(capturesInfo.CaptureCompleteVoice);
 
 						if (self.Owner.Stances[oldOwner].HasStance(capturesInfo.PlayerExperienceStances))
