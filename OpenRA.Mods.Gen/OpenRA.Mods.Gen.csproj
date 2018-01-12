@@ -86,6 +86,7 @@
     <Compile Include="Orders\ShootableBallisticMissileMoveOrderTargeter.cs" />
     <Compile Include="Projectiles\RadBeam.cs" />
     <Compile Include="Traits\AIDeployHelper.cs" />
+    <Compile Include="Traits\DelayedWeaponAttachable.cs" />
     <Compile Include="Traits\AegisAutoTarget.cs" />
     <Compile Include="Traits\AcceptCashRallyPointAcceptor.cs" />
     <Compile Include="Traits\MissileSpawnerMaster.cs" />
@@ -120,8 +121,10 @@
     <Compile Include="Traits\Player\BotProvidesPrerequisite.cs" />
     <Compile Include="Traits\BaseSpawnerSlave.cs" />
     <Compile Include="Traits\CarrierSlave.cs" />
+    <Compile Include="Traits\DelayedWeaponDetector.cs" />
     <Compile Include="Traits\Doctrine.cs" />
     <Compile Include="Traits\DamagedByRadioactivity.cs" />
+    <Compile Include="Traits\DelayedWeaponTrigger.cs" />
     <Compile Include="Traits\ExplodeWeapon.cs" />
     <Compile Include="Traits\ExperienceTrickler.cs" />
     <Compile Include="Traits\Nydus.cs" />
@@ -134,7 +137,9 @@
     <Compile Include="Traits\BaseSpawnerMaster.cs" />
     <Compile Include="Traits\Warheads\CreateRadioactivityWarhead.cs" />
     <Compile Include="Traits\Warheads\WarheadAS.cs" />
+    <Compile Include="Traits\Warheads\AttachDelayedWeaponWarhead.cs" />
     <Compile Include="Traits\Warheads\CaptureActorWarhead.cs" />
+    <Compile Include="Traits\Warheads\DetachDelayedWeaponWarhead.cs" />
     <Compile Include="Traits\Warheads\SpawnActorWarhead.cs" />
     <Compile Include="Traits\World\RadioactivityLayer.cs" />
     <Compile Include="Lint\CheckSpawnActorWarheads.cs" />
