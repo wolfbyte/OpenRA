@@ -21,6 +21,9 @@ namespace OpenRA.Mods.Common.Lint
 		{
 			foreach (var actorInfo in rules.Actors)
 			{
+				if (actorInfo.Key.StartsWith("^", StringComparison.Ordinal))
+					continue;
+
 				var buildable = actorInfo.Value.TraitInfoOrDefault<BuildableInfo>();
 				if (buildable == null)
 					continue;
