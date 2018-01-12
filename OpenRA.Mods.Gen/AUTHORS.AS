@@ -16,6 +16,9 @@ The plugin is maintained by
  * Pavel Penev
    > PaletteFromJasc32File - base JASC palette parser
 
+ * Martin Lang (Gerseras/Seraphinexxx)
+   > DelayedWeapon system
+
  Authors of documents used in this plugin:
   * Apollo
    > Jasc 32bit format idea
