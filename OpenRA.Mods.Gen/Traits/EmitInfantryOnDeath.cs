@@ -30,6 +30,9 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			"Leave empty to allow all factions by default.")]
 		public readonly HashSet<string> Factions = new HashSet<string>();
 
+		[Desc("Should an actor spawn after the player has been defeated (e.g. after surrendering)?")]
+		public readonly bool SpawnAfterDefeat = false;
+
 		public object Create(ActorInitializer init) { return new EmitInfantryOnDeath(init.Self, this); }
 	}
 
@@ -47,6 +50,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		void Emit(Actor self)
 		{
+			var defeated = self.Owner.WinState == WinState.Lost;
+			if (defeated && !info.SpawnAfterDefeat)
+				return;
+
 			if (!correctFaction)
 				return;
 
