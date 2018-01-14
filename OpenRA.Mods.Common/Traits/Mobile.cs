@@ -78,6 +78,12 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Occupy space? Units such as Mob spawners doesn't occupy space, letting others to enter.")]
 		public readonly bool OccupySpace = true;
 
+		[Desc("If this value is not null, these actors can't block me.")]
+		public readonly string[] NonBlockerActors = null;
+
+		[Desc("If this value is not null, only these actors can block me.")]
+		public readonly string[] BlockerActors = null;
+
 		[Desc("Can the actor be ordered to move in to shroud?")]
 		public readonly bool MoveIntoShroud = true;
 
@@ -323,6 +329,14 @@ namespace OpenRA.Mods.Common.Traits
 				self.Owner.Stances[otherActor.Owner] == Stance.Ally &&
 				IsMovingInMyDirection(self, otherActor))
 				return false;
+
+			if (BlockerActors != null)
+				if (!BlockerActors.Contains(otherActor.Info.Name))
+					return false;
+
+			if (NonBlockerActors != null)
+				if (NonBlockerActors.Contains(otherActor.Info.Name))
+					return false;
 
 			// If there is a temporary blocker in our path, but we can remove it, we are not blocked.
 			var temporaryBlocker = otherActor.TraitOrDefault<ITemporaryBlocker>();
