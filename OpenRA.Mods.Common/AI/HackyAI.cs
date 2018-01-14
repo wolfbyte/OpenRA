@@ -31,6 +31,7 @@ namespace OpenRA.Mods.Common.AI
 		public class UnitCategories
 		{
 			public readonly HashSet<string> Mcv = new HashSet<string>();
+			public readonly HashSet<string> Dozer = new HashSet<string>();
 			public readonly HashSet<string> NavalUnits = new HashSet<string>();
 			public readonly HashSet<string> Seige = new HashSet<string>();
 			public readonly HashSet<string> Collector = new HashSet<string>();
@@ -151,6 +152,9 @@ namespace OpenRA.Mods.Common.AI
 
 		[Desc("Radius in cells around a factory scanned for rally points by the AI.")]
 		public readonly int RallyPointScanRadius = 8;
+
+		[Desc("Radius in cells around base center to send dozer after building it.")]
+		public readonly int DozerSendingRadius = 16;
 
 		[Desc("Minimum distance in cells from center of the base when checking for building placement.")]
 		public readonly int MinBaseRadius = 2;
@@ -897,7 +901,10 @@ namespace OpenRA.Mods.Common.AI
 
 			foreach (var a in newUnits)
 			{
-				unitsHangingAroundTheBase.Add(a);
+				if (Info.UnitsCommonNames.Dozer.Contains(a.Info.Name))
+					QueueOrder(new Order("Move", a, Target.FromCell(World, Map.FindTilesInCircle(GetRandomBaseCenter(), Info.DozerSendingRadius).Random(Random)), true));
+				else
+					unitsHangingAroundTheBase.Add(a);
 
 				if (a.Info.HasTraitInfo<AircraftInfo>() && a.Info.HasTraitInfo<AttackBaseInfo>())
 				{
