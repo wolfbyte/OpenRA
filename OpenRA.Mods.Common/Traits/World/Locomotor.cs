@@ -59,6 +59,12 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Can the actor be ordered to move in to shroud?")]
 		public readonly bool MoveIntoShroud = true;
 
+		[Desc("If this value is not null, these actors can't block me.")]
+		public readonly string[] NonBlockerActors = null;
+
+		[Desc("If this value is not null, only these actors can block me.")]
+		public readonly string[] BlockerActors = null;
+
 		[Desc("e.g. crate, wall, infantry")]
 		public readonly BitSet<CrushClass> Crushes = default(BitSet<CrushClass>);
 
@@ -266,6 +272,14 @@ namespace OpenRA.Mods.Common.Traits
 				self.Owner.Stances[otherActor.Owner] == Stance.Ally &&
 				IsMovingInMyDirection(self, otherActor))
 				return false;
+
+			if (BlockerActors != null)
+				if (!BlockerActors.Contains(otherActor.Info.Name))
+					return false;
+
+			if (NonBlockerActors != null)
+				if (NonBlockerActors.Contains(otherActor.Info.Name))
+					return false;
 
 			// PERF: Only perform ITemporaryBlocker trait look-up if mod/map rules contain any actors that are temporary blockers
 			if (self.World.RulesContainTemporaryBlocker)
