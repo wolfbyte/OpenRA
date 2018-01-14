@@ -33,6 +33,7 @@ namespace OpenRA.Mods.Common.AI
 			public readonly HashSet<string> Mcv = new HashSet<string>();
 			public readonly HashSet<string> NavalUnits = new HashSet<string>();
 			public readonly HashSet<string> Seige = new HashSet<string>();
+			public readonly HashSet<string> Collector = new HashSet<string>();
 			public readonly HashSet<string> ExcludeFromSquads = new HashSet<string>();
 		}
 
@@ -1132,6 +1133,10 @@ namespace OpenRA.Mods.Common.AI
 			if (Info.UnitLimits != null &&
 				Info.UnitLimits.ContainsKey(name) &&
 				World.Actors.Count(a => a.Owner == Player && a.Info.Name == name) >= Info.UnitLimits[name])
+				return;
+
+			if (Info.UnitsCommonNames.Collector != null && resLayer != null &&
+				Info.UnitsCommonNames.Collector.Contains(name) && resLayer.IsResourceLayerEmpty)
 				return;
 
 			QueueOrder(Order.StartProduction(queue.Actor, name, 1));
