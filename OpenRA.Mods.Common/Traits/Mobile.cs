@@ -89,6 +89,7 @@ namespace OpenRA.Mods.Common.Traits
 				return false;
 
 			var check = checkTransientActors ? CellConditions.All : CellConditions.BlockedByMovers;
+
 			return LocomotorInfo.CanMoveFreelyInto(world, self, cell, ignoreActor, check);
 		}
 
