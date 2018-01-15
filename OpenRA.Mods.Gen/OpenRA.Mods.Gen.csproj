@@ -140,6 +140,7 @@
     <Compile Include="Traits\Warheads\AttachDelayedWeaponWarhead.cs" />
     <Compile Include="Traits\Warheads\CaptureActorWarhead.cs" />
     <Compile Include="Traits\Warheads\DetachDelayedWeaponWarhead.cs" />
+    <Compile Include="Traits\Warheads\RevealShroudWarhead.cs" />
     <Compile Include="Traits\Warheads\SpawnActorWarhead.cs" />
     <Compile Include="Traits\World\RadioactivityLayer.cs" />
     <Compile Include="Lint\CheckSpawnActorWarheads.cs" />
