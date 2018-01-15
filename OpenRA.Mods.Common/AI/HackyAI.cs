@@ -35,6 +35,7 @@ namespace OpenRA.Mods.Common.AI
 			public readonly HashSet<string> NavalUnits = new HashSet<string>();
 			public readonly HashSet<string> Seige = new HashSet<string>();
 			public readonly HashSet<string> Collector = new HashSet<string>();
+			public readonly HashSet<string> FragileDeployer = new HashSet<string>();
 			public readonly HashSet<string> ExcludeFromSquads = new HashSet<string>();
 		}
 
@@ -153,8 +154,11 @@ namespace OpenRA.Mods.Common.AI
 		[Desc("Radius in cells around a factory scanned for rally points by the AI.")]
 		public readonly int RallyPointScanRadius = 8;
 
-		[Desc("Radius in cells around base center to send dozer after building it.")]
-		public readonly int DozerSendingRadius = 16;
+		[Desc("Minimum radius in cells around base center to send dozer after building it.")]
+		public readonly int MinDozerSendingRadius = 4;
+
+		[Desc("Maximum radius in cells around base center to send dozer after building it.")]
+		public readonly int MaxDozerSendingRadius = 16;
 
 		[Desc("Minimum distance in cells from center of the base when checking for building placement.")]
 		public readonly int MinBaseRadius = 2;
@@ -561,6 +565,31 @@ namespace OpenRA.Mods.Common.AI
 			return null;
 		}
 
+		CPos FindPosFrontForUnit(CPos center, CVec front, int minRange, int maxRange, Actor actor)
+		{
+			var mobile = actor.TraitOrDefault<Mobile>();
+			if (mobile == null)
+				return center;
+
+			// zero vector case. we can't define front or rear.
+			if (front == CVec.Zero)
+				return FindPosForUnit(center, center, minRange, maxRange, actor);
+
+			var cells = Map.FindTilesInAnnulus(center, minRange, maxRange).Shuffle(Random);
+			foreach (var cell in cells)
+			{
+				var v = cell - center;
+				if (!mobile.CanEnterCell(cell))
+					continue;
+
+				if (CVec.Dot(front, v) > 0)
+					return cell;
+			}
+
+			// Front is so full of stuff that we can't move there.
+			return center;
+		}
+
 		// Find the buildable cell that is closest to pos and centered around center
 		CPos? FindPos(CPos center, CPos target, int minRange, int maxRange,
 			string actorType, BuildingInfo bi, bool distanceToBaseIsImportant)
@@ -586,6 +615,32 @@ namespace OpenRA.Mods.Common.AI
 			}
 
 			return null;
+		}
+
+		// Find the moveable cell that is closest to pos and centered around center
+		CPos FindPosForUnit(CPos center, CPos target, int minRange, int maxRange, Actor actor)
+		{
+			var mobile = actor.TraitOrDefault<Mobile>();
+			if (mobile == null)
+				return center;
+
+			var cells = Map.FindTilesInAnnulus(center, minRange, maxRange);
+
+			// Sort by distance to target if we have one
+			if (center != target)
+				cells = cells.OrderBy(c => (c - target).LengthSquared);
+			else
+				cells = cells.Shuffle(Random);
+
+			foreach (var cell in cells)
+			{
+				if (!mobile.CanEnterCell(cell))
+					continue;
+
+				return cell;
+			}
+
+			return center;
 		}
 
 		CPos defenseCenter;
@@ -901,8 +956,29 @@ namespace OpenRA.Mods.Common.AI
 
 			foreach (var a in newUnits)
 			{
-				if (Info.UnitsCommonNames.Dozer.Contains(a.Info.Name))
-					QueueOrder(new Order("Move", a, Target.FromCell(World, Map.FindTilesInCircle(GetRandomBaseCenter(), Info.DozerSendingRadius).Random(Random)), true));
+				var closestEnemy = World.ActorsHavingTrait<Building>().Where(actor => !actor.Disposed && IsOwnedByEnemy(actor))
+					.ClosestTo(World.Map.CenterOfCell(defenseCenter));
+				var baseCenter = GetRandomBaseCenter();
+				var mobile = a.TraitOrDefault<Mobile>();
+
+				CVec direction = CVec.Zero;
+				if (closestEnemy != null)
+					direction = baseCenter - closestEnemy.Location;
+
+				if (Info.UnitsCommonNames.FragileDeployer.Contains(a.Info.Name) && mobile != null)
+				{
+					QueueOrder(new Order("Move", a, Target
+						.FromCell(World, FindPosFrontForUnit(baseCenter, direction, Info.MinFragilePlacementRadius, Info.MaxBaseRadius, a)), true));
+					QueueOrder(new Order("GrantConditionOnDeploy", a, true));
+				}
+				else if (Info.UnitsCommonNames.Dozer.Contains(a.Info.Name) && mobile != null)
+				{
+					var dozerTargetPos = Map.FindTilesInAnnulus(baseCenter, Info.MinDozerSendingRadius, Info.MaxDozerSendingRadius)
+						.Where(c => mobile.CanEnterCell(c) && !resourceTypeIndices.Get(Map.GetTerrainIndex(c))).Random(Random);
+
+					BotDebug("AI: {0} has chosen {1} to move its Dozer ({2})".F(a.Owner, dozerTargetPos, a));
+					QueueOrder(new Order("Move", a, Target.FromCell(World, dozerTargetPos), true));
+				}
 				else
 					unitsHangingAroundTheBase.Add(a);
 
