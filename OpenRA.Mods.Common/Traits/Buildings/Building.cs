@@ -257,7 +257,7 @@ namespace OpenRA.Mods.Common.Traits
 		Pair<CPos, SubCell>[] occupiedCells;
 		Pair<CPos, SubCell>[] targetableCells;
 
-		// Shared activity lock: undeploy, sell, capture, etc.
+		// Shared activity lock: undeploy, sell, etc.
 		[Sync] public bool Locked = true;
 
 		public bool Lock()
