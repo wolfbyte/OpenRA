@@ -29,6 +29,10 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Whether to prevent autotargeting this actor while it is being captured by an ally.")]
 		public readonly bool PreventsAutoTarget = true;
 
+		[GrantedConditionReference]
+		[Desc("Grant this condition to self while being captured.")]
+		public readonly string CaptureCondition = null;
+
 		public bool CanBeTargetedBy(Actor captor, Player owner)
 		{
 			var c = captor.Info.TraitInfoOrDefault<ExternalCapturesInfo>();
@@ -48,12 +52,15 @@ namespace OpenRA.Mods.Common.Traits
 		public override object Create(ActorInitializer init) { return new ExternalCapturable(init.Self, this); }
 	}
 
-	public class ExternalCapturable : ConditionalTrait<ExternalCapturableInfo>, ITick, ISync, IPreventsAutoTarget
+	public class ExternalCapturable : ConditionalTrait<ExternalCapturableInfo>, ITick, ISync, INotifyCreated, IPreventsAutoTarget
 	{
 		[Sync] public int CaptureProgressTime = 0;
 		[Sync] public Actor Captor;
 		private Actor self;
 		public bool CaptureInProgress { get { return Captor != null; } }
+
+		ConditionManager conditionManager;
+		int token = ConditionManager.InvalidConditionToken;
 
 		public ExternalCapturable(Actor self, ExternalCapturableInfo info)
 			: base(info)
@@ -61,20 +68,23 @@ namespace OpenRA.Mods.Common.Traits
 			this.self = self;
 		}
 
+		void INotifyCreated.Created(Actor self)
+		{
+			conditionManager = self.TraitOrDefault<ConditionManager>();
+		}
+
 		public void BeginCapture(Actor captor)
 		{
-			var building = self.TraitOrDefault<Building>();
-			if (building != null)
-				building.Lock();
+			if (conditionManager != null && token == ConditionManager.InvalidConditionToken && !string.IsNullOrEmpty(Info.CaptureCondition))
+				token = conditionManager.GrantCondition(self, Info.CaptureCondition);
 
 			Captor = captor;
 		}
 
 		public void EndCapture()
 		{
-			var building = self.TraitOrDefault<Building>();
-			if (building != null)
-				building.Unlock();
+			if (token != ConditionManager.InvalidConditionToken)
+				token = conditionManager.RevokeCondition(self, token);
 
 			Captor = null;
 		}
