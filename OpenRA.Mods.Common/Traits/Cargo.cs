@@ -387,7 +387,7 @@ namespace OpenRA.Mods.Common.Traits
 					var positionable = passenger.Trait<IPositionable>();
 					positionable.SetPosition(passenger, self.Location);
 
-					if (!inAir && positionable.CanEnterCell(self.Location, self, false))
+					if (self.Owner.WinState != WinState.Lost && !inAir && positionable.CanEnterCell(self.Location, self, false))
 					{
 						self.World.AddFrameEndTask(w => w.Add(passenger));
 						var nbm = passenger.TraitOrDefault<INotifyBlockingMove>();
