@@ -20,7 +20,7 @@ using OpenRA.Traits;
 
 /* Works without base engine modification */
 
-namespace OpenRA.Mods.AS.Traits
+namespace OpenRA.Mods.Yupgi_alert.Traits
 {
 	public class GrantTimedConditionOnDeployInfo : ITraitInfo
 	{
@@ -125,6 +125,8 @@ namespace OpenRA.Mods.AS.Traits
 		{
 			return new Order("GrantConditionOnDeploy", self, false);
 		}
+
+		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return true; }
 
 		void IResolveOrder.ResolveOrder(Actor self, Order order)
 		{
