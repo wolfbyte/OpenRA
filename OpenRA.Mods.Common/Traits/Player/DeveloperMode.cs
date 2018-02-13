@@ -11,6 +11,8 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using OpenRA.Mods.Common.Activities;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -238,6 +240,34 @@ namespace OpenRA.Mods.Common.Traits
 						break;
 
 					order.Target.Actor.Dispose();
+					break;
+				}
+
+				case "DevProduce":
+				{
+					if (order.Target.Type != TargetType.Actor)
+						break;
+
+					var producer = order.Target.Actor;
+					var production = producer.TraitsImplementing<Production>().FirstOrDefault();
+					var actors = self.World.Map.Rules.Actors;
+					var actorToProduce = actors.Keys.Contains(order.TargetString) ? actors[order.TargetString] : null;
+
+					if (production != null && actorToProduce != null)
+					{
+						var faction = BuildableInfo.GetInitialFaction(actorToProduce, production.Faction);
+						var inits = new TypeDictionary
+						{
+							new OwnerInit(producer.Owner),
+							new FactionInit(faction)
+						};
+
+						producer.QueueActivity(new WaitFor(() => production.Produce(producer, actorToProduce, null, inits)));
+					}
+					
+					if (actorToProduce == null)
+						Game.Debug("'{0}' is not a valid actor", order.TargetString);
+
 					break;
 				}
 
