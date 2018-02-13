@@ -57,6 +57,7 @@ namespace OpenRA.Mods.Common.Commands
 			register("poweroutage", "causes owners of selected actors to have a 5 second power outage.");
 			register("kill", "kills selected actors.");
 			register("dispose", "disposes selected actors.");
+			register("produce", "makes the selected actor produce given actor.");
 		}
 
 		public void InvokeCommand(string name, string arg)
@@ -151,6 +152,17 @@ namespace OpenRA.Mods.Common.Commands
 							continue;
 
 						world.IssueOrder(new Order("DevDispose", world.LocalPlayer.PlayerActor, Target.FromActor(actor), false));
+					}
+
+					break;
+
+				case "produce":
+					foreach (var actor in world.Selection.Actors)
+					{
+						if (actor.IsDead)
+							continue;
+
+						world.IssueOrder(new Order("DevProduce", world.LocalPlayer.PlayerActor, Target.FromActor(actor), false) { TargetString = arg });
 					}
 
 					break;
