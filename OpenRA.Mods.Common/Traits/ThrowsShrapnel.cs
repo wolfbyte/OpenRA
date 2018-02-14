@@ -36,8 +36,10 @@ namespace OpenRA.Mods.Common.Traits
 		public WeaponInfo[] WeaponInfos { get; private set; }
 
 		public override object Create(ActorInitializer actor) { return new ThrowsShrapnel(this); }
-		public void RulesetLoaded(Ruleset rules, ActorInfo ai)
+		public override void RulesetLoaded(Ruleset rules, ActorInfo ai)
 		{
+			base.RulesetLoaded(rules, ai);
+
 			WeaponInfos = Weapons.Select(w =>
 			{
 				WeaponInfo weapon;
