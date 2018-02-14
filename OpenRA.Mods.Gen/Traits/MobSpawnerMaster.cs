@@ -109,9 +109,12 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 			// The base class creates the slaves but doesn't move them into world.
 			// Let's do it here.
-			SpawnReplenishedSlaves(self);
+			if (!IsTraitDisabled)
+			{
+				SpawnReplenishedSlaves(self);
 
-			hasSpawnedInitialLoad = true;
+				hasSpawnedInitialLoad = true;
+			}
 		}
 
 		public override BaseSpawnerSlaveEntry[] CreateSlaveEntries(BaseSpawnerMasterInfo info)
@@ -356,6 +359,17 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				AttackMoveSlaves(self);
 			else if (self.CurrentActivity is AttackOmni.SetTarget)
 				AssignTargetsToSlaves(self, self.CurrentActivity.GetTargets(self).First());
+		}
+
+		protected override void TraitEnabled(Actor self)
+		{
+			if (!Info.EnabledByDefault && !hasSpawnedInitialLoad)
+			{
+				Replenish(self, slaveEntries);
+
+				SpawnReplenishedSlaves(self);
+				hasSpawnedInitialLoad = true;
+			}
 		}
 	}
 }
