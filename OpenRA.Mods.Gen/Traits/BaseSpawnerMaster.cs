@@ -128,8 +128,9 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 			// Spawn initial load.
 			int burst = Info.InitialActorCount == -1 ? Info.Actors.Length : Info.InitialActorCount;
-			for (int i = 0; i < burst; i++)
-				Replenish(self, SlaveEntries);
+			if (!IsTraitDisabled)
+				for (int i = 0; i < burst; i++)
+					Replenish(self, SlaveEntries);
 		}
 
 		/// <summary>
