@@ -106,6 +106,7 @@
     <Compile Include="Traits\FireWeaponAtSelf.cs" />
     <Compile Include="Traits\PaletteEffects\TermitePaletteEffect.cs" />
     <Compile Include="Traits\Render\WithMindcontrolArc.cs" />
+    <Compile Include="Traits\Render\WithTerrainDependantSpriteBody.cs" />
     <Compile Include="Traits\MobSpawnerSlave.cs" />
     <Compile Include="Traits\SpawnerHarvesterSlave.cs" />
     <Compile Include="Traits\PaletteEffects\IronCurtainPaletteEffect.cs" />
