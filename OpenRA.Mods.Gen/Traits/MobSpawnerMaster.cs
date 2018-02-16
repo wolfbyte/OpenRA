@@ -163,7 +163,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public void Tick(Actor self)
 		{
-			if (spawnReplaceTicks > 0)
+			if (spawnReplaceTicks > 0 && !IsTraitDisabled)
 			{
 				spawnReplaceTicks--;
 
