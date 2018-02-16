@@ -34,6 +34,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Force a specific faction variant, overriding the faction of the producing actor.")]
 		public readonly string ForceFaction = null;
 
+		[Desc("Show a tooltip when hovered over my icon.")]
+		public readonly bool ShowTooltip = true;
+
 		[Desc("Sequence of the actor that contains the icon.")]
 		[SequenceReference] public readonly string Icon = "icon";
 
