@@ -86,7 +86,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 			OnBuildComplete(self);
 		}
 
-		public void PlayCustomAnimation(Actor self, string name, Action after = null)
+		public virtual void PlayCustomAnimation(Actor self, string name, Action after = null)
 		{
 			DefaultAnimation.PlayThen(NormalizeSequence(self, name), () =>
 			{
@@ -96,13 +96,13 @@ namespace OpenRA.Mods.Common.Traits.Render
 			});
 		}
 
-		public void PlayCustomAnimationRepeating(Actor self, string name)
+		public virtual void PlayCustomAnimationRepeating(Actor self, string name)
 		{
 			var sequence = NormalizeSequence(self, name);
 			DefaultAnimation.PlayThen(sequence, () => PlayCustomAnimationRepeating(self, sequence));
 		}
 
-		public void PlayCustomAnimationBackwards(Actor self, string name, Action after = null)
+		public virtual void PlayCustomAnimationBackwards(Actor self, string name, Action after = null)
 		{
 			DefaultAnimation.PlayBackwardsThen(NormalizeSequence(self, name), () =>
 			{
@@ -112,7 +112,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 			});
 		}
 
-		public void CancelCustomAnimation(Actor self)
+		public virtual void CancelCustomAnimation(Actor self)
 		{
 			DefaultAnimation.PlayRepeating(NormalizeSequence(self, Info.Sequence));
 		}
