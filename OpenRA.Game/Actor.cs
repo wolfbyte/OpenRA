@@ -302,6 +302,9 @@ namespace OpenRA
 			if (Disposed)
 				return;
 
+			if (newOwner == Owner)
+				return;
+
 			var oldOwner = Owner;
 			var wasInWorld = IsInWorld;
 
