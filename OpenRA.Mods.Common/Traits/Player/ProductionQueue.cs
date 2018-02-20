@@ -101,6 +101,9 @@ namespace OpenRA.Mods.Common.Traits
 		public string Faction { get; private set; }
 		[Sync] public bool IsValidFaction { get; private set; }
 
+		bool anyEnabledProduction = false;
+		bool anyUnpausedProduction = false;
+
 		public ProductionQueue(ActorInitializer init, Actor playerActor, ProductionQueueInfo info)
 		{
 			self = init.Self;
@@ -252,16 +255,30 @@ namespace OpenRA.Mods.Common.Traits
 		protected virtual void Tick(Actor self)
 		{
 			// PERF: Avoid LINQ when checking whether all production traits are disabled/paused
-			var anyEnabledProduction = false;
-			var anyUnpausedProduction = false;
+			var wasDisabled = !anyEnabledProduction;
+
+			anyEnabledProduction = false;
+			anyUnpausedProduction = false;
 			foreach (var p in productionTraits)
 			{
 				anyEnabledProduction |= !p.IsTraitDisabled;
 				anyUnpausedProduction |= !p.IsTraitPaused;
 			}
 
+			if (wasDisabled && anyEnabledProduction)
+			{
+				self.World.AddFrameEndTask(_ =>
+				{
+					self.Owner.PlayerActor.Trait<TechTree>().Update();
+					CacheProducibles(self.Owner.PlayerActor);
+				});
+			}
+
 			if (!anyEnabledProduction)
+			{
+				self.Owner.PlayerActor.Trait<TechTree>().Remove(this);
 				ClearQueue();
+			}
 
 			Enabled = IsValidFaction && anyEnabledProduction;
 
