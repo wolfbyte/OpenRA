@@ -47,7 +47,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 	public class WithSpriteBody : PausableConditionalTrait<WithSpriteBodyInfo>, INotifyDamageStateChanged, INotifyBuildComplete, IAutoMouseBounds
 	{
 		public readonly Animation DefaultAnimation;
-		readonly RenderSprites rs;
+		public readonly RenderSprites rs;
 
 		public WithSpriteBody(ActorInitializer init, WithSpriteBodyInfo info)
 			: this(init, info, () => 0) { }
