@@ -20,7 +20,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Yupgi_alert
 {
-	[Desc("Default trait for rendering sprite-based actors.")]
+	[Desc("Renders a different sequence depending on terrain actor is on.")]
 	public class WithTerrainDependantSpriteBodyInfo : WithSpriteBodyInfo
 	{
 		public override object Create(ActorInitializer init) { return new WithTerrainDependantSpriteBody(init, this); }
@@ -28,9 +28,6 @@ namespace OpenRA.Mods.Common.Yupgi_alert
 
 	public class WithTerrainDependantSpriteBody : WithSpriteBody
 	{
-		public readonly Animation DefaultAnimation;
-		readonly RenderSprites rs;
-
 		string terrain;
 		string sequence;
 		string startSequence;
@@ -41,14 +38,10 @@ namespace OpenRA.Mods.Common.Yupgi_alert
 		protected WithTerrainDependantSpriteBody(ActorInitializer init, WithTerrainDependantSpriteBodyInfo info, Func<int> baseFacing)
 			: base(init, info)
 		{
-			rs = init.Self.Trait<RenderSprites>();
 			terrain = init.World.Map.GetTerrainInfo(init.Self.Location).Type;
 
 			Func<bool> paused = () => IsTraitPaused &&
 				DefaultAnimation.CurrentSequence.Name == NormalizeSequence(init.Self, Info.Sequence);
-
-			DefaultAnimation = new Animation(init.World, rs.GetImage(init.Self), baseFacing, paused);
-			rs.Add(new AnimationWithOffset(DefaultAnimation, null, () => IsTraitDisabled));
 
 			sequence = DefaultAnimation.HasSequence(info.Sequence + "-" + terrain) ? info.Sequence + "-" + terrain : info.Sequence;
 
@@ -97,7 +90,7 @@ namespace OpenRA.Mods.Common.Yupgi_alert
 			});
 		}
 
-		public void CancelCustomAnimation(Actor self)
+		public override void CancelCustomAnimation(Actor self)
 		{
 			DefaultAnimation.PlayRepeating(NormalizeSequence(self, sequence));
 		}
