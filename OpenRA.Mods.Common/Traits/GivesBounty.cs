@@ -22,7 +22,7 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		[Desc("Type of bounty. Used for targerting along with 'TakesBounty' trait on actors.")]
 		public readonly string Type = "Bounty";
-		
+
 		[Desc("Stance the attacking player needs to receive the bounty.")]
 		public readonly Stance ValidStances = Stance.Neutral | Stance.Enemy;
 

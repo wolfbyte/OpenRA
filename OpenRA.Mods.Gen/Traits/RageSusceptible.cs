@@ -2,8 +2,8 @@
 /*
  * Written by Boolbada of OP Mod,
  * Follows GPLv3 License as OpenRA main engine:
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -21,7 +21,7 @@ using OpenRA.Traits;
  * Almost works without base engine modification
  * While AttackBase.cs:UnforcedAttackTargetStances() affects target selection,
  * I don't think it is a good idea to mess with the very core part of the engine.
- * 
+ *
  * Unfortunately, due to CancelActivity not canceling the attack base's attack,
  * OnStopOrder of AttckBase and AttackFollow is made public for this.
  * A neater fix would be to go into Cancel() of the attack activities then
