@@ -20,16 +20,20 @@ namespace OpenRA.Mods.Common.Lint
 	{
 		public void Run(Action<string> emitError, Action<string> emitWarning, Ruleset rules)
 		{
-			// ProvidesPrerequisite allows arbitrary prereq definitions
+			// ProvidesPrerequisite allows arbitrary prerequisite definitions
 			var customPrereqs = rules.Actors.SelectMany(a => a.Value.TraitInfos<ProvidesPrerequisiteInfo>()
 				.Select(p => p.Prerequisite ?? a.Value.Name));
 
-			// ProvidesTechPrerequisite allows arbitrary prereq definitions
+			// ProvidesTechPrerequisite allows arbitrary prerequisite definitions
 			// (but only one group at a time during gameplay)
 			var techPrereqs = rules.Actors.SelectMany(a => a.Value.TraitInfos<ProvidesTechPrerequisiteInfo>())
 				.SelectMany(p => p.Prerequisites);
 
-			var providedPrereqs = customPrereqs.Concat(techPrereqs);
+			// LobbyPrerequisiteCheckbox allows arbitrary prerequisite definitions
+			var lobbyPrereqs = rules.Actors.SelectMany(a => a.Value.TraitInfos<LobbyPrerequisiteCheckboxInfo>())
+				.SelectMany(p => p.Prerequisites);
+
+			var providedPrereqs = customPrereqs.Concat(techPrereqs).Concat(lobbyPrereqs);
 
 			// TODO: this check is case insensitive while the real check in-game is not
 			foreach (var i in rules.Actors)
