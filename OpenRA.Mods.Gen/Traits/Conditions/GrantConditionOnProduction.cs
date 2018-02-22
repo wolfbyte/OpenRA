@@ -1,6 +1,6 @@
 ﻿#region Copyright & License Information
 /*
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -12,8 +12,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Activities;
+using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Yupgi_alert.Traits
@@ -27,8 +27,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		[ActorReference]
 		[Desc("The actors to grant condition for. If empty condition will be granted for all actors.")]
-		public readonly HashSet<string> Actors = new HashSet<string>(); 
-		
+		public readonly HashSet<string> Actors = new HashSet<string>();
+
 		public object Create(ActorInitializer init) { return new GrantConditionOnProduction(init.Self, this); }
 	}
 
@@ -43,7 +43,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		{
 			this.info = info;
 		}
-		
+
 		void INotifyCreated.Created(Actor self)
 		{
 			manager = self.Trait<ConditionManager>();
