@@ -968,8 +968,8 @@ namespace OpenRA.Mods.Common.AI
 
 				if (Info.UnitsCommonNames.FragileDeployer.Contains(a.Info.Name) && mobile != null)
 				{
-					QueueOrder(new Order("Move", a, Target
-						.FromCell(World, FindPosFrontForUnit(baseCenter, direction, Info.MinFragilePlacementRadius, Info.MaxBaseRadius, a)), true));
+					QueueOrder(new Order("Move", a,
+						Target.FromCell(World, FindPosFrontForUnit(baseCenter, direction, Info.MinFragilePlacementRadius, Info.MaxBaseRadius, a)), true));
 					QueueOrder(new Order("GrantConditionOnDeploy", a, true));
 				}
 				else if (Info.UnitsCommonNames.Dozer.Contains(a.Info.Name) && mobile != null)

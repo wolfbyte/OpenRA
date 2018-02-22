@@ -19,7 +19,7 @@ using OpenRA.Traits;
 
 /* Works without base engine modification
  * ACCUMULATES condition per shot.
- * Useful for: Natasha/Boris airstrike and Gattling.
+ * Useful for: Natasha/Boris airstrike and gatling.
  */
 
 namespace OpenRA.Mods.Yupgi_alert.Traits
@@ -103,7 +103,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 					manager.RevokeCondition(self, tokens.Pop());
 		}
 
-		public void Tick(Actor self)
+		void ITick.Tick(Actor self)
 		{
 			if (tokens.Count > 0 && --cooldown == 0)
 			{
@@ -142,7 +142,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			return false;
 		}
 
-		public void Attacking(Actor self, Target target, Armament a, Barrel barrel)
+		void INotifyAttack.Attacking(Actor self, Target target, Armament a, Barrel barrel)
 		{
 			if (a.Info.Name != info.ArmamentName)
 				return;
@@ -176,6 +176,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			}
 		}
 
-		public void PreparingAttack(Actor self, Target target, Armament a, Barrel barrel) { }
+		void INotifyAttack.PreparingAttack(Actor self, Target target, Armament a, Barrel barrel) { }
 	}
 }

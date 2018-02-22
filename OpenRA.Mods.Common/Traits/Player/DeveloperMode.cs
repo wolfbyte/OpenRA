@@ -264,7 +264,7 @@ namespace OpenRA.Mods.Common.Traits
 
 						producer.QueueActivity(new WaitFor(() => production.Produce(producer, actorToProduce, null, inits)));
 					}
-					
+
 					if (actorToProduce == null)
 						Game.Debug("'{0}' is not a valid actor", order.TargetString);
 

@@ -332,10 +332,10 @@ namespace OpenRA.Mods.Common.Traits
 	public interface ISpeedModifier { int GetSpeedModifier(); }
 
 	[RequireExplicitImplementation]
-	public interface IFirepowerModifier { int GetFirepowerModifier(string ArmamentName); }
+	public interface IFirepowerModifier { int GetFirepowerModifier(string armamentName); }
 
 	[RequireExplicitImplementation]
-	public interface IReloadModifier { int GetReloadModifier(string ArmamentName); }
+	public interface IReloadModifier { int GetReloadModifier(string armamentName); }
 
 	[RequireExplicitImplementation]
 	public interface IInaccuracyModifier { int GetInaccuracyModifier(); }
