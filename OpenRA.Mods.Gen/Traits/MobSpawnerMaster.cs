@@ -2,8 +2,8 @@
 /*
  * Written by Boolbada of OP Mod.
  * Follows OpenRA's license, GPLv3 as follows:
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -23,14 +23,9 @@ using OpenRA.Traits;
  * In Mobile.cs, OccupySpace (true by default) added. Aircraft trait for a dummy unit wasn't the greatest idea as they fly over anything.
  * Move.cs, uses my PR which isn't in bleed yet. (PR to make Move use parent child activity)
  *
- * The difference between Spawner (carrier logic) and this is that
- * carriers have units going in and out of the master actor for reload activities,
- * while MobSpawner doesn't, thus MobSpawner has much simpler code.
- */
-
-/*
- * The code is very similar to Spawner.cs.
- * Sometimes it is neater to have a duplicate than to have wrong inheirtances.
+ * The difference between CarrierMaster and this is that carriers have
+ * units going in and out of the master actor for reload activities,
+ * while MobSpawnerMaster doesn't, thus MobSpawnerMaster has much simpler code.
  */
 
 namespace OpenRA.Mods.Yupgi_alert.Traits
@@ -161,7 +156,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			AssignTargetsToSlaves(self, target);
 		}
 
-		public void Tick(Actor self)
+		void ITick.Tick(Actor self)
 		{
 			if (spawnReplaceTicks > 0 && !IsTraitDisabled)
 			{
@@ -190,7 +185,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (!Info.SlavesHaveFreeWill)
 				AssignSlaveActivity(self);
 		}
-	
+
 		void SpawnReplenishedSlaves(Actor self)
 		{
 			WPos centerPosition = WPos.Zero;

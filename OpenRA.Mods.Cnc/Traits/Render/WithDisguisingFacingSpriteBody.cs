@@ -34,7 +34,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 			intendedSprite = disguise.AsSprite;
 		}
 
-		public void Tick(Actor self)
+		void ITick.Tick(Actor self)
 		{
 			if (disguise.AsSprite != intendedSprite)
 			{

@@ -33,7 +33,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("Can a destroyed aircraft eject its pilot when it falls to ground level?")]
 		public readonly bool EjectOnGround = false;
-		
+
 		[Desc("Carry over dead actor's veterancy to pilot?")]
 		public readonly bool CarryVeterancy = true;
 

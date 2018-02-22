@@ -2,7 +2,7 @@
 /*
  * Modded by Boolbada of OP Mod.
  * Started from Mod.AS's ExplodesWeapon trait but not much left.
- * 
+ *
  * Copyright 2015- OpenRA.Mods.AS Developers (see AUTHORS)
  * This file is a part of a third-party plugin for OpenRA, which is
  * free software. It is made available to you under the terms of the
