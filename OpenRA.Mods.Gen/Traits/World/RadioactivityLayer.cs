@@ -2,8 +2,8 @@
 /*
  * Radioactivity layer by Boolbada of OP Mod.
  * Started off from Resource layer by OpenRA devs but required intensive rewrite...
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -22,11 +22,10 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Yupgi_alert.Traits
 {
-	[Desc("Attach this to the world actor. Radioactivity layer, as in RA2 desolator radioactivity. Order of the layers defines the Z sorting.")]
-
 	// You can attach this layer by editing rules/world.yaml
 	// I (boolbada) made this layer by cloning resources layer, as resource amount is quite similar to
 	// radio activity. I looked at SmudgeLayer too.
+	[Desc("Attach this to the world actor. Radioactivity layer, as in RA2 desolator radioactivity. Order of the layers defines the Z sorting.")]
 	public class RadioactivityLayerInfo : ITraitInfo
 	{
 		[Desc("Color of radio activity")]
@@ -48,7 +47,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public readonly int Brightest = 64;
 
 		[Desc("Color mix threshold. If alpha level goes beyond this threshold, Color2 will be mixed in.")]
-		public readonly int MixThreshold = 36; 
+		public readonly int MixThreshold = 36;
 
 		[Desc("Delay of half life, in ticks")]
 		public readonly int Halflife = 150;
@@ -100,8 +99,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			Slope100 = 100 * (info.Brightest - info.Darkest) / (info.MaxLevel - 1);
 			YIntercept100 = 100 * info.Brightest - (info.MaxLevel * Slope100);
 		}
-	
-		public void Tick(Actor self)
+
+		void ITick.Tick(Actor self)
 		{
 			var remove = new List<CPos>();
 
@@ -110,7 +109,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			{
 				if (!kv.Value.Decay(Info.UpdateDelay))
 					continue;
-	
+
 				// Not radioactive anymore. Remove from this.tiles.
 				if (kv.Value.Level <= 0)
 					remove.Add(kv.Key);
@@ -126,7 +125,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public void WorldLoaded(World w, WorldRenderer wr) { }
 
 		// tick render, regardless of pause state.
-		public void TickRender(WorldRenderer wr, Actor self)
+		void ITickRender.TickRender(WorldRenderer wr, Actor self)
 		{
 			var remove = new List<CPos>();
 			foreach (var c in dirty)
@@ -174,7 +173,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (!tiles.ContainsKey(cell))
 				tiles[cell] = new Radioactivity(this, world.Map.CenterOfCell(cell));
 
-			tiles[cell].IncreaseLevel(Info.UpdateDelay, level, max_level);	
+			tiles[cell].IncreaseLevel(Info.UpdateDelay, level, max_level);
 			dirty.Add(cell);
 		}
 
@@ -185,9 +184,9 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			// world.Map.CustomTerrain[cell] = byte.MaxValue;
 			// dirty[cell] = 100;
 		}
-		
+
 		bool disposed = false;
-		public void Disposing(Actor self)
+		void INotifyActorDisposing.Disposing(Actor self)
 		{
 			if (disposed)
 				return;

@@ -2,7 +2,7 @@
 /*
  * Made by Boolbada of OP Mod then rectified by Mods.AS devs then modified again by Boolbada
  * Long story haha
- * 
+ *
  * Copyright 2015- OpenRA.Mods.AS Developers (see AUTHORS)
  * This file is a part of a third-party plugin for OpenRA, which is
  * free software. It is made available to you under the terms of the
@@ -52,9 +52,21 @@ namespace OpenRA.Mods.Yupgi_alert.Graphics
 		public int ZOffset { get { return zOffset; } }
 		public bool IsDecoration { get { return true; } }
 
-		public IRenderable WithPalette(PaletteReference newPalette) { return new RadBeamRenderable(pos, zOffset, sourceToTarget, width, color, amplitude, wavelength, quantizationCount); }
-		public IRenderable WithZOffset(int newOffset) { return new RadBeamRenderable(pos, zOffset, sourceToTarget, width, color, amplitude, wavelength, quantizationCount); }
-		public IRenderable OffsetBy(WVec vec) { return new RadBeamRenderable(pos + vec, zOffset, sourceToTarget, width, color, amplitude, wavelength, quantizationCount); }
+		public IRenderable WithPalette(PaletteReference newPalette)
+		{
+			return new RadBeamRenderable(pos, zOffset, sourceToTarget, width, color, amplitude, wavelength, quantizationCount);
+		}
+
+		public IRenderable WithZOffset(int newOffset)
+		{
+			return new RadBeamRenderable(pos, zOffset, sourceToTarget, width, color, amplitude, wavelength, quantizationCount);
+		}
+
+		public IRenderable OffsetBy(WVec vec)
+		{
+			return new RadBeamRenderable(pos + vec, zOffset, sourceToTarget, width, color, amplitude, wavelength, quantizationCount);
+		}
+
 		public IRenderable AsDecoration() { return this; }
 
 		public IFinalizedRenderable PrepareRender(WorldRenderer wr) { return this; }

@@ -2,8 +2,8 @@
 /*
  * Written by Boolbada of OP Mod.
  * Follows OpenRA's license, GPLv3 as follows:
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -49,7 +49,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			spawnerHarvesterMaster = Master.Trait<SpawnerHarvesterMaster>();
 		}
 
-		public void Tick(Actor self)
+		void ITick.Tick(Actor self)
 		{
 			// Compensate for bug #13879 (upstream).
 			// https://github.com/OpenRA/OpenRA/issues/13879

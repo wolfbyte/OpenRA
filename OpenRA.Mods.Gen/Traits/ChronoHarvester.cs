@@ -2,8 +2,8 @@
 /*
  * Modded by Boolbada of OP Mod,
  * Copy-pasted from AutoCarryall.cs in d2k mod.
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -20,9 +20,9 @@ using OpenRA.Traits;
 
 /*
  * Works without base engine modification.
- * 
+ *
  * This module implements an OP version of chrono miner.
- * Similar to RA2 chrono miners, harvesters with this trait teleports back to refinary.
+ * Similar to RA2 chrono miners, harvesters with this trait teleports back to refinery.
  * (Not to the docking position but a near cell).
  * What's OP, is that it teleports back to the resource field!
  */
