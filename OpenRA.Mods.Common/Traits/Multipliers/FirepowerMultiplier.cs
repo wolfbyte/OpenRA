@@ -28,9 +28,9 @@ namespace OpenRA.Mods.Common.Traits
 		public FirepowerMultiplier(FirepowerMultiplierInfo info)
 			: base(info) { }
 
-		int IFirepowerModifier.GetFirepowerModifier(string ArmamentName)
+		int IFirepowerModifier.GetFirepowerModifier(string armamentName)
 		{
-			return IsTraitDisabled || ArmamentName != Info.Type ? 100 : Info.Modifier;
+			return IsTraitDisabled || armamentName != Info.Type ? 100 : Info.Modifier;
 		}
 	}
 }
