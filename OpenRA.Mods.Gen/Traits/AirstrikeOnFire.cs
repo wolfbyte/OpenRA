@@ -17,7 +17,7 @@ using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
 
 /* Works without base engine modification
- * I like this module, I see many possibilities... This could be used in a hacky way as OCLs in C&C Genera.s
+ * I like this module, I see many possibilities... This could be used in a hacky way as OCLs in C&C Generals
  */
 
 namespace OpenRA.Mods.Yupgi_alert.Traits
@@ -49,7 +49,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			ap = aps.Where(a => a.Info.OrderName == info.OrderName).First();
 		}
 
-		public void Attacking(Actor self, Target target, Armament a, Barrel barrel)
+		void INotifyAttack.Attacking(Actor self, Target target, Armament a, Barrel barrel)
 		{
 			if (a.Info.Name != info.Armament)
 				return;
@@ -61,9 +61,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			self.CurrentActivity.Cancel(self); // Cancel current activity and proceed to next.
 		}
 
-		public void PreparingAttack(Actor self, Target target, Armament a, Barrel barrel)
-		{
-			// do nothing
-		}
+		void INotifyAttack.PreparingAttack(Actor self, Target target, Armament a, Barrel barrel) { }
 	}
 }

@@ -160,12 +160,12 @@ namespace OpenRA.Mods.Common.Traits
 
 		public IEnumerable<IOrderTargeter> Orders
 		{
-			get 
+			get
 			{
 				if (IsTraitDisabled)
 					yield break;
 
-				yield return new DeployOrderTargeter("Unload", 10, () => CanUnload() ? Info.UnloadCursor : Info.UnloadBlockedCursor); 
+				yield return new DeployOrderTargeter("Unload", 10, () => CanUnload() ? Info.UnloadCursor : Info.UnloadBlockedCursor);
 			}
 		}
 

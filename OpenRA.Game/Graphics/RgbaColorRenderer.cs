@@ -199,7 +199,7 @@ namespace OpenRA.Graphics
 			var bl = new float3(tl.X, br.Y, br.Z);
 			DrawPolygon(new[] { tl, tr, br, bl }, width, color);
 		}
-		
+
 		public void FillTriangle(float3 a, float3 b, float3 c, Color color)
 		{
 			renderer.CurrentBatchRenderer = this;

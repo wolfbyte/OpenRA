@@ -10,9 +10,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using OpenRA.Mods.Yupgi_alert.Activities;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Warheads;
+using OpenRA.Mods.Yupgi_alert.Activities;
 using OpenRA.Primitives;
 using OpenRA.Traits;
 
