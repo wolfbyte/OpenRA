@@ -2,8 +2,8 @@
 /*
  * Written by Boolbada of OP Mod.
  * Follows GPLv3 License as the OpenRA engine:
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -19,7 +19,7 @@ using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
 
 /*
- * Needs base engine modification. (Becaus MobSpawner.cs mods it)
+ * Needs base engine modification. (Because MobSpawner.cs mods it)
  */
 
 namespace OpenRA.Mods.Yupgi_alert.Traits
@@ -32,8 +32,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 	public class MobSpawnerSlave : BaseSpawnerSlave, INotifySelected
 	{
-		readonly Actor self;
 		// readonly MobSpawnerSlaveInfo info;
+		readonly Actor self;
 
 		public IMove[] Moves { get; private set; }
 		public IPositionable Positionable { get; private set; }
@@ -45,11 +45,11 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public MobSpawnerSlave(ActorInitializer init, MobSpawnerSlaveInfo info) : base(init, info)
 		{
-			this.self = init.Self;
 			// this.info = info;
+			this.self = init.Self;
 		}
 
-		public override void Created(Actor self)
+		protected override void Created(Actor self)
 		{
 			base.Created(self);
 

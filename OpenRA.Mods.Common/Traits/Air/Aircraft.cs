@@ -184,7 +184,7 @@ namespace OpenRA.Mods.Common.Traits
 			Facing = init.Contains<FacingInit>() ? init.Get<FacingInit, int>() : Info.InitialFacing;
 		}
 
-		public void Created(Actor self)
+		void INotifyCreated.Created(Actor self)
 		{
 			conditionManager = self.TraitOrDefault<ConditionManager>();
 			speedModifiers = self.TraitsImplementing<ISpeedModifier>().ToArray().Select(sm => sm.GetSpeedModifier());
@@ -192,7 +192,7 @@ namespace OpenRA.Mods.Common.Traits
 			dockClient = self.TraitOrDefault<DockClient>(); // Not all are dockers.
 		}
 
-		public void AddedToWorld(Actor self)
+		void INotifyAddedToWorld.AddedToWorld(Actor self)
 		{
 			self.World.AddToMaps(self, this);
 
@@ -203,7 +203,12 @@ namespace OpenRA.Mods.Common.Traits
 				OnCruisingAltitudeReached();
 		}
 
-		public virtual void Tick(Actor self)
+		void ITick.Tick(Actor self)
+		{
+			Tick(self);
+		}
+
+		protected virtual void Tick(Actor self)
 		{
 			if (firstTick)
 			{
@@ -690,7 +695,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		#endregion
 
-		public void RemovedFromWorld(Actor self)
+		void INotifyRemovedFromWorld.RemovedFromWorld(Actor self)
 		{
 			UnReserve();
 			self.World.RemoveFromMaps(self, this);

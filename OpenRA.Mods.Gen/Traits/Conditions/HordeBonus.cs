@@ -72,7 +72,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			cachedVRange = Info.MaximumVerticalOffset;
 			sources = new HashSet<Actor>();
 		}
-		
+
 		void INotifyCreated.Created(Actor self)
 		{
 			manager = self.Trait<ConditionManager>();
