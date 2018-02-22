@@ -38,7 +38,8 @@ namespace OpenRA.Mods.Common.Activities
 		public override Activity Tick(Actor self)
 		{
 			var activeExternalCaptures = externalCaptures.FirstOrDefault(c => !c.IsTraitDisabled);
-			if (IsCanceled || !self.IsInWorld || self.IsDead || target.Type != TargetType.Actor || !target.IsValidFor(self) || capturable.IsTraitDisabled || activeExternalCaptures == null || externalCaptures.All(c => c.IsTraitDisabled))
+			if (IsCanceled || !self.IsInWorld || self.IsDead || target.Type != TargetType.Actor || !target.IsValidFor(self) ||
+				capturable.IsTraitDisabled || activeExternalCaptures == null || externalCaptures.All(c => c.IsTraitDisabled))
 			{
 				EndCapture(self);
 				return NextActivity;

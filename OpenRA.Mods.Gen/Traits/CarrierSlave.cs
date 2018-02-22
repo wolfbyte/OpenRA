@@ -2,8 +2,8 @@
 /*
  * Modded by Boolbada of OP Mod.
  * Modded from cargo.cs but a lot changed.
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -34,7 +34,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		[Desc("We consider this is close enought to the spawner and enter it, instead of trying to reach 0 distance." +
 			"This allows the spawned unit to enter the spawner while the spawner is moving.")]
-		public readonly WDist CloseEnoughDistance = new WDist(128);	
+		public readonly WDist CloseEnoughDistance = new WDist(128);
 
 		public override object Create(ActorInitializer init) { return new CarrierSlave(init, this); }
 	}
@@ -89,7 +89,12 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			return ammoPools.All(x => !x.AutoReloads && !x.HasAmmo());
 		}
 
-		public virtual void OnBecomingIdle(Actor self)
+		void INotifyBecomingIdle.OnBecomingIdle(Actor self)
+		{
+			OnBecomingIdle(self);
+		}
+
+		protected virtual void OnBecomingIdle(Actor self)
 		{
 			EnterSpawner(self);
 		}

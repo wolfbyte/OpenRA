@@ -1,8 +1,8 @@
 #region Copyright & License Information
 /*
  * Modded by Boolbada of OP Mod, from EngineerRepair logic.
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -44,9 +44,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 	// The actor teleports itself, upon entering: works the same as EngineerRepairalbe trait.
 	public class Nydus : INotifyCreated, INotifyActorDisposing, INotifyOwnerChanged, IAcceptsRallyPoint
 	{
-		public Nydus(ActorInitializer init, NydusInfo info)
-		{
-		}
+		public Nydus(ActorInitializer init, NydusInfo info) { }
 
 		void IncreaseNydusCnt(Actor self, Player owner)
 		{
@@ -85,8 +83,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			}
 		}
 
-		public void Created(Actor self) { IncreaseNydusCnt(self, self.Owner); }
-		public void Disposing(Actor self) { DecreaseNydusCnt(self, self.Owner); }
+		void INotifyCreated.Created(Actor self) { IncreaseNydusCnt(self, self.Owner); }
+		void INotifyActorDisposing.Disposing(Actor self) { DecreaseNydusCnt(self, self.Owner); }
 
 		/*
 		//  public void AddedToWorld(Actor self) { IncreaseNydusCnt(self.Owner); } // created happens first. no need.
