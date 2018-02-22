@@ -11,7 +11,7 @@
 using System.Linq;
 using OpenRA.Traits;
 
-namespace OpenRA.Mods.yupgi_alert.Traits
+namespace OpenRA.Mods.Yupgi_alert.Traits
 {
 	[Desc("When created, this actor kills all actors with this trait owned by it's owner.")]
 	public class DoctrineInfo : ITraitInfo

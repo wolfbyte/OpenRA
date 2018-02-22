@@ -215,7 +215,7 @@ namespace OpenRA.Mods.Common.Traits
 			Facing = init.Contains<FacingInit>() ? init.Get<FacingInit, int>() : Info.InitialFacing;
 		}
 
-		public void Created(Actor self)
+		void INotifyCreated.Created(Actor self)
 		{
 			repairableInfo = self.Info.TraitInfoOrDefault<RepairableInfo>();
 			rearmableInfo = self.Info.TraitInfoOrDefault<RearmableInfo>();
@@ -230,7 +230,7 @@ namespace OpenRA.Mods.Common.Traits
 			AddedToWorld(self);
 		}
 
-		public void AddedToWorld(Actor self)
+		protected virtual void AddedToWorld(Actor self)
 		{
 			self.World.AddToMaps(self, this);
 
@@ -241,7 +241,12 @@ namespace OpenRA.Mods.Common.Traits
 				OnCruisingAltitudeReached();
 		}
 
-		public virtual void Tick(Actor self)
+		void ITick.Tick(Actor self)
+		{
+			Tick(self);
+		}
+
+		protected virtual void Tick(Actor self)
 		{
 			if (firstTick)
 			{
@@ -750,7 +755,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		#endregion
 
-		public void RemovedFromWorld(Actor self)
+		void INotifyRemovedFromWorld.RemovedFromWorld(Actor self)
 		{
 			UnReserve();
 			self.World.RemoveFromMaps(self, this);

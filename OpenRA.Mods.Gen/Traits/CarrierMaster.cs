@@ -2,8 +2,8 @@
 /*
  * Modded by Boolbada of OP Mod.
  * Modded from cargo.cs but a lot changed.
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -14,8 +14,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
+using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
 
@@ -178,7 +178,12 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			});
 		}
 
-		public virtual void OnBecomingIdle(Actor self)
+		void INotifyBecomingIdle.OnBecomingIdle(Actor self)
+		{
+			OnBecomingIdle(self);
+		}
+
+		protected virtual void OnBecomingIdle(Actor self)
 		{
 			Recall(self);
 		}
@@ -252,7 +257,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				loadedTokens.Push(conditionManager.GrantCondition(self, Info.LoadedCondition));
 		}
 
-		public void Tick(Actor self)
+		void ITick.Tick(Actor self)
 		{
 			if (respawnTicks > 0)
 			{

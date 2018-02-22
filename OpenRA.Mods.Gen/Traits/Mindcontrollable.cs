@@ -148,7 +148,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			UnlinkMaster(self, master);
 		}
 
-		public void Disposing(Actor self)
+		void INotifyActorDisposing.Disposing(Actor self)
 		{
 			UnlinkMaster(self, master);
 		}
