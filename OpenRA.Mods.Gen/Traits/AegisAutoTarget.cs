@@ -4,8 +4,8 @@
  * Could have used inheritance but to allow users to use this module
  * without base engine modification...
  * Modded by Boolbada of OP Mod
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -126,7 +126,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				Attack(self, Aggressor, allowMove);
 		}
 
-		public void TickIdle(Actor self)
+		void INotifyIdle.TickIdle(Actor self)
 		{
 			if (IsTraitDisabled)
 				return;
@@ -151,7 +151,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			return true;
 		}
 
-		public void Tick(Actor self)
+		void ITick.Tick(Actor self)
 		{
 			if (IsTraitDisabled)
 				return;
@@ -185,7 +185,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			}
 
 			return RoundRobin(self, true);
-		}	
+		}
 
 		public void ScanAndAttack(Actor self, bool allowMove)
 		{
@@ -279,7 +279,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		}
 
 		// Switch target after firing ONE shot.
-		public void Attacking(Actor self, Target target, Armament a, Barrel barrel)
+		void INotifyAttack.Attacking(Actor self, Target target, Armament a, Barrel barrel)
 		{
 			if (!rrenabled)
 				return;
@@ -301,10 +301,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				Attack(self, tgt, false);
 		}
 
-		public void PreparingAttack(Actor self, Target target, Armament a, Barrel barrel)
-		{
-			// do nothing
-		}
+		void INotifyAttack.PreparingAttack(Actor self, Target target, Armament a, Barrel barrel) { }
 
 		Actor RoundRobin(Actor self, bool allowTurn)
 		{
