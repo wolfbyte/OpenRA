@@ -470,7 +470,7 @@ namespace OpenRA.Mods.Common.Traits
 			var unit = rules.Actors[itemName];
 			var bi = unit.TraitInfo<BuildableInfo>();
 
-			var onHoldAudio = bi.OnHoldAudio != null ? bi.OnHoldAudio : Info.OnHoldAudio; 
+			var onHoldAudio = bi.OnHoldAudio != null ? bi.OnHoldAudio : Info.OnHoldAudio;
 
 			Game.Sound.PlayNotification(rules, self.Owner, "Speech", onHoldAudio, self.Owner.Faction.InternalName);
 			var item = Queue.FirstOrDefault(a => a.Item == itemName);
@@ -484,7 +484,7 @@ namespace OpenRA.Mods.Common.Traits
 			var unit = rules.Actors[itemName];
 			var bi = unit.TraitInfo<BuildableInfo>();
 
-			var cancelledAudio = bi.CancelledAudio != null ? bi.CancelledAudio : Info.CancelledAudio; 
+			var cancelledAudio = bi.CancelledAudio != null ? bi.CancelledAudio : Info.CancelledAudio;
 
 			Game.Sound.PlayNotification(rules, self.Owner, "Speech", cancelledAudio, self.Owner.Faction.InternalName);
 			for (var i = 0; i < numberToCancel; i++)
@@ -586,7 +586,7 @@ namespace OpenRA.Mods.Common.Traits
 			};
 
 			var bi = unit.TraitInfo<BuildableInfo>();
-			var type = (bi.BuildAtProductionType ?? Info.Type);
+			var type = bi.BuildAtProductionType ?? Info.Type;
 
 			if (!mostLikelyProducerTrait.IsTraitPaused && mostLikelyProducerTrait.Produce(self, unit, type, inits))
 			{

@@ -40,7 +40,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 				intendedTurretOffset = disguise.TurretOffsets.First();
 				DisguiseOffset = intendedTurretOffset;
 			}
-			
+
 			base.Tick(self);
 		}
 	}

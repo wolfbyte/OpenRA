@@ -134,12 +134,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			}
 		}
 
-		public void PreparingAttack(Actor self, Target target, Armament a, Barrel barrel)
-		{
-			// Do nothing
-		}
-
-		public void Attacking(Actor self, Target target, Armament a, Barrel barrel)
+		void INotifyAttack.Attacking(Actor self, Target target, Armament a, Barrel barrel)
 		{
 			// Only specified MC weapon can do mind control.
 			if (info.Name != a.Info.Name)
@@ -183,6 +178,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			// Tick() will do the rest.
 		}
 
+		void INotifyAttack.PreparingAttack(Actor self, Target target, Armament a, Barrel barrel) { }
+
 		void ReleaseSlaves(Actor self)
 		{
 			var toUnMC = slaves.ToArray(); // UnMincdontrol modifies slaves list.
@@ -200,12 +197,12 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			ReleaseSlaves(self);
 		}
 
-		public void Disposing(Actor self)
+		void INotifyActorDisposing.Disposing(Actor self)
 		{
 			ReleaseSlaves(self);
 		}
 
-		public void Tick(Actor self)
+		void ITick.Tick(Actor self)
 		{
 			if (info.Policy != MindcontrolPolicy.HyperControl)
 				return;

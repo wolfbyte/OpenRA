@@ -2,8 +2,8 @@
 /*
  * Modded by Boolbada of OP Mod.
  * Modded from cargo.cs but a lot changed.
- * 
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ *
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -103,7 +103,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			// Search for resources upon creation.
 			if (info.SearchOnCreation)
 				self.QueueActivity(new SpawnerHarvesterHarvest(self));
-		}	
+		}
 
 		// Modify Harvester trait's states to do the mining.
 		void AssignTargetForSpawned(Actor slave, CPos targetLocation)
@@ -145,7 +145,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				respawnTicks = Info.RespawnTicks;
 		}
 
-		public void Tick(Actor self)
+		void ITick.Tick(Actor self)
 		{
 			respawnTicks--;
 			if (respawnTicks > 0)
@@ -233,7 +233,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			return order.OrderString == "SpawnerHarvest" ? info.HarvestVoice : null;
 		}
 
-		public void TickIdle(Actor self)
+		void INotifyIdle.TickIdle(Actor self)
 		{
 			// wake up on idle for long (to find new resource patch. i.e., kick)
 			if (allowKicks && self.IsIdle)
