@@ -28,9 +28,9 @@ namespace OpenRA.Mods.Common.Traits
 		public ReloadDelayMultiplier(ReloadDelayMultiplierInfo info)
 			: base(info) { }
 
-		int IReloadModifier.GetReloadModifier(string ArmamentName)
+		int IReloadModifier.GetReloadModifier(string armamentName)
 		{
-			return IsTraitDisabled || ArmamentName != Info.Type ? 100 : Info.Modifier;
+			return IsTraitDisabled || armamentName != Info.Type ? 100 : Info.Modifier;
 		}
 	}
 }
