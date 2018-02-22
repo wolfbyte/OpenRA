@@ -35,7 +35,7 @@ namespace OpenRA.Mods.Cnc.Scripting
 			if (disguise.Any(x => !x.IsTraitDisabled))
 			{
 				var activeDisguise = disguise.FirstOrDefault(c => !c.IsTraitDisabled);
-			
+
 				activeDisguise.DisguiseAs(target);
 			}
 			else
@@ -50,7 +50,7 @@ namespace OpenRA.Mods.Cnc.Scripting
 			{
 				var activeDisguise = disguise.FirstOrDefault(c => !c.IsTraitDisabled);
 				var actorInfo = Self.World.Map.Rules.Actors[actorType];
-			
+
 				activeDisguise.DisguiseAs(actorInfo, newOwner);
 			}
 			else

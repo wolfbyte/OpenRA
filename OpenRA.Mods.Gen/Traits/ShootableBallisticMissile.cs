@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2017 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -60,8 +60,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public int GetInitialFacing() { return 0; }
 	}
 
-	public class ShootableBallisticMissile : ITick, ISync, IFacing, IPositionable, IMove,
-		INotifyCreated, INotifyAddedToWorld, INotifyRemovedFromWorld, INotifyActorDisposing, IActorPreviewInitModifier
+	public class ShootableBallisticMissile : ISync, IFacing, IPositionable, IMove,
+		INotifyCreated, INotifyAddedToWorld, INotifyRemovedFromWorld, IActorPreviewInitModifier
 	{
 		static readonly Pair<CPos, SubCell>[] NoCells = { };
 
@@ -97,23 +97,24 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		// This kind of missile will not turn anyway. Hard-coding here.
 		public int TurnSpeed { get { return 10; } }
 
-		public void Created(Actor self)
+		void INotifyCreated.Created(Actor self)
+		{
+			Created(self);
+		}
+
+		protected void Created(Actor self)
 		{
 			conditionManager = self.TraitOrDefault<ConditionManager>();
 			speedModifiers = self.TraitsImplementing<ISpeedModifier>().ToArray().Select(sm => sm.GetSpeedModifier());
 		}
 
-		public void AddedToWorld(Actor self)
+		void INotifyAddedToWorld.AddedToWorld(Actor self)
 		{
 			self.World.AddToMaps(self, this);
 
 			var altitude = self.World.Map.DistanceAboveTerrain(CenterPosition);
 			if (altitude.Length >= Info.MinAirborneAltitude)
 				OnAirborneAltitudeReached();
-		}
-
-		public virtual void Tick(Actor self)
-		{
 		}
 
 		public int MovementSpeed
@@ -272,10 +273,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
 		{
 			if (order.OrderID == "Enter")
-				return new Order(order.OrderID, self, target, queued );
+				return new Order(order.OrderID, self, target, queued);
 
 			if (order.OrderID == "Move")
-				return new Order(order.OrderID, self, Target.FromCell(self.World, self.World.Map.CellContaining(target.CenterPosition)), queued );
+				return new Order(order.OrderID, self, Target.FromCell(self.World, self.World.Map.CellContaining(target.CenterPosition)), queued);
 
 			return null;
 		}
@@ -292,7 +293,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		#endregion
 
-		public void RemovedFromWorld(Actor self)
+		void INotifyRemovedFromWorld.RemovedFromWorld(Actor self)
 		{
 			self.World.RemoveFromMaps(self, this);
 			OnAirborneAltitudeLeft();
@@ -321,10 +322,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		}
 
 		#endregion
-
-		public void Disposing(Actor self)
-		{
-		}
 
 		void IActorPreviewInitModifier.ModifyActorPreviewInit(Actor self, TypeDictionary inits)
 		{
