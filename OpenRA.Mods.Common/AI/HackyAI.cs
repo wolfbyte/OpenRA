@@ -982,7 +982,7 @@ namespace OpenRA.Mods.Common.AI
 				else
 					unitsHangingAroundTheBase.Add(a);
 
-				if (a.Info.HasTraitInfo<AircraftInfo>() && a.Info.HasTraitInfo<AttackBaseInfo>())
+				if (a.Info.HasTraitInfo<AircraftInfo>() && a.Info.HasTraitInfo<AttackBaseInfo>() && a.Info.HasTraitInfo<SelectableInfo>())
 				{
 					var air = GetSquadOfType(SquadType.Air);
 					if (air == null)
