@@ -69,6 +69,7 @@ namespace OpenRA.Mods.Common.AI
 			public readonly HashSet<string> StaticAntiAir = new HashSet<string>();
 			public readonly HashSet<string> Fragile = new HashSet<string>();
 			public readonly HashSet<string> Defense = new HashSet<string>();
+			public readonly HashSet<string> Strategy = new HashSet<string>();
 		}
 
 		[FieldLoader.Require]
