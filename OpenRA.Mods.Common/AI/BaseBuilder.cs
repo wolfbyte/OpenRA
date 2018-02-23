@@ -366,6 +366,22 @@ namespace OpenRA.Mods.Common.AI
 				}
 			}
 
+			// Select a strategy
+			var strategy = GetProducibleBuilding(ai.Info.BuildingCommonNames.Strategy, buildableThings);
+			if (strategy != null &&
+				!world.Actors.Where(a => ai.Info.BuildingCommonNames.Strategy.Contains(a.Info.Name) && a.Owner == player).Any() &&
+				HasSufficientPowerForActor(strategy))
+			{
+				HackyAI.BotDebug("AI: {0} decided to build {1}: Priority override (strategy)", queue.Actor.Owner, strategy.Name);
+				return strategy;
+			}
+
+			if (power != null && strategy != null && !HasSufficientPowerForActor(strategy))
+			{
+				HackyAI.BotDebug("{0} decided to build {1}: Priority override (would be low power)", queue.Actor.Owner, power.Name);
+				return power;
+			}
+
 			// Build everything else
 			foreach (var frac in ai.Info.BuildingFractions.Shuffle(ai.Random))
 			{
