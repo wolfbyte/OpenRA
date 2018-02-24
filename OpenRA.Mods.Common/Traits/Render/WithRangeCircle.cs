@@ -43,17 +43,20 @@ namespace OpenRA.Mods.Common.Traits.Render
 
 		public IEnumerable<IRenderable> Render(WorldRenderer wr, World w, ActorInfo ai, WPos centerPosition)
 		{
-			yield return new RangeCircleRenderable(
-				centerPosition,
-				Range,
-				0,
-				Color,
-				Color.FromArgb(96, Color.Black));
+			if (EnabledByDefault)
+			{
+				yield return new RangeCircleRenderable(
+					centerPosition,
+					Range,
+					0,
+					Color,
+					Color.FromArgb(96, Color.Black));
 
 			foreach (var a in w.ActorsWithTrait<WithRangeCircle>())
 				if (a.Trait.Info.Type == Type)
 					foreach (var r in a.Trait.RenderRangeCircle(a.Actor, wr))
 						yield return r;
+			}
 		}
 
 		public override object Create(ActorInitializer init) { return new WithRangeCircle(init.Self, this); }
@@ -100,7 +103,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 
 		void IRenderAboveWorld.RenderAboveWorld(Actor self, WorldRenderer wr)
 		{
-			if (Info.Visible == RangeCircleVisibility.Always && Visible)
+			if (Info.Visible == RangeCircleVisibility.Always && Visible && !IsTraitDisabled)
 				RangeCircleRenderable.DrawRangeCircle(
 					wr,
 					self.CenterPosition,
