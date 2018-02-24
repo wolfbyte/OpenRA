@@ -34,7 +34,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public Actor PrimaryActor = null;
 	}
 
-	[Desc("This actor can teleport actors like Nydus canels in SC1. Assuming static object. The actor must have PrimaryBuilding trait so that exit can be specified!")]
+	[Desc("This actor can teleport actors like Nydus canels in SC1. Assuming static object.")]
 	public class NydusInfo : ITraitInfo
 	{
 		public object Create(ActorInitializer init) { return new Nydus(init, this); }
