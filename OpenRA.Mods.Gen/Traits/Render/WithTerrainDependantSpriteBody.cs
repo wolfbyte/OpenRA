@@ -40,9 +40,6 @@ namespace OpenRA.Mods.Common.Yupgi_alert
 		{
 			terrain = init.World.Map.GetTerrainInfo(init.Self.Location).Type;
 
-			Func<bool> paused = () => IsTraitPaused &&
-				DefaultAnimation.CurrentSequence.Name == NormalizeSequence(init.Self, Info.Sequence);
-
 			sequence = DefaultAnimation.HasSequence(info.Sequence + "-" + terrain) ? info.Sequence + "-" + terrain : info.Sequence;
 
 			if (info.StartSequence != null)
