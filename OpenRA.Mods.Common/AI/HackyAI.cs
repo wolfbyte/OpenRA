@@ -208,6 +208,9 @@ namespace OpenRA.Mods.Common.AI
 		[Desc("What units should the AI have a maximum limit to train.")]
 		public readonly Dictionary<string, int> UnitLimits = null;
 
+		[Desc("Tells AI to don't train from this queue more than specified time at the same time.")]
+		public readonly Dictionary<string, int> QueueLimits = null;
+
 		[Desc("What buildings to the AI should build.", "What % of the total base must be this type of building.")]
 		public readonly Dictionary<string, float> BuildingFractions = null;
 
@@ -1182,6 +1185,25 @@ namespace OpenRA.Mods.Common.AI
 				.Select(a => a.Trait);
 		}
 
+		internal ProductionQueue FindQueue(string category)
+		{
+			var queues = FindQueues(category);
+
+			var usedQueues = queues.Where(q => q.CurrentItem() != null);
+			if (Info.QueueLimits != null &&
+				Info.QueueLimits.ContainsKey(category) &&
+				usedQueues.Count() >= Info.QueueLimits[category])
+				return null;
+
+			var freeQueues = queues.Where(q => q.CurrentItem() == null);
+			if (!freeQueues.Any())
+				return null;
+
+			var queue = freeQueues.Shuffle(Random).FirstOrDefault();
+
+			return queue;
+		}
+
 		void ProductionUnits(Actor self)
 		{
 			// Stop building until economy is restored
@@ -1205,7 +1227,7 @@ namespace OpenRA.Mods.Common.AI
 		void BuildUnit(string category, bool buildRandom)
 		{
 			// Pick a free queue
-			var queue = FindQueues(category).FirstOrDefault(q => q.CurrentItem() == null);
+			var queue = FindQueue(category);
 			if (queue == null)
 				return;
 
@@ -1235,7 +1257,7 @@ namespace OpenRA.Mods.Common.AI
 
 		void BuildUnit(string category, string name)
 		{
-			var queue = FindQueues(category).FirstOrDefault(q => q.CurrentItem() == null);
+			var queue = FindQueue(category);
 			if (queue == null)
 				return;
 
@@ -1307,7 +1329,7 @@ namespace OpenRA.Mods.Common.AI
 		void QueryPipe(string category, IEnumerable<Actor> unit)
 		{
 			// Pick a free queue
-			var queue = FindQueues(category).FirstOrDefault(q => q.CurrentItem() == null);
+			var queue = FindQueue(category);
 			if (queue == null)
 				return;
 
