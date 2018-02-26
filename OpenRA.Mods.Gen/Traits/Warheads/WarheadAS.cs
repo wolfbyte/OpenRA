@@ -20,11 +20,10 @@ namespace OpenRA.Mods.Yupgi_alert.Warheads
 {
 	[Desc("AS warhead extension class." +
 		"These warheads check for the Air TargetType when detonated inair!")]
-	public abstract class WarheadAS : Warhead, IRulesetLoaded<WeaponInfo>
+	public abstract class WarheadAS : Warhead
 	{
-		[Desc("Extra search radius beyond maximum spread. If set to zero (default), it will automatically scale to the largest health shape.",
-			"Custom overrides should not be necessary under normal circumstances.")]
-		public WDist VictimScanRadius = WDist.Zero;
+		[Desc("Whether to consider actors in determining whether the explosion should happen. If false, only terrain will be considered.")]
+		public readonly bool ImpactActors = true;
 
 		public ImpactType GetImpactType(World world, CPos cell, WPos pos, Actor firedBy)
 		{
@@ -47,7 +46,7 @@ namespace OpenRA.Mods.Yupgi_alert.Warheads
 
 		public bool GetDirectHit(World world, CPos cell, WPos pos, Actor firedBy, bool checkTargetType = false)
 		{
-			foreach (var victim in world.FindActorsInCircle(pos, VictimScanRadius))
+			foreach (var victim in world.FindActorsInCircle(pos, WDist.Zero))
 			{
 				if (checkTargetType && !IsValidAgainst(victim, firedBy))
 					continue;
@@ -89,12 +88,6 @@ namespace OpenRA.Mods.Yupgi_alert.Warheads
 			}
 
 			return validImpact;
-		}
-
-		void IRulesetLoaded<WeaponInfo>.RulesetLoaded(Ruleset rules, WeaponInfo info)
-		{
-			if (VictimScanRadius == WDist.Zero)
-				VictimScanRadius = Util.MinimumRequiredVictimScanRadius(rules);
 		}
 	}
 }
