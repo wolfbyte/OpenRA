@@ -46,7 +46,7 @@ namespace OpenRA.Mods.Yupgi_alert.Warheads
 			if (!IsValidImpact(pos, firedBy))
 				return;
 
-			var availableActors = firedBy.World.FindActorsInCircle(pos, Range + VictimScanRadius);
+			var availableActors = firedBy.World.FindActorsInCircle(pos, Range);
 
 			foreach (var a in availableActors)
 			{
