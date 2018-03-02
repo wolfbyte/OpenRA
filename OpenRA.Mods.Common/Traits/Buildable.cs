@@ -52,6 +52,9 @@ namespace OpenRA.Mods.Common.Traits
 		// TODO: UI fluff; doesn't belong here
 		public readonly int BuildPaletteOrder = 9999;
 
+		// TODO: UI fluff; doesn't belong here
+		public readonly bool ForceIconLocation = false;
+
 		[Desc("Text shown in the production tooltip.")]
 		[Translate] public readonly string Description = "";
 
