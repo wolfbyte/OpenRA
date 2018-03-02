@@ -196,7 +196,18 @@ namespace OpenRA.Mods.Common.Widgets
 
 		public override void Tick()
 		{
-			TotalIconCount = AllBuildables.Count();
+			var forcedIcons = AllBuildables.Where(a => a.TraitInfo<BuildableInfo>().ForceIconLocation);
+
+			var largestForcedIconOrder = 0;
+			if (forcedIcons.Any())
+				largestForcedIconOrder = forcedIcons.Max(a => a.TraitInfo<BuildableInfo>().BuildPaletteOrder);
+
+			var totalIconCount = AllBuildables.Count();
+
+			if (largestForcedIconOrder > totalIconCount)
+				TotalIconCount = largestForcedIconOrder;
+			else
+				TotalIconCount = totalIconCount;
 
 			if (CurrentQueue != null && !CurrentQueue.Actor.IsInWorld)
 				CurrentQueue = null;
@@ -361,6 +372,7 @@ namespace OpenRA.Mods.Common.Widgets
 		public void RefreshIcons()
 		{
 			icons = new Dictionary<Rectangle, ProductionIcon>();
+
 			var producer = CurrentQueue != null ? CurrentQueue.MostLikelyProducer() : default(TraitPair<Production>);
 			if (CurrentQueue == null || producer.Trait == null)
 			{
@@ -381,20 +393,22 @@ namespace OpenRA.Mods.Common.Widgets
 
 			foreach (var item in AllBuildables.Skip(IconRowOffset * Columns).Take(MaxIconRowOffset * Columns))
 			{
-				var x = DisplayedIconCount % Columns;
-				var y = DisplayedIconCount / Columns;
+				var bi = item.TraitInfo<BuildableInfo>();
+				var iconLocation = bi.ForceIconLocation ? bi.BuildPaletteOrder : DisplayedIconCount;
+
+				var x = iconLocation % Columns;
+				var y = iconLocation / Columns;
 				var rect = new Rectangle(rb.X + x * (IconSize.X + IconMargin.X), rb.Y + y * (IconSize.Y + IconMargin.Y), IconSize.X, IconSize.Y);
 
 				var rsi = item.TraitInfo<RenderSpritesInfo>();
 				var icon = new Animation(World, rsi.GetImage(item, World.Map.Rules.Sequences, faction));
-				var bi = item.TraitInfo<BuildableInfo>();
 				icon.Play(bi.Icon);
 
 				var pi = new ProductionIcon()
 				{
 					Actor = item,
 					Name = item.Name,
-					Hotkey = DisplayedIconCount < HotkeyCount ? hotkeys[DisplayedIconCount] : null,
+					Hotkey = iconLocation < HotkeyCount ? hotkeys[iconLocation] : null,
 					Sprite = icon.Image,
 					Palette = worldRenderer.Palette(bi.IconPalette),
 					IconClockPalette = worldRenderer.Palette(ClockPalette),
@@ -405,7 +419,11 @@ namespace OpenRA.Mods.Common.Widgets
 				};
 
 				icons.Add(rect, pi);
-				DisplayedIconCount++;
+
+				if (iconLocation > DisplayedIconCount)
+					DisplayedIconCount = iconLocation + 1;
+				else
+					DisplayedIconCount++;
 			}
 
 			eventBounds = icons.Any() ? icons.Keys.Aggregate(Rectangle.Union) : Rectangle.Empty;
