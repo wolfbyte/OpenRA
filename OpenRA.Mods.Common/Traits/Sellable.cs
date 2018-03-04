@@ -24,6 +24,7 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly int RefundPercent = 50;
 		public readonly string[] SellSounds = { };
 		public readonly bool ShowTicks = true;
+		public readonly bool ShowTooltipText = true;
 
 		[Desc("Skip playing (reversed) make animation.")]
 		public readonly bool SkipMakeAnimation = false;
@@ -98,7 +99,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public bool IsTooltipVisible(Player forPlayer)
 		{
-			if (!IsTraitDisabled && self.World.OrderGenerator is SellOrderGenerator)
+			if (info.ShowTooltipText && !IsTraitDisabled && self.World.OrderGenerator is SellOrderGenerator)
 				return forPlayer == self.Owner;
 			return false;
 		}
