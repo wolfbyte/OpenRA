@@ -253,7 +253,7 @@ namespace OpenRA.Mods.Common.Traits
 
 	public interface IResourceExchange
 	{
-		void GiveResource(int amount);
+		void GiveResource(int amount, string harvester);
 		bool CanGiveResource(int amount);
 	}
 
@@ -420,4 +420,11 @@ namespace OpenRA.Mods.Common.Traits
 
 	[RequireExplicitImplementation]
 	public interface IPreventsShroudReset { bool PreventShroudReset(Actor self); }
+
+	[RequireExplicitImplementation]
+	public interface IResourcePurifier
+	{
+		int RefineAmount(int amount, string refinery, string harvester);
+		bool ShowTicksOnRefinery { get; }
+	}
 }
