@@ -349,7 +349,7 @@ namespace OpenRA.Mods.Common.Traits
 				if (!ire.CanGiveResource(type.ValuePerUnit))
 					return false;
 
-				ire.GiveResource(type.ValuePerUnit);
+				ire.GiveResource(type.ValuePerUnit, self.Info.Name);
 				if (--contents[type] == 0)
 					contents.Remove(type);
 

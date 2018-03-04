@@ -266,7 +266,7 @@ namespace OpenRA.Mods.Common.Traits
 
 	public interface IResourceExchange
 	{
-		void GiveResource(int amount);
+		void GiveResource(int amount, string harvester);
 		bool CanGiveResource(int amount);
 	}
 
@@ -546,5 +546,12 @@ namespace OpenRA.Mods.Common.Traits
 	public interface IPreventMapSpawn
 	{
 		bool PreventMapSpawn(World world, ActorReference actorReference);
+	}
+
+	[RequireExplicitImplementation]
+	public interface IResourcePurifier
+	{
+		int RefineAmount(int amount, string refinery, string harvester);
+		bool ShowTicksOnRefinery { get; }
 	}
 }
