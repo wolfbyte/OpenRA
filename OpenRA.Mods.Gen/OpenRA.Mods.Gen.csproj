@@ -133,6 +133,7 @@
     <Compile Include="Traits\ExperienceTrickler.cs" />
     <Compile Include="Traits\Nydus.cs" />
     <Compile Include="Traits\NydusPrimaryExit.cs" />
+    <Compile Include="Traits\ResourcePurifier.cs" />
     <Compile Include="Traits\MobSpawnerMaster.cs" />
     <Compile Include="Traits\SpawnerHarvesterMaster.cs" />
     <Compile Include="Traits\CarrierMaster.cs" />
