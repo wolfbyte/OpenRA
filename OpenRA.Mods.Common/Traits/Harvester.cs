@@ -38,6 +38,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("How fast it can dump it's carryage.")]
 		public readonly int BaleUnloadDelay = 4;
 
+		[Desc("How much bales can i dump at once.")]
+		public readonly int BaleUnloadAmount = 1;
+
 		[Desc("How many squares to show the fill level.")]
 		public readonly int PipCount = 7;
 
@@ -327,11 +330,16 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				var type = contents.First().Key;
 				var ire = proc.Trait<IResourceExchange>();
-				if (!ire.CanGiveResource(type.ValuePerUnit))
+
+				var count = contents[type] - Info.BaleUnloadAmount < 0 ? contents[type] : Info.BaleUnloadAmount;
+				var value = type.ValuePerUnit * count;
+
+				if (!ire.CanGiveResource(value))
 					return false;
 
-				ire.GiveResource(type.ValuePerUnit, self.Info.Name);
-				if (--contents[type] == 0)
+				ire.GiveResource(value, self.Info.Name);
+				contents[type] = contents[type] - count;
+				if (contents[type] == 0)
 					contents.Remove(type);
 
 				currentUnloadTicks = Info.BaleUnloadDelay;
