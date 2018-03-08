@@ -47,11 +47,17 @@ namespace OpenRA.Mods.Common.Commands
 			register("givecash", "gives the default or specified amount of money.");
 			register("givecashall", "gives the default or specified amount of money to all players and ai.");
 			register("instantbuild", "toggles instant building.");
+			register("instantbuildall", "toggles instant building for all players.");
 			register("buildanywhere", "toggles you the ability to build anywhere.");
+			register("buildanywhereall", "toggles you the ability to build anywhere for all players.");
 			register("unlimitedpower", "toggles infinite power.");
+			register("unlimitedpowerall", "toggles infinite power for all players.");
 			register("enabletech", "toggles the ability to build everything.");
+			register("enabletechall", "toggles the ability to build everything for all players.");
 			register("instantcharge", "toggles instant support power charging.");
+			register("instantchargeall", "toggles instant support power charging for all players.");
 			register("all", "toggles all cheats and gives you some cash for your trouble.");
+			register("allforall", "toggles all cheats for all players and gives everyone some cash for their troubles.");
 			register("crash", "crashes the game.");
 			register("levelup", "adds a specified number of levels to the selected actors.");
 			register("poweroutage", "causes owners of selected actors to have a 5 second power outage.");
@@ -106,8 +112,64 @@ namespace OpenRA.Mods.Common.Commands
 				case "instantcharge": IssueDevCommand(world, "DevFastCharge"); break;
 				case "clearresources": IssueDevCommand(world, "DevClearResources"); break;
 
+				case "visibilityall":
+					foreach (var player in world.Players.Where(p => !p.NonCombatant))
+					{
+						world.IssueOrder(new Order("DevVisibility", player.PlayerActor, false));
+					}
+
+					break;
+
+				case "instantbuildall":
+					foreach (var player in world.Players.Where(p => !p.NonCombatant))
+					{
+						world.IssueOrder(new Order("DevFastBuild", player.PlayerActor, false));
+					}
+
+					break;
+
+				case "buildanywhereall":
+					foreach (var player in world.Players.Where(p => !p.NonCombatant))
+					{
+						world.IssueOrder(new Order("DevBuildAnywhere", player.PlayerActor, false));
+					}
+
+					break;
+
+				case "unlimitedpowerall":
+					foreach (var player in world.Players.Where(p => !p.NonCombatant))
+					{
+						world.IssueOrder(new Order("DevUnlimitedPower", player.PlayerActor, false));
+					}
+
+					break;
+
+				case "enabletechall":
+					foreach (var player in world.Players.Where(p => !p.NonCombatant))
+					{
+						world.IssueOrder(new Order("DevEnableTech", player.PlayerActor, false));
+					}
+
+					break;
+
+				case "instantchargeall":
+					foreach (var player in world.Players.Where(p => !p.NonCombatant))
+					{
+						world.IssueOrder(new Order("DevFastCharge", player.PlayerActor, false));
+					}
+
+					break;
+
 				case "all":
 					IssueDevCommand(world, "DevAll");
+					break;
+
+				case "allforall":
+					foreach (var player in world.Players.Where(p => !p.NonCombatant))
+					{
+						world.IssueOrder(new Order("DevAll", player.PlayerActor, false));
+					}
+
 					break;
 
 				case "crash":
