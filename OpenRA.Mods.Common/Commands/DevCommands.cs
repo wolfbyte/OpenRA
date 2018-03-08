@@ -57,6 +57,7 @@ namespace OpenRA.Mods.Common.Commands
 			register("kill", "kills selected actors.");
 			register("dispose", "disposes selected actors.");
 			register("produce", "makes the selected actor produce given actor.");
+			register("clearresources", "removes all the ore from the map.");
 		}
 
 		public void InvokeCommand(string name, string arg)
@@ -102,6 +103,7 @@ namespace OpenRA.Mods.Common.Commands
 				case "unlimitedpower": IssueDevCommand(world, "DevUnlimitedPower"); break;
 				case "enabletech": IssueDevCommand(world, "DevEnableTech"); break;
 				case "instantcharge": IssueDevCommand(world, "DevFastCharge"); break;
+				case "clearresources": IssueDevCommand(world, "DevClearResources"); break;
 
 				case "all":
 					IssueDevCommand(world, "DevAll");
