@@ -187,7 +187,12 @@ namespace OpenRA.Mods.Common.Traits
 				if (!baseBuilder.Info.BuildingLimits.ContainsKey(actor.Name))
 					return true;
 
-				return playerBuildings.Count(a => a.Info.Name == actor.Name) < baseBuilder.Info.BuildingLimits[actor.Name];
+				var producers = world.Actors.Where(a => a.Owner == player && a.TraitsImplementing<ProductionQueue>() != null);
+				var productionQueues = producers.SelectMany(a => a.TraitsImplementing<ProductionQueue>());
+				var activeProductionQueues = productionQueues.Where(pq => pq.CurrentItem() != null);
+				var queues = activeProductionQueues.Where(pq => pq.CurrentItem().Item == actor.Name);
+
+				return playerBuildings.Count(a => a.Info.Name == actor.Name) + queues.Count() < baseBuilder.Info.BuildingLimits[actor.Name];
 			});
 
 			if (orderBy != null)
@@ -386,7 +391,12 @@ namespace OpenRA.Mods.Common.Traits
 				//}
 
 				// Do we want to build this structure?
-				var count = playerBuildings.Count(a => a.Info.Name == name);
+				var producers = world.Actors.Where(a => a.Owner == queue.Actor.Owner && a.TraitsImplementing<ProductionQueue>() != null);
+				var productionQueues = producers.SelectMany(a => a.TraitsImplementing<ProductionQueue>());
+				var activeProductionQueues = productionQueues.Where(pq => pq.CurrentItem() != null);
+				var queues = activeProductionQueues.Where(pq => pq.CurrentItem().Item == name);
+
+				var count = playerBuildings.Count(a => a.Info.Name == name) + (queues == null ? 0 : queues.Count());
 				if (count * 100 > frac.Value * playerBuildings.Length)
 					continue;
 
