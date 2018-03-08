@@ -269,6 +269,15 @@ namespace OpenRA.Mods.Common.Traits
 					break;
 				}
 
+				case "DevClearResources":
+				{
+					var resLayer = self.World.WorldActor.TraitOrDefault<ResourceLayer>();
+					foreach (var c in self.World.Map.AllCells.MapCoords)
+						resLayer.Destroy(c.ToCPos(self.World.Map.Grid.Type));
+
+					break;
+				}
+
 				default:
 					return;
 			}
