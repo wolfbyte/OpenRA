@@ -117,7 +117,8 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 							if (statsHotkeys[i].IsActivatedBy(e))
 							{
 								Game.Sound.PlayNotification(modData.DefaultRules, null, "Sounds", clickSound, null);
-								statistics.Removed();
+								if (statistics != null)
+									statistics.Removed();
 								statistics = Game.LoadWidget(world, stats.MenuContainer, menuRoot, new WidgetArgs() { { "activePanel", i } });
 								return true;
 							}
