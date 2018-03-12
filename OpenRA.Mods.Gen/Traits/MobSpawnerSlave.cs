@@ -39,6 +39,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public IPositionable Positionable { get; private set; }
 
 		MobSpawnerMaster spawnerMaster;
+		Actor master;
 
 		// TODO: add more activities for aircrafts
 		public bool IsMoving { get { return self.CurrentActivity is Move; } }
@@ -65,6 +66,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public override void LinkMaster(Actor self, Actor master, BaseSpawnerMaster spawnerMaster)
 		{
 			base.LinkMaster(self, master, spawnerMaster);
+			this.master = master;
 			this.spawnerMaster = spawnerMaster as MobSpawnerMaster;
 		}
 
@@ -72,6 +74,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		{
 			// And tell attack bases to stop attacking.
 			if (Moves.Length == 0)
+				return;
+
+			var masterMobile = master.TraitOrDefault<Mobile>();
+			if (masterMobile != null && masterMobile.IsTraitDisabled)
 				return;
 
 			foreach (var mv in Moves)
@@ -86,6 +92,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		{
 			// And tell attack bases to stop attacking.
 			if (Moves.Length == 0)
+				return;
+
+			var masterMobile = master.TraitOrDefault<Mobile>();
+			if (masterMobile != null && masterMobile.IsTraitDisabled)
 				return;
 
 			foreach (var mv in Moves)
