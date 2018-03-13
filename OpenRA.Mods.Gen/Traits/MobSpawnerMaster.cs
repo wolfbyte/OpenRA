@@ -69,8 +69,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public override object Create(ActorInitializer init) { return new MobSpawnerMaster(init, this); }
 	}
 
-	public class MobSpawnerMaster : BaseSpawnerMaster, INotifyCreated, INotifyOwnerChanged, ITick,
-		INotifyActorDisposing, IResolveOrder, INotifyAttack
+	public class MobSpawnerMaster : BaseSpawnerMaster, INotifyCreated, INotifyOwnerChanged, ITick, IResolveOrder, INotifyAttack
 	{
 		class MobSpawnerSlaveEntry : BaseSpawnerSlaveEntry
 		{
