@@ -96,26 +96,22 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 					{
 						AdjustStatisticsPanel(basicStatsHeaders, basicPlayerTemplate);
 						DisplayStats(BasicStats);
-					}
-				),
-				createStatsOption("Economy", economyStatsHeaders, () => 
+					}),
+				createStatsOption("Economy", economyStatsHeaders, () =>
 					{
 						AdjustStatisticsPanel(economyStatsHeaders, economyPlayerTemplate);
 						DisplayStats(EconomyStats);
-					}
-				),
+					}),
 				createStatsOption("Production", productionStatsHeaders, () =>
 					{
 						AdjustStatisticsPanel(productionStatsHeaders, productionPlayerTemplate);
 						DisplayStats(ProductionStats);
-					}
-				),
+					}),
 				createStatsOption("Combat", combatStatsHeaders, () =>
 					{
 						AdjustStatisticsPanel(combatStatsHeaders, combatPlayerTemplate);
 						DisplayStats(CombatStats);
-					}
-				),
+					}),
 				createStatsOption("Earnings (graph)", earnedThisMinuteGraphHeaders, () =>
 					{
 						playerStatsPanel.Bounds.Width = earnedThisMinuteGraphTemplate.Bounds.Width + 60;
@@ -124,8 +120,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 						playerStatsPanel.ScrollToTop();
 						earnedThisMinuteGraphHeaders.Parent.Bounds.Width = playerStatsPanel.Bounds.Width;
 						EarnedThisMinuteGraph();
-					}
-				)
+					})
 			};
 
 			Func<StatsDropDownOption, ScrollItemWidget, ScrollItemWidget> setupItem = (option, template) =>
