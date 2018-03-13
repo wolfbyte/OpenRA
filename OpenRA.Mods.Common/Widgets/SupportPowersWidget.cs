@@ -125,7 +125,11 @@ namespace OpenRA.Mods.Common.Widgets
 			foreach (var p in powers)
 			{
 				var rect = new Rectangle(rb.X, rb.Y + IconCount * (IconSize.Y + IconMargin), IconSize.X, IconSize.Y);
-				icon.Play(p.Info.Icon);
+				var level = p.GetLevel();
+				if (level == 0)
+					continue;
+
+				icon.Play(p.Info.Icons.First(i => i.Key == level).Value);
 
 				var power = new SupportPowerIcon()
 				{

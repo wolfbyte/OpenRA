@@ -10,6 +10,7 @@
 #endregion
 
 using System;
+using System.Linq;
 using OpenRA.Effects;
 using OpenRA.GameRules;
 using OpenRA.Mods.Common.Activities;
@@ -138,7 +139,7 @@ namespace OpenRA.Mods.Common.Traits
 					Info.BeaconPaletteIsPlayerPalette,
 					Info.BeaconPalette,
 					Info.BeaconImage,
-					Info.BeaconPoster,
+					Info.BeaconPosters.First(bp => bp.Key == GetLevel()).Value,
 					Info.BeaconPosterPalette,
 					Info.ArrowSequence,
 					Info.CircleSequence,
