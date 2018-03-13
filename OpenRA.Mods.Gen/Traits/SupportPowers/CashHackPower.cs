@@ -31,7 +31,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public readonly int Minimum = 0;
 
 		[Desc("Maximum amount of funds which will be stolen.")]
-		public readonly int Maximum = int.MaxValue;
+		public readonly Dictionary<int, int> Maximums = new Dictionary<int, int>();
 
 		[Desc("Type of support power. Used for targerting along with 'CashHackable' trait on actors.")]
 		public readonly string Type = "Cash-Hack";
@@ -76,7 +76,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			{
 				var enemyResources = a.Owner.PlayerActor.Trait<PlayerResources>();
 
-				var toTake = Math.Min(info.Maximum, (enemyResources.Cash + enemyResources.Resources) * info.Percentage / 100);
+				var toTake = Math.Min(info.Maximums.First(ut => ut.Key == GetLevel()).Value, (enemyResources.Cash + enemyResources.Resources) * info.Percentage / 100);
 				var toGive = Math.Max(toTake, info.Minimum);
 
 				enemyResources.TakeCash(toTake);
