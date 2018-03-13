@@ -9,6 +9,8 @@
  */
 #endregion
 
+using System.Collections.Generic;
+using System.Linq;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Effects;
 using OpenRA.Primitives;
@@ -19,9 +21,9 @@ namespace OpenRA.Mods.Common.Traits
 	[Desc("Spawns an actor that stays for a limited amount of time.")]
 	public class SpawnActorPowerInfo : SupportPowerInfo
 	{
-		[ActorReference, FieldLoader.Require]
-		[Desc("Actor to spawn.")]
-		public readonly string Actor = null;
+		[FieldLoader.Require]
+		[Desc("Actors to spawn for each level.")]
+		public readonly Dictionary<int, string> Actors = new Dictionary<int, string>();
 
 		[Desc("Amount of time to keep the actor alive in ticks. Value < 0 means this actor will not remove itself.")]
 		public readonly int LifeTime = 250;
@@ -38,13 +40,14 @@ namespace OpenRA.Mods.Common.Traits
 	public class SpawnActorPower : SupportPower
 	{
 		public SpawnActorPower(Actor self, SpawnActorPowerInfo info) : base(self, info) { }
+
 		public override void Activate(Actor self, Order order, SupportPowerManager manager)
 		{
 			base.Activate(self, order, manager);
 
 			var info = Info as SpawnActorPowerInfo;
 
-			if (info.Actor != null)
+			if (info.Actors != null)
 			{
 				self.World.AddFrameEndTask(w =>
 				{
@@ -56,7 +59,7 @@ namespace OpenRA.Mods.Common.Traits
 					if (!string.IsNullOrEmpty(info.EffectSequence) && !string.IsNullOrEmpty(info.EffectPalette))
 						w.Add(new SpriteEffect(location, w, info.EffectImage, info.EffectSequence, info.EffectPalette));
 
-					var actor = w.CreateActor(info.Actor, new TypeDictionary
+					var actor = w.CreateActor(info.Actors.First(a => a.Key == GetLevel()).Value, new TypeDictionary
 					{
 						new LocationInit(order.TargetLocation),
 						new OwnerInit(self.Owner),

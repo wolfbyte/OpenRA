@@ -10,7 +10,9 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Widgets;
 
@@ -56,7 +58,8 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 				nameLabel.Text = sp.Info.Description;
 				var nameSize = nameFont.Measure(nameLabel.Text);
 
-				descLabel.Text = sp.Info.LongDesc.Replace("\\n", "\n");
+				var level = sp.GetLevel();
+				descLabel.Text = sp.Info.LongDescs.First(ld => ld.Key == level).Value.Replace("\\n", "\n");
 				var descSize = descFont.Measure(descLabel.Text);
 
 				var remaining = WidgetUtils.FormatTime(sp.RemainingTime, world.Timestep);
