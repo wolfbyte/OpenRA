@@ -134,7 +134,8 @@ namespace OpenRA.Mods.Common.Traits.Render
 			}
 
 			var pxPos = wr.Viewport.WorldToViewPx(boundsOffset) + sizeOffset;
-			return new IRenderable[] { new UISpriteRenderable(Anim.Image, self.CenterPosition, pxPos, Info.ZOffset, wr.Palette(Info.Palette + (Info.IsPlayerPalette ? self.Owner.InternalName : "")), 1f) };
+			return new IRenderable[] { new UISpriteRenderable(Anim.Image, self.CenterPosition, pxPos, Info.ZOffset,
+				wr.Palette(Info.Palette + (Info.IsPlayerPalette ? self.Owner.InternalName : "")), 1f) };
 		}
 
 		void ITick.Tick(Actor self) { Anim.Tick(); }
