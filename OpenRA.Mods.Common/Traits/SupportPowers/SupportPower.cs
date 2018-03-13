@@ -9,6 +9,8 @@
  */
 #endregion
 
+using System.Collections.Generic;
+using System.Linq;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -17,9 +19,9 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		[Desc("Measured in ticks.")]
 		public readonly int ChargeInterval = 0;
-		public readonly string Icon = null;
+		public readonly Dictionary<int, string> Icons = new Dictionary<int, string>();
 		public readonly string Description = "";
-		public readonly string LongDesc = "";
+		public readonly Dictionary<int, string> LongDescs = new Dictionary<int, string>();
 		public readonly bool AllowMultiple = false;
 		public readonly bool OneShot = false;
 
@@ -29,7 +31,7 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("If set to true, the support power will be fully charged when it becomes available. " +
 			"Normal rules apply for subsequent charges.")]
 		public readonly bool StartFullyCharged = false;
-		public readonly string[] Prerequisites = { };
+		public readonly Dictionary<int, string[]> Prerequisites = new Dictionary<int, string[]>();
 
 		public readonly string BeginChargeSound = null;
 
@@ -74,7 +76,7 @@ namespace OpenRA.Mods.Common.Traits
 		[PaletteReference("BeaconPaletteIsPlayerPalette")] public readonly string BeaconPalette = "player";
 
 		public readonly string BeaconImage = "beacon";
-		[SequenceReference("BeaconImage")] public readonly string BeaconPoster = null;
+		public readonly Dictionary<int, string> BeaconPosters = new Dictionary<int, string>();
 		[PaletteReference] public readonly string BeaconPosterPalette = "chrome";
 		[SequenceReference("BeaconImage")] public readonly string ClockSequence = null;
 		[SequenceReference("BeaconImage")] public readonly string ArrowSequence = null;
@@ -97,13 +99,32 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		public readonly Actor Self;
 		readonly SupportPowerInfo info;
+		readonly TechTree techTree;
 		protected RadarPing ping;
+		protected DeveloperMode developerMode;
 
 		public SupportPower(Actor self, SupportPowerInfo info)
 			: base(info)
 		{
 			Self = self;
 			this.info = info;
+
+			// Special case handling is required for the Player actor.
+			// Created is called before Player.PlayerActor is assigned,
+			// so we must query other player traits from self, knowing that
+			// it refers to the same actor as self.Owner.PlayerActor
+			var playerActor = self.Info.Name == "player" ? self : self.Owner.PlayerActor;
+
+			techTree = playerActor.Trait<TechTree>();
+			developerMode = playerActor.Trait<DeveloperMode>();
+		}
+
+		public int GetLevel()
+		{
+			var availables = Info.Prerequisites.Where(p => techTree.HasPrerequisites(p.Value));
+			var level = availables.Any() ? availables.Max(p => p.Key) : 0;
+
+			return developerMode.AllTech ? Info.Prerequisites.Max(p => p.Key) : level;
 		}
 
 		public virtual void Charging(Actor self, string key)
