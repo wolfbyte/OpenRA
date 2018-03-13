@@ -103,7 +103,7 @@ namespace OpenRA.Mods.Common.Widgets
  			foreach (var queue in queues)
  				if (!clocks.ContainsKey(queue.Trait))
  					clocks.Add(queue.Trait, new Animation(world, ClockAnimation));
- 
+
 			if (renderBounds != RenderBounds)
 			{
 				renderBounds = RenderBounds;
