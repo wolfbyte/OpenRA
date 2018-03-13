@@ -85,7 +85,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public override object Create(ActorInitializer init) { return new BaseSpawnerMaster(init, this); }
 	}
 
-	public class BaseSpawnerMaster : ConditionalTrait<BaseSpawnerMasterInfo>, INotifyCreated, INotifyKilled, INotifyOwnerChanged
+	public class BaseSpawnerMaster : ConditionalTrait<BaseSpawnerMasterInfo>, INotifyCreated, INotifyKilled, INotifyOwnerChanged, INotifyActorDisposing
 	{
 		readonly Actor self;
 		protected readonly BaseSpawnerSlaveEntry[] SlaveEntries;
@@ -215,7 +215,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			});
 		}
 
-		public virtual void Disposing(Actor self)
+		void INotifyActorDisposing.Disposing(Actor self)
 		{
 			// Just dispose them regardless of slave disposal options.
 			foreach (var se in SlaveEntries)
