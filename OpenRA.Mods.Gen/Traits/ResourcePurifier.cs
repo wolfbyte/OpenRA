@@ -51,7 +51,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		int currentDisplayTick = 0;
 		int currentDisplayValue = 0;
 
-		public bool ShowTicksOnRefinery { get { return info.ShowTicksOnRefinery; } }
+		bool IResourcePurifier.ShowTicksOnRefinery { get { return info.ShowTicksOnRefinery; } }
 
 		public ResourcePurifier(Actor self, ResourcePurifierInfo info)
 			: base(info)
@@ -81,7 +81,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			var cash = Util.ApplyPercentageModifiers(amount, new int[] { info.Modifier });
 			playerResources.GiveCash(cash);
 
-			if (info.ShowTicks && !ShowTicksOnRefinery)
+			if (info.ShowTicks && !info.ShowTicksOnRefinery)
 				currentDisplayValue += cash;
 
 			return cash;
@@ -89,7 +89,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		void ITick.Tick(Actor self)
 		{
-			if (info.ShowTicks && !ShowTicksOnRefinery && currentDisplayValue > 0 && --currentDisplayTick <= 0)
+			if (info.ShowTicks && !info.ShowTicksOnRefinery && currentDisplayValue > 0 && --currentDisplayTick <= 0)
 			{
 				var temp = currentDisplayValue;
 				if (self.Owner.IsAlliedWith(self.World.RenderPlayer))

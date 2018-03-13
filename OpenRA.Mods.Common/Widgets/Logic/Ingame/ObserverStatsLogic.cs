@@ -97,38 +97,26 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 
 			var statsDropDownOptions = new StatsDropDownOption[]
 			{
-<<<<<<< HEAD
-				createStatsOption("Basic", basicStatsHeaders, () => DisplayStats(BasicStats)),
-				createStatsOption("Economy", economyStatsHeaders, () => DisplayStats(EconomyStats)),
-				createStatsOption("Production", productionStatsHeaders, () => DisplayStats(ProductionStats)),
-				createStatsOption("Combat", combatStatsHeaders, () => DisplayStats(CombatStats)),
-				createStatsOption("Earnings (graph)", earnedThisMinuteGraphHeaders, () => EarnedThisMinuteGraph()),
-				createStatsOption("Army (graph)", armyThisMinuteGraphHeaders, () => ArmyThisMinuteGraph()),
-=======
 				createStatsOption("Basic", basicStatsHeaders, () =>
 					{
 						AdjustStatisticsPanel(basicStatsHeaders, basicPlayerTemplate);
 						DisplayStats(BasicStats);
-					}
-				),
-				createStatsOption("Economy", economyStatsHeaders, () => 
+					}),
+				createStatsOption("Economy", economyStatsHeaders, () =>
 					{
 						AdjustStatisticsPanel(economyStatsHeaders, economyPlayerTemplate);
 						DisplayStats(EconomyStats);
-					}
-				),
+					}),
 				createStatsOption("Production", productionStatsHeaders, () =>
 					{
 						AdjustStatisticsPanel(productionStatsHeaders, productionPlayerTemplate);
 						DisplayStats(ProductionStats);
-					}
-				),
+					}),
 				createStatsOption("Combat", combatStatsHeaders, () =>
 					{
 						AdjustStatisticsPanel(combatStatsHeaders, combatPlayerTemplate);
 						DisplayStats(CombatStats);
-					}
-				),
+					}),
 				createStatsOption("Earnings (graph)", earnedThisMinuteGraphHeaders, () =>
 					{
 						playerStatsPanel.Bounds.Width = earnedThisMinuteGraphTemplate.Bounds.Width + 60;
@@ -137,8 +125,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 						playerStatsPanel.ScrollToTop();
 						earnedThisMinuteGraphHeaders.Parent.Bounds.Width = playerStatsPanel.Bounds.Width;
 						EarnedThisMinuteGraph();
-					}
-				),
+					}),
 				createStatsOption("Army (graph)", armyThisMinuteGraphHeaders, () =>
 					{
 						playerStatsPanel.Bounds.Width = armyThisMinuteGraphTemplate.Bounds.Width + 60;
@@ -147,8 +134,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 						playerStatsPanel.ScrollToTop();
 						armyThisMinuteGraphHeaders.Parent.Bounds.Width = playerStatsPanel.Bounds.Width;
 						ArmyThisMinuteGraph();
-					}
-				)
+					})
 			};
 
 			Func<StatsDropDownOption, ScrollItemWidget, ScrollItemWidget> setupItem = (option, template) =>
