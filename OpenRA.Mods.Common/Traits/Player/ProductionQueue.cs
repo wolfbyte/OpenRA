@@ -56,6 +56,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("The build time is multiplied with this value on low power.")]
 		public readonly int LowPowerSlowdown = 3;
 
+		[Desc("Only allow queueing this much actors.")]
+		public readonly int QueueLimit = int.MaxValue;
+
 		[Desc("Notification played when production is complete.",
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string ReadyAudio = "UnitReady";
@@ -78,6 +81,10 @@ namespace OpenRA.Mods.Common.Traits
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string OnHoldAudio = "OnHold";
 
+		[Desc("Notification played when player right-clicks on the build palette icon.",
+			"The filename of the audio is defined per faction in notifications.yaml.")]
+		public readonly string UnableToComplyAudio = "BuildingInProgress";
+
 		[Desc("Notification played when player right-clicks on a build palette icon that is already on hold.",
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string CancelledAudio = "Cancelled";
@@ -88,6 +95,9 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			if (LowPowerSlowdown <= 0)
 				throw new YamlException("Production queue must have LowPowerSlowdown of at least 1.");
+
+			if (QueueLimit <= 0)
+				throw new YamlException("Production queue must have QueueLimit of at least 1.");
 		}
 	}
 
@@ -364,6 +374,14 @@ namespace OpenRA.Mods.Common.Traits
 			switch (order.OrderString)
 			{
 				case "StartProduction":
+					// This queue doesn't allow more
+					if (QueueLength >= Info.QueueLimit)
+					{
+						Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.UnableToComplyAudio, self.Owner.Faction.InternalName);
+
+						return;
+					}
+
 					var unit = rules.Actors[order.TargetString];
 					var bi = unit.TraitInfo<BuildableInfo>();
 
