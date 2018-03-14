@@ -41,6 +41,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Should right clicking on the icon instantly cancel the production instead of putting it on hold?")]
 		public readonly bool DisallowPaused = false;
 
+		[Desc("Drain the cost of actors instantly on first frame of production.")]
+		public readonly bool InstantCashDrain = false;
+
 		[Desc("This percentage value is multiplied with actor cost to translate into build time (lower means faster).")]
 		public readonly int BuildDurationModifier = 100;
 
@@ -574,6 +577,8 @@ namespace OpenRA.Mods.Common.Traits
 		readonly BuildableInfo bi;
 		readonly PowerManager pm;
 
+		bool firstCostTaken = false;
+
 		public ProductionItem(ProductionQueue queue, string item, int cost, PowerManager pm, Action onComplete)
 		{
 			Item = item;
@@ -616,11 +621,24 @@ namespace OpenRA.Mods.Common.Traits
 					return;
 			}
 
-			var costThisFrame = RemainingCost / RemainingTime;
+			var unitValued = ai.TraitInfoOrDefault<ValuedInfo>();
+			var costThisFrame = 0;
+			if (Queue.Info.InstantCashDrain && unitValued != null)
+			{
+				if (!firstCostTaken)
+					costThisFrame = unitValued.Cost;
+				else
+					costThisFrame = 0;	
+			}
+			else
+				costThisFrame = RemainingCost / RemainingTime;
+
 			if (costThisFrame != 0 && !pr.TakeCash(costThisFrame, true))
 				return;
 
 			RemainingCost -= costThisFrame;
+			firstCostTaken = true;
+
 			RemainingTime -= 1;
 			if (RemainingTime > 0)
 				return;
