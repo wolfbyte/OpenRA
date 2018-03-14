@@ -337,12 +337,20 @@ namespace OpenRA.Mods.Common.Traits
 							return;
 					}
 
+					var valued = unit.TraitInfoOrDefault<ValuedInfo>();
+					var cost = valued != null ? valued.Cost : 0;
+
+					if (cost != 0 && Info.InstantCashDrain && !playerResources.TakeCash(cost, true))
+					{
+						Game.Sound.PlayNotification(rules, self.Owner, "Speech", playerResources.Info.InsufficientFundsNotification, self.Owner.Faction.InternalName);
+						
+						return;
+					}
+
 					var queuedAudio = bi.QueuedAudio != null ? bi.QueuedAudio : Info.QueuedAudio;
 
 					Game.Sound.PlayNotification(rules, self.Owner, "Speech", queuedAudio, self.Owner.Faction.InternalName);
 
-					var valued = unit.TraitInfoOrDefault<ValuedInfo>();
-					var cost = valued != null ? valued.Cost : 0;
 					var time = GetBuildTime(unit, bi);
 					var amountToBuild = Math.Min(fromLimit, order.ExtraData);
 					for (var n = 0; n < amountToBuild; n++)
@@ -383,6 +391,11 @@ namespace OpenRA.Mods.Common.Traits
 					var bi3 = unit3.TraitInfo<BuildableInfo>();
 
 					var cancelledAudio = bi3.CancelledAudio != null ? bi3.CancelledAudio : Info.CancelledAudio;
+
+					var valued2 = unit3.TraitInfoOrDefault<ValuedInfo>();
+					var cost2 = valued2 != null ? valued2.Cost : 0;
+					if (cost2 != 0 && Info.InstantCashDrain)
+						playerResources.GiveCash(cost2);
 
 					Game.Sound.PlayNotification(rules, self.Owner, "Speech", cancelledAudio, self.Owner.Faction.InternalName);
 					CancelProduction(order.TargetString, order.ExtraData);
@@ -513,8 +526,6 @@ namespace OpenRA.Mods.Common.Traits
 		readonly BuildableInfo bi;
 		readonly PowerManager pm;
 
-		bool firstCostTaken = false;
-
 		public ProductionItem(ProductionQueue queue, string item, int cost, PowerManager pm, Action onComplete)
 		{
 			Item = item;
@@ -557,24 +568,11 @@ namespace OpenRA.Mods.Common.Traits
 					return;
 			}
 
-			var unitValued = ai.TraitInfoOrDefault<ValuedInfo>();
-			var costThisFrame = 0;
-			if (Queue.Info.InstantCashDrain && unitValued != null)
-			{
-				if (!firstCostTaken)
-					costThisFrame = unitValued.Cost;
-				else
-					costThisFrame = 0;	
-			}
-			else
-				costThisFrame = RemainingCost / RemainingTime;
-
+			var costThisFrame = Queue.Info.InstantCashDrain ? 0 : RemainingCost / RemainingTime;
 			if (costThisFrame != 0 && !pr.TakeCash(costThisFrame, true))
 				return;
 
 			RemainingCost -= costThisFrame;
-			firstCostTaken = true;
-
 			RemainingTime -= 1;
 			if (RemainingTime > 0)
 				return;
