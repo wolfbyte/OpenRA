@@ -66,7 +66,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 				return;
 
 			var current = queue.AllQueued().Where(i => i.Started).OrderBy(i => i.RemainingTime).FirstOrDefault();
-			value = current != null ? 1 - (float)current.RemainingCost / current.TotalCost : 0;
+			value = current != null ? 1 - (float)current.RemainingTime / current.TotalTime : 0;
 		}
 
 		float ISelectionBar.GetValue()
