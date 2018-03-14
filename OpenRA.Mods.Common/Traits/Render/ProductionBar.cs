@@ -68,7 +68,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 		void ITick.Tick(Actor self)
 		{
 			var current = queue.CurrentItem();
-			value = current != null ? 1 - (float)current.RemainingCost / current.TotalCost : 0;
+			value = current != null ? 1 - (float)current.RemainingTime / current.TotalTime : 0;
 		}
 
 		float ISelectionBar.GetValue()
