@@ -1211,7 +1211,7 @@ namespace OpenRA.Mods.Common.AI
 		void ProductionUnits(Actor self)
 		{
 			// Stop building until economy is restored
-			if (!HasAdequateProc() || Info.ProductionMinimumCash > playerResource.Cash)
+			if (!HasAdequateProc())
 				return;
 
 			// No construction yards - Build a new MCV
@@ -1240,6 +1240,9 @@ namespace OpenRA.Mods.Common.AI
 				ChooseUnitToBuild(queue);
 
 			if (unit == null)
+				return;
+
+			if (unit.TraitInfoOrDefault<HarvesterInfo>() == null && Info.ProductionMinimumCash > playerResource.Cash)
 				return;
 
 			var name = unit.Name;
