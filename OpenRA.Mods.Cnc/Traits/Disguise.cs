@@ -350,7 +350,7 @@ namespace OpenRA.Mods.Cnc.Traits
 			if (!info.ValidStances.HasStance(stance))
 				return false;
 
-			return info.TargetTypes.Overlaps(target.GetAllTargetTypes());
+			return info.TargetTypes.Overlaps(target.GetEnabledTargetTypes());
 		}
 
 		public override bool CanTargetFrozenActor(Actor self, FrozenActor target, TargetModifiers modifiers, ref string cursor)
