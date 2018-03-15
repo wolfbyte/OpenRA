@@ -395,6 +395,11 @@ namespace OpenRA.Mods.Common.AI
 			// Build everything else
 			foreach (var frac in ai.Info.BuildingFractions.Shuffle(ai.Random))
 			{
+				if (ai.Info.QueueTimeLimits != null &&
+					ai.Info.QueueTimeLimits.ContainsKey(queue.Info.Type) &&
+					ai.Info.QueueTimeLimits[queue.Info.Type] > world.WorldTick)
+					break;
+
 				if (ai.Info.ProductionMinimumCash > playerResources.Cash)
 					break;
 
