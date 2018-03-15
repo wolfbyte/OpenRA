@@ -214,6 +214,9 @@ namespace OpenRA.Mods.Common.AI
 		[Desc("Tells AI to don't train from this queue more than specified time at the same time.")]
 		public readonly Dictionary<string, int> QueueLimits = null;
 
+		[Desc("Tells AI to don't train from this queue until that much time in ticks has passed from game's start.")]
+		public readonly Dictionary<string, int> QueueTimeLimits = null;
+
 		[Desc("What buildings to the AI should build.", "What % of the total base must be this type of building.")]
 		public readonly Dictionary<string, float> BuildingFractions = null;
 
@@ -1184,6 +1187,11 @@ namespace OpenRA.Mods.Common.AI
 		internal ProductionQueue FindQueue(string category)
 		{
 			var queues = FindQueues(category);
+
+			if (Info.QueueTimeLimits != null &&
+				Info.QueueTimeLimits.ContainsKey(category) &&
+				Info.QueueTimeLimits[category] > World.WorldTick)
+				return null;
 
 			var usedQueues = queues.Where(q => q.CurrentItem() != null);
 			if (Info.QueueLimits != null &&
