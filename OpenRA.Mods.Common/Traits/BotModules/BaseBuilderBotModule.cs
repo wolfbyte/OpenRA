@@ -108,6 +108,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Maximum range at which to build defensive structures near a combat hotspot.")]
 		public readonly int MaximumDefenseRadius = 20;
 
+		[Desc("Don't build anything other than cash generators if we don't have enough cash.")]
+		public readonly int ConstructionMinimumCash = 0;
+
 		[Desc("Try to build another production building if there is too much cash.")]
 		public readonly int NewProductionCashThreshold = 5000;
 
