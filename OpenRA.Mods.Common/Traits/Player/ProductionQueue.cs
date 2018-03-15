@@ -149,6 +149,15 @@ namespace OpenRA.Mods.Common.Traits
 				return;
 
 			// Refund the current item
+			if (Info.InstantCashDrain)
+				foreach (var item in queue)
+				{
+					var valued = item.ActorInfo.TraitInfoOrDefault<ValuedInfo>();
+					var cost = valued != null ? valued.Cost : 0;
+
+					playerResources.GiveCash(cost);
+				}
+
 			playerResources.GiveCash(queue[0].TotalCost - queue[0].RemainingCost);
 			queue.Clear();
 		}
@@ -324,14 +333,6 @@ namespace OpenRA.Mods.Common.Traits
 			switch (order.OrderString)
 			{
 				case "StartProduction":
-					// This queue doesn't allow more
-					if (QueueLength >= Info.QueueLimit)
-					{
-						Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.UnableToComplyAudio, self.Owner.Faction.InternalName);
-
-						return;
-					}
-
 					var unit = rules.Actors[order.TargetString];
 					var bi = unit.TraitInfo<BuildableInfo>();
 
@@ -357,23 +358,33 @@ namespace OpenRA.Mods.Common.Traits
 
 					var valued = unit.TraitInfoOrDefault<ValuedInfo>();
 					var cost = valued != null ? valued.Cost : 0;
-
-					if (cost != 0 && Info.InstantCashDrain && !playerResources.TakeCash(cost, true))
-					{
-						Game.Sound.PlayNotification(rules, self.Owner, "Speech", playerResources.Info.InsufficientFundsNotification, self.Owner.Faction.InternalName);
-						
-						return;
-					}
-
-					var queuedAudio = bi.QueuedAudio != null ? bi.QueuedAudio : Info.QueuedAudio;
-
-					Game.Sound.PlayNotification(rules, self.Owner, "Speech", queuedAudio, self.Owner.Faction.InternalName);
-
 					var time = GetBuildTime(unit, bi);
 					var amountToBuild = Math.Min(fromLimit, order.ExtraData);
+					var hasPlayedQueuedSound = false;
 					for (var n = 0; n < amountToBuild; n++)
 					{
 						var hasPlayedSound = false;
+						if (QueueLength >= Info.QueueLimit)
+						{
+							Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.UnableToComplyAudio, self.Owner.Faction.InternalName);
+
+							return;
+						}
+
+						if (cost != 0 && Info.InstantCashDrain && !playerResources.TakeCash(cost, true))
+						{
+							Game.Sound.PlayNotification(rules, self.Owner, "Speech", playerResources.Info.InsufficientFundsNotification, self.Owner.Faction.InternalName);
+
+							return;
+						}
+
+						if (!hasPlayedQueuedSound)
+						{
+							var queuedAudio = bi.QueuedAudio != null ? bi.QueuedAudio : Info.QueuedAudio;
+							Game.Sound.PlayNotification(rules, self.Owner, "Speech", queuedAudio, self.Owner.Faction.InternalName);
+							hasPlayedQueuedSound = true;
+						}
+
 						BeginProduction(new ProductionItem(this, order.TargetString, cost, playerPower, () => self.World.AddFrameEndTask(_ =>
 						{
 							var isBuilding = unit.HasTraitInfo<BuildingInfo>();
@@ -398,7 +409,6 @@ namespace OpenRA.Mods.Common.Traits
 					var bi2 = unit2.TraitInfo<BuildableInfo>();
 
 					var onHoldAudio = bi2.OnHoldAudio != null ? bi2.OnHoldAudio : Info.OnHoldAudio;
-
 					Game.Sound.PlayNotification(rules, self.Owner, "Speech", onHoldAudio, self.Owner.Faction.InternalName);
 					if (queue.Count > 0 && queue[0].Item == order.TargetString)
 						queue[0].Pause(order.ExtraData != 0);
@@ -408,13 +418,15 @@ namespace OpenRA.Mods.Common.Traits
 					var unit3 = rules.Actors[order.TargetString];
 					var bi3 = unit3.TraitInfo<BuildableInfo>();
 
-					var cancelledAudio = bi3.CancelledAudio != null ? bi3.CancelledAudio : Info.CancelledAudio;
-
 					var valued2 = unit3.TraitInfoOrDefault<ValuedInfo>();
 					var cost2 = valued2 != null ? valued2.Cost : 0;
-					if (cost2 != 0 && Info.InstantCashDrain)
-						playerResources.GiveCash(cost2);
 
+					var amountToCancel = Math.Min(QueueLength, order.ExtraData);
+					for (var n = 0; n < amountToCancel; n++)
+						if (cost2 != 0 && Info.InstantCashDrain)
+							playerResources.GiveCash(cost2);
+
+					var cancelledAudio = bi3.CancelledAudio != null ? bi3.CancelledAudio : Info.CancelledAudio;
 					Game.Sound.PlayNotification(rules, self.Owner, "Speech", cancelledAudio, self.Owner.Faction.InternalName);
 					CancelProduction(order.TargetString, order.ExtraData);
 					break;
@@ -540,7 +552,8 @@ namespace OpenRA.Mods.Common.Traits
 		public bool Started { get; private set; }
 		public int Slowdown { get; private set; }
 
-		readonly ActorInfo ai;
+		public readonly ActorInfo ActorInfo;
+
 		readonly BuildableInfo bi;
 		readonly PowerManager pm;
 
@@ -552,15 +565,15 @@ namespace OpenRA.Mods.Common.Traits
 			OnComplete = onComplete;
 			Queue = queue;
 			this.pm = pm;
-			ai = Queue.Actor.World.Map.Rules.Actors[Item];
-			bi = ai.TraitInfo<BuildableInfo>();
+			ActorInfo = Queue.Actor.World.Map.Rules.Actors[Item];
+			bi = ActorInfo.TraitInfo<BuildableInfo>();
 		}
 
 		public void Tick(PlayerResources pr)
 		{
 			if (!Started)
 			{
-				var time = Queue.GetBuildTime(ai, bi);
+				var time = Queue.GetBuildTime(ActorInfo, bi);
 				if (time > 0)
 					RemainingTime = TotalTime = time;
 
