@@ -320,7 +320,7 @@ namespace OpenRA.Mods.Common.Traits
 			}
 
 			// Make sure that we can spend as fast as we are earning
-			if (baseBuilder.Info.NewProductionCashThreshold > 0 && playerResources.Resources > baseBuilder.Info.NewProductionCashThreshold)
+			if (baseBuilder.Info.NewProductionCashThreshold > 0 && baseBuilder.Info.ProductionMinimumCash <= playerResources.Cash && playerResources.Cash > baseBuilder.Info.NewProductionCashThreshold)
 			{
 				var production = GetProducibleBuilding(baseBuilder.Info.ProductionTypes, buildableThings);
 				if (production != null && HasSufficientPowerForActor(production))
@@ -338,6 +338,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			// Only consider building this if there is enough water inside the base perimeter and there are close enough adjacent buildings
 			if (waterState == WaterCheck.EnoughWater && baseBuilder.Info.NewProductionCashThreshold > 0
+				&& baseBuilder.Info.ProductionMinimumCash <= playerResources.Cash 
 				&& playerResources.Resources > baseBuilder.Info.NewProductionCashThreshold
 				&& AIUtils.IsAreaAvailable<GivesBuildableArea>(world, player, world.Map, baseBuilder.Info.CheckForWaterRadius, baseBuilder.Info.WaterTerrainTypes))
 			{
@@ -375,6 +376,9 @@ namespace OpenRA.Mods.Common.Traits
 			// Build everything else
 			foreach (var frac in baseBuilder.Info.BuildingFractions.Shuffle(world.LocalRandom))
 			{
+				if (baseBuilder.Info.ProductionMinimumCash > playerResources.Cash)
+					break;
+
 				var name = frac.Key;
 
 				// Core logic should be implemented as a seperate module, commenting this out for now.
