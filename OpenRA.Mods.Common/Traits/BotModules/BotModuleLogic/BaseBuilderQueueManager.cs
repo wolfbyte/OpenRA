@@ -376,7 +376,16 @@ namespace OpenRA.Mods.Common.Traits
 			// Build everything else
 			foreach (var frac in baseBuilder.Info.BuildingFractions.Shuffle(world.LocalRandom))
 			{
+<<<<<<< HEAD:OpenRA.Mods.Common/Traits/BotModules/BotModuleLogic/BaseBuilderQueueManager.cs
 				if (baseBuilder.Info.ProductionMinimumCash > playerResources.Cash)
+=======
+				if (baseBuilder.Info.QueueTimeLimits != null &&
+					baseBuilder.Info.QueueTimeLimits.ContainsKey(queue.Info.Type) &&
+					baseBuilder.Info.QueueTimeLimits[queue.Info.Type] > world.WorldTick)
+					break;
+
+				if (baseBuilder.Info.ProductionMinimumCash > playerResources.Cash)
+>>>>>>> Added a way to limit A.ı to not build from a queue till a specified time is passed:OpenRA.Mods.Common/AI/BaseBuilder.cs
 					break;
 
 				var name = frac.Key;
