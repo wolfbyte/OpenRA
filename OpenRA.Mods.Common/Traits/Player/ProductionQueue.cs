@@ -81,7 +81,7 @@ namespace OpenRA.Mods.Common.Traits
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string OnHoldAudio = "OnHold";
 
-		[Desc("Notification played when player right-clicks on the build palette icon.",
+		[Desc("Notification played when user clicks on the build palette icon, but QueueLimit is reached.",
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string UnableToComplyAudio = "BuildingInProgress";
 
