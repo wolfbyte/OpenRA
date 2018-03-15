@@ -86,6 +86,10 @@ namespace OpenRA.Mods.Common.Traits
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string OnHoldAudio = null;
 
+		[Desc("Notification played when user clicks on the build palette icon, but QueueLimit is reached.",
+			"The filename of the audio is defined per faction in notifications.yaml.")]
+		public readonly string UnableToComplyAudio = null;
+
 		[NotificationReference("Speech")]
 		[Desc("Notification played when player right-clicks on a build palette icon that is already on hold.",
 			"The filename of the audio is defined per faction in notifications.yaml.")]
