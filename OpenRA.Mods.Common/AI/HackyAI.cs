@@ -140,6 +140,9 @@ namespace OpenRA.Mods.Common.AI
 		[Desc("Maximum range at which to build defensive structures near a combat hotspot.")]
 		public readonly int MaximumDefenseRadius = 20;
 
+		[Desc("Don't produce anything other than cash generators if we don't have enough cash.")]
+		public readonly int ProductionMinimumCash = 0;
+
 		[Desc("Try to build another production building if there is too much cash.")]
 		public readonly int NewProductionCashThreshold = 5000;
 
@@ -1200,7 +1203,7 @@ namespace OpenRA.Mods.Common.AI
 		void ProductionUnits(Actor self)
 		{
 			// Stop building until economy is restored
-			if (!HasAdequateProc())
+			if (!HasAdequateProc() || Info.ProductionMinimumCash > playerResource.Cash)
 				return;
 
 			// No construction yards - Build a new MCV
