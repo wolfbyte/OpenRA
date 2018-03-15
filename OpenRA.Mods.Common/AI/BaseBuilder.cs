@@ -323,7 +323,7 @@ namespace OpenRA.Mods.Common.AI
 			}
 
 			// Make sure that we can spend as fast as we are earning
-			if (ai.Info.NewProductionCashThreshold > 0 && playerResources.Resources > ai.Info.NewProductionCashThreshold)
+			if (ai.Info.NewProductionCashThreshold > 0 && ai.Info.ProductionMinimumCash <= playerResources.Cash && playerResources.Cash > ai.Info.NewProductionCashThreshold)
 			{
 				var production = GetProducibleBuilding(ai.Info.BuildingCommonNames.Production, buildableThings);
 				if (production != null && HasSufficientPowerForActor(production))
@@ -341,6 +341,7 @@ namespace OpenRA.Mods.Common.AI
 
 			// Only consider building this if there is enough water inside the base perimeter and there are close enough adjacent buildings
 			if (waterState == Water.EnoughWater && ai.Info.NewProductionCashThreshold > 0
+				&& ai.Info.ProductionMinimumCash <= playerResources.Cash 
 				&& playerResources.Resources > ai.Info.NewProductionCashThreshold
 				&& ai.IsAreaAvailable<GivesBuildableArea>(ai.Info.CheckForWaterRadius, ai.Info.WaterTerrainTypes))
 			{
@@ -394,6 +395,9 @@ namespace OpenRA.Mods.Common.AI
 			// Build everything else
 			foreach (var frac in ai.Info.BuildingFractions.Shuffle(ai.Random))
 			{
+				if (ai.Info.ProductionMinimumCash > playerResources.Cash)
+					break;
+
 				var name = frac.Key;
 
 				// Can we build this structure?
