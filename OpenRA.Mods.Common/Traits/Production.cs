@@ -142,7 +142,8 @@ namespace OpenRA.Mods.Common.Traits
 
 			if (exit != null || self.OccupiesSpace == null)
 			{
-				DoProduction(self, producee, exit, productionType, inits);
+				for (var n = 0; n < producee.TraitInfo<BuildableInfo>().BuildAmount; n++)
+					DoProduction(self, producee, exit, productionType, inits);
 
 				return true;
 			}
