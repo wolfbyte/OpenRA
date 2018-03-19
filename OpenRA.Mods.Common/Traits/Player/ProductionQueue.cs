@@ -161,23 +161,12 @@ namespace OpenRA.Mods.Common.Traits
 		protected void ClearQueue()
 		{
 			// Refund the current item
-<<<<<<< HEAD
 			foreach (var item in Queue)
-				playerResources.GiveCash(item.TotalCost - item.RemainingCost);
+				if (Info.InstantCashDrain)
+					playerResources.GiveCash(item.TotalCost);
+				else
+					playerResources.GiveCash(item.TotalCost - item.RemainingCost);
 			Queue.Clear();
-=======
-			if (Info.InstantCashDrain)
-				foreach (var item in queue)
-				{
-					var valued = item.ActorInfo.TraitInfoOrDefault<ValuedInfo>();
-					var cost = valued != null ? valued.Cost : 0;
-
-					playerResources.GiveCash(cost);
-				}
-
-			playerResources.GiveCash(queue[0].TotalCost - queue[0].RemainingCost);
-			queue.Clear();
->>>>>>> Fixes and changes to instant cash drain logic.
 		}
 
 		void INotifyOwnerChanged.OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)
@@ -525,19 +514,10 @@ namespace OpenRA.Mods.Common.Traits
 			var unit = rules.Actors[itemName];
 			var bi = unit.TraitInfo<BuildableInfo>();
 
-			var valued = unit.TraitInfoOrDefault<ValuedInfo>();
-			var cost = valued != null ? valued.Cost : 0;
-
 			var cancelledAudio = bi.CancelledAudio != null ? bi.CancelledAudio : Info.CancelledAudio;
 			Game.Sound.PlayNotification(rules, self.Owner, "Speech", cancelledAudio, self.Owner.Faction.InternalName);
-			for (var i = 0; i < numberToCancel; i++)
-			{
-				if (cost != 0 && Info.InstantCashDrain)
-					playerResources.GiveCash(cost);
-
 				if (!CancelProductionInner(itemName))
 					break;
-			}
 		}
 
 		bool CancelProductionInner(string itemName)
@@ -555,7 +535,11 @@ namespace OpenRA.Mods.Common.Traits
 				else
 				{
 					// Refund what has been paid
-					playerResources.GiveCash(item.TotalCost - item.RemainingCost);
+					if (cost != 0 && Info.InstantCashDrain)
+						playerResources.GiveCash(item.TotalCost);
+					else
+						playerResources.GiveCash(item.TotalCost - item.RemainingCost);
+
 					EndProduction(item);
 				}
 
