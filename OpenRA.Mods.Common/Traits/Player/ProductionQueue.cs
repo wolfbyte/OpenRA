@@ -418,14 +418,6 @@ namespace OpenRA.Mods.Common.Traits
 					var unit3 = rules.Actors[order.TargetString];
 					var bi3 = unit3.TraitInfo<BuildableInfo>();
 
-					var valued2 = unit3.TraitInfoOrDefault<ValuedInfo>();
-					var cost2 = valued2 != null ? valued2.Cost : 0;
-
-					var amountToCancel = Math.Min(QueueLength, order.ExtraData);
-					for (var n = 0; n < amountToCancel; n++)
-						if (cost2 != 0 && Info.InstantCashDrain)
-							playerResources.GiveCash(cost2);
-
 					var cancelledAudio = bi3.CancelledAudio != null ? bi3.CancelledAudio : Info.CancelledAudio;
 					Game.Sound.PlayNotification(rules, self.Owner, "Speech", cancelledAudio, self.Owner.Faction.InternalName);
 					CancelProduction(order.TargetString, order.ExtraData);
@@ -458,6 +450,14 @@ namespace OpenRA.Mods.Common.Traits
 		void CancelProductionInner(string itemName)
 		{
 			var lastIndex = queue.FindLastIndex(a => a.Item == itemName);
+
+			if (lastIndex >= 0)
+			{
+				var valued = queue[lastIndex].ActorInfo.TraitInfoOrDefault<ValuedInfo>();
+				var cost = valued != null ? valued.Cost : 0;
+				if (cost != 0 && Info.InstantCashDrain)
+					playerResources.GiveCash(cost);
+			}
 
 			if (lastIndex > 0)
 				queue.RemoveAt(lastIndex);
