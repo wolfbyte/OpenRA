@@ -20,7 +20,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 		public override object Create(ActorInitializer init) { return new WithDisguisingSpriteTurret(init.Self, this); }
 	}
 
-	class WithDisguisingSpriteTurret : WithSpriteTurret
+	class WithDisguisingSpriteTurret : WithSpriteTurret, ITick
 	{
 		readonly Disguise disguise;
 		readonly RenderSprites rs;
@@ -34,7 +34,7 @@ namespace OpenRA.Mods.Cnc.Traits.Render
 			intendedSprite = disguise.AsSprite;
 		}
 
-		protected override void Tick(Actor self)
+		void ITick.Tick(Actor self)
 		{
 			if (disguise.AsSprite != intendedSprite)
 			{
