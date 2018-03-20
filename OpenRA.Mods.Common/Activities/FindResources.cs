@@ -12,6 +12,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Pathfinder;
 using OpenRA.Mods.Common.Traits;
@@ -177,9 +178,9 @@ namespace OpenRA.Mods.Common.Activities
 			if (harv.LastOrderLocation.HasValue)
 				return harv.LastOrderLocation.Value;
 			else if (harv.LastLinkedProc != null)
-				return harv.LastLinkedProc.Location + harv.LastLinkedProc.Trait<IAcceptResources>().DeliveryOffset;
+				return harv.LastLinkedProc.Location + harv.LastLinkedProc.TraitsImplementing<Dock>().First().Info.DockOffset;
 			else if (harv.LinkedProc != null)
-				return harv.LinkedProc.Location + harv.LinkedProc.Trait<IAcceptResources>().DeliveryOffset;
+				return harv.LinkedProc.Location + harv.LinkedProc.TraitsImplementing<Dock>().First().Info.DockOffset;
 			return self.Location;
 		}
 	}
