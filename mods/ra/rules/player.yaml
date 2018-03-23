@@ -38,6 +38,7 @@ Player:
 	ScriptTriggers:
 	MissionObjectives:
 	ConquestVictoryConditions:
+		DamageTypes: BulletDeath
 	PowerManager:
 	AllyRepair:
 	PlayerResources:

@@ -55,6 +55,7 @@ Player:
 	ScriptTriggers:
 	MissionObjectives:
 	ConquestVictoryConditions:
+		DamageTypes: BulletDeath
 	PowerManager:
 		AdviceInterval: 650
 	AllyRepair:
