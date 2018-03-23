@@ -431,7 +431,8 @@ namespace OpenRA.Mods.Common.Traits
 			if (developerMode.FastBuild)
 				return 0;
 
-			var time = bi.BuildDuration;
+			var customTimes = unit.TraitInfos<CustomProductionTimeInfo>().Where(t => t.Queue.Contains(Info.Type));
+			var time = customTimes.Any() ? customTimes.First().BuildTime : bi.BuildDuration;
 			if (time == -1)
 			{
 				time = GetProductionCost(unit);
