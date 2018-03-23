@@ -395,6 +395,7 @@
     <Compile Include="Traits\Parachutable.cs" />
     <Compile Include="Traits\ParaDrop.cs" />
     <Compile Include="Traits\Passenger.cs" />
+    <Compile Include="Traits\CustomProductionCost.cs" />
     <Compile Include="Traits\Multipliers\CashTricklerMultiplier.cs" />
     <Compile Include="Traits\Multipliers\DamageMultiplier.cs" />
     <Compile Include="Traits\Multipliers\FirepowerMultiplier.cs" />
