@@ -72,6 +72,8 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 				var buildable = actor.TraitInfo<BuildableInfo>();
 				var valued = actor.TraitInfoOrDefault<ValuedInfo>();
 				var cost = valued != null ? valued.Cost : 0;
+				if (tooltipIcon.ProductionQueue != null)
+					cost = tooltipIcon.ProductionQueue.GetProductionCost(actor);
 
 				nameLabel.Text = name;
 

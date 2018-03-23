@@ -423,8 +423,7 @@ namespace OpenRA.Mods.Common.Traits
 							return;
 					}
 
-					var valued = unit.TraitInfoOrDefault<ValuedInfo>();
-					var cost = valued != null ? valued.Cost : 0;
+					var cost = GetProductionCost(unit);
 					var time = GetBuildTime(unit, bi);
 					var amountToBuild = Math.Min(fromLimit, order.ExtraData);
 					var hasPlayedQueuedSound = false;
@@ -487,12 +486,23 @@ namespace OpenRA.Mods.Common.Traits
 			var time = bi.BuildDuration;
 			if (time == -1)
 			{
-				var valued = unit.TraitInfoOrDefault<ValuedInfo>();
-				time = valued != null ? valued.Cost : 0;
+				time = GetProductionCost(unit);
 			}
 
 			time = time * bi.BuildDurationModifier * Info.BuildDurationModifier / 10000;
 			return time;
+		}
+
+		public virtual int GetProductionCost(ActorInfo unit)
+		{
+			var valued = unit.TraitInfoOrDefault<ValuedInfo>();
+
+			if (valued == null)
+				return 0;
+
+			var customCosts = unit.TraitInfos<CustomProductionCostInfo>().Where(t => t.Queue.Contains(Info.Type));
+
+			return customCosts.Any() ? customCosts.First().Cost : valued.Cost;
 		}
 
 		protected void PauseProduction(string itemName, bool paused)
