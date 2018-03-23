@@ -41,6 +41,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Disable the win/loss messages and audio notifications?")]
 		public readonly bool SuppressNotifications = false;
 
+		[Desc("Types of damage that dealt to kill remaining actors of a player when they lose. Leave empty for no damage types.")]
+		public readonly HashSet<string> DamageTypes = new HashSet<string>();
+
 		public object Create(ActorInitializer init) { return new StrategicVictoryConditions(init.Self, this); }
 	}
 
@@ -108,7 +111,7 @@ namespace OpenRA.Mods.Common.Traits
 		public void OnPlayerLost(Player player)
 		{
 			foreach (var a in player.World.Actors.Where(a => a.Owner == player))
-				a.Kill(a);
+				a.Kill(a, info.DamageTypes);
 
 			if (info.SuppressNotifications)
 				return;
