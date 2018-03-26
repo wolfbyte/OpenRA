@@ -117,6 +117,7 @@
     <Compile Include="Traits\EnergyWall.cs" />
     <Compile Include="Traits\FrozenUnderFogUpdatedByGps.cs" />
     <Compile Include="Traits\HarvesterHuskModifier.cs" />
+    <Compile Include="Traits\Infiltration\InfiltrateForCondition.cs" />
     <Compile Include="Traits\Infiltration\InfiltrateForCash.cs" />
     <Compile Include="Traits\Infiltration\InfiltrateForExploration.cs" />
     <Compile Include="Traits\Infiltration\InfiltrateForPowerOutage.cs" />
