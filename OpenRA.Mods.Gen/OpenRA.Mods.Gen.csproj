@@ -139,7 +139,6 @@
     <Compile Include="Traits\SpawnerHarvesterMaster.cs" />
     <Compile Include="Traits\CarrierMaster.cs" />
     <Compile Include="Traits\CashHackable.cs" />
-    <Compile Include="Traits\StructureChrono.cs" />
     <Compile Include="Traits\BaseSpawnerMaster.cs" />
     <Compile Include="Traits\Warheads\CreateRadioactivityWarhead.cs" />
     <Compile Include="Traits\Warheads\WarheadAS.cs" />
