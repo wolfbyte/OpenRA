@@ -14,6 +14,7 @@ using OpenRA.GameRules;
 using OpenRA.Mods.Common;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Warheads;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Yupgi_alert.Warheads
@@ -79,7 +80,7 @@ namespace OpenRA.Mods.Yupgi_alert.Warheads
 					validImpact = true;
 					break;
 				case ImpactType.Air:
-					validImpact = IsValidTarget(new string[] { "Air" });
+					validImpact = IsValidTarget(new BitSet<TargetableType>("Air"));
 					break;
 				case ImpactType.Ground:
 					var tileInfo = world.Map.GetTerrainInfo(targetTile);
