@@ -20,7 +20,7 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Measured in ticks.")]
 		public readonly int ChargeInterval = 0;
 		public readonly Dictionary<int, string> Icons = new Dictionary<int, string>();
-		public readonly string Description = "";
+		public readonly Dictionary<int, string> Descriptions = new Dictionary<int, string>();
 		public readonly Dictionary<int, string> LongDescs = new Dictionary<int, string>();
 		public readonly bool AllowMultiple = false;
 		public readonly bool OneShot = false;
