@@ -55,10 +55,10 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 				if (sp == lastPower && hotkey == lastHotkey && lastRemainingSeconds == remainingSeconds)
 					return;
 
-				nameLabel.Text = sp.Info.Description;
+				var level = sp.GetLevel();
+				nameLabel.Text = sp.Info.Descriptions.First(ld => ld.Key == level).Value;
 				var nameSize = nameFont.Measure(nameLabel.Text);
 
-				var level = sp.GetLevel();
 				descLabel.Text = sp.Info.LongDescs.First(ld => ld.Key == level).Value.Replace("\\n", "\n");
 				var descSize = descFont.Measure(descLabel.Text);
 
