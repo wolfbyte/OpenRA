@@ -21,7 +21,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Custom production cost for the unit.")]
 		public readonly int Cost = 0;
 
-		[FieldLoader.Require]
+		[Desc("Only apply this cost change if owner has these prerequisites.")]
+		public readonly string[] Prerequisites = { };
+
 		[Desc("Queues that this cost will apply.")]
 		public readonly HashSet<string> Queue = new HashSet<string>();
 	}
