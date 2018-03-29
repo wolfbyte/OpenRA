@@ -37,7 +37,7 @@ namespace OpenRA.Mods.Cnc.Traits
 		public override object Create(ActorInitializer init) { return new InfiltrateForCondition(this); }
 	}
 
-	class InfiltrateForCondition : INotifyCreated, INotifyInfiltrated, ITick
+	class InfiltrateForCondition : INotifyCreated, INotifyInfiltrated, ITick, ISync
 	{
 		readonly InfiltrateForConditionInfo info;
 		ConditionManager conditionManager;
