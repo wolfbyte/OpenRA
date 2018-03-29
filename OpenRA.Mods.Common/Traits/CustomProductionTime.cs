@@ -21,8 +21,10 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Custom production time for the unit.")]
 		public readonly int BuildTime = -1;
 
-		[FieldLoader.Require]
-		[Desc("Queues that this cost will apply.")]
+		[Desc("Only apply this time change if owner has these prerequisites.")]
+		public readonly string[] Prerequisites = { };
+
+		[Desc("Queues that this time will apply.")]
 		public readonly HashSet<string> Queue = new HashSet<string>();
 	}
 
