@@ -97,6 +97,29 @@ namespace OpenRA.Mods.Common.Traits
 			if (!unitGroup.SupportActors.Any())
 				return;
 
+			var buildingSpawnCells = w.Map.FindTilesInAnnulus(sp, unitGroup.InnerBuildingRadius + 1, unitGroup.OuterBuildingRadius);
+
+			foreach (var b in unitGroup.SupportBuildings)
+			{
+				var actorRules = w.Map.Rules.Actors[b.ToLowerInvariant()];
+				var building = actorRules.TraitInfo<BuildingInfo>();
+				var validCells = buildingSpawnCells.Where(c => w.CanPlaceBuilding(c, actorRules, building, null));
+				if (!validCells.Any())
+				{
+					Log.Write("debug", "No cells available to spawn starting building {0} for player {1}".F(b, p));
+					continue;
+				}
+
+				var cell = validCells.Random(w.SharedRandom);
+
+				w.CreateActor(b.ToLowerInvariant(), new TypeDictionary
+				{
+					new OwnerInit(p),
+					new LocationInit(cell),
+					new FacingInit(unitGroup.SupportActorsFacing < 0 ? w.SharedRandom.Next(256) : unitGroup.SupportActorsFacing)
+				});
+			}
+
 			var supportSpawnCells = w.Map.FindTilesInAnnulus(sp, unitGroup.InnerSupportRadius + 1, unitGroup.OuterSupportRadius);
 
 			foreach (var s in unitGroup.SupportActors)
@@ -119,6 +142,14 @@ namespace OpenRA.Mods.Common.Traits
 					new LocationInit(cell),
 					new SubCellInit(subCell),
 					new FacingInit(unitGroup.SupportActorsFacing < 0 ? w.SharedRandom.Next(256) : unitGroup.SupportActorsFacing)
+				});
+			}
+
+			foreach (var pa in unitGroup.SupportProxyActors)
+			{
+				w.CreateActor(pa.ToLowerInvariant(), new TypeDictionary
+				{
+					new OwnerInit(p)
 				});
 			}
 		}
