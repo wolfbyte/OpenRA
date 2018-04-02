@@ -10,6 +10,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Drawing;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -32,6 +33,12 @@ namespace OpenRA.Mods.Common.Traits
 		[GrantedConditionReference]
 		[Desc("Grant this condition to self while being captured.")]
 		public readonly string CaptureCondition = null;
+
+		[Desc("Whether to show a chat message from Battlefield Control, when this actor is being captured.")]
+		public readonly bool ShowChatMessage = false;
+
+		[Desc("Message to show when this actor is being captured.")]
+		public readonly string ChatMessage = "One of our buildings is being captured.";
 
 		public bool CanBeTargetedBy(Actor captor, Player owner)
 		{
@@ -77,6 +84,9 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			if (conditionManager != null && token == ConditionManager.InvalidConditionToken && !string.IsNullOrEmpty(Info.CaptureCondition))
 				token = conditionManager.GrantCondition(self, Info.CaptureCondition);
+
+			if (Info.ShowChatMessage && self.World.LocalPlayer == self.Owner)
+				Game.AddChatLine(Color.White, "Battlefield Control", Info.ChatMessage);
 
 			Captor = captor;
 		}
