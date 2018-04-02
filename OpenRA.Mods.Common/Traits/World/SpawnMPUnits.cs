@@ -116,6 +116,7 @@ namespace OpenRA.Mods.Common.Traits
 				{
 					new OwnerInit(p),
 					new LocationInit(cell),
+					new SkipMakeAnimsInit(),
 					new FacingInit(unitGroup.SupportActorsFacing < 0 ? w.SharedRandom.Next(256) : unitGroup.SupportActorsFacing)
 				});
 			}
