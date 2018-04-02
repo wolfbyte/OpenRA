@@ -10,6 +10,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using OpenRA.Primitives;
 using OpenRA.Traits;
@@ -37,6 +38,12 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("Should units friendly to the capturing actor auto-target this actor while it is being captured?")]
 		public readonly bool PreventsAutoTarget = true;
+
+		[Desc("Whether to show a chat message from Battlefield Control, when this actor is being captured.")]
+		public readonly bool ShowChatMessage = false;
+
+		[Desc("Message to show when this actor is being captured.")]
+		public readonly string ChatMessage = "One of our buildings is being captured.";
 
 		public virtual object Create(ActorInitializer init) { return new CaptureManager(this); }
 
@@ -216,6 +223,9 @@ namespace OpenRA.Mods.Common.Traits
 
 			if (captures == null)
 				return false;
+
+			if (Info.ShowChatMessage && self.World.LocalPlayer == self.Owner)
+				Game.AddChatLine(Color.White, "Battlefield Control", Info.ChatMessage);
 
 			if (progressWatchers.Any() || targetManager.progressWatchers.Any())
 			{
