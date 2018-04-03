@@ -66,6 +66,11 @@ namespace OpenRA.Mods.Common.Traits
 			"Defaults to what is set for the Queue actor built from.")]
 		public readonly string ReadyAudio = null;
 
+		[Desc("Notification played when you can't place a building.",
+			"The filename of the audio is defined per faction in notifications.yaml.",
+			"Defaults to what is set for the Queue actor built from.")]
+		public readonly string CannotBuildAudio = null;
+
 		[Desc("Notification played when user clicks on the build palette icon.",
 			"The filename of the audio is defined per faction in notifications.yaml.",
 			"Defaults to what is set for the Queue actor built from.")]
