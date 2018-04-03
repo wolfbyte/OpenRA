@@ -73,6 +73,10 @@ namespace OpenRA.Mods.Common.Traits
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string LimitedAudio = null;
 
+		[Desc("Notification played when you can't place a building.",
+			"The filename of the audio is defined per faction in notifications.yaml.")]
+		public readonly string CannotBuildAudio = "BuildingCannotPlaceAudio";
+
 		[Desc("Notification played when user clicks on the build palette icon.",
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string QueuedAudio = "Training";
