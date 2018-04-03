@@ -28,6 +28,7 @@ namespace OpenRA.Mods.Common.Orders
 		readonly ProductionQueue queue;
 		readonly ActorInfo actorInfo;
 		readonly BuildingInfo buildingInfo;
+		readonly BuildableInfo buildableInfo;
 		readonly PlaceBuildingInfo placeBuildingInfo;
 		readonly BuildingInfluence buildingInfluence;
 		readonly string faction;
@@ -59,7 +60,7 @@ namespace OpenRA.Mods.Common.Orders
 			centerOffset = buildingInfo.CenterOffset(world);
 			topLeftScreenOffset = -worldRenderer.ScreenPxOffset(centerOffset);
 
-			var buildableInfo = actorInfo.TraitInfo<BuildableInfo>();
+			buildableInfo = actorInfo.TraitInfo<BuildableInfo>();
 			var mostLikelyProducer = queue.MostLikelyProducer();
 			faction = buildableInfo.ForceFaction
 				?? (mostLikelyProducer.Trait != null ? mostLikelyProducer.Trait.Faction : queue.Actor.Owner.Faction.InternalName);
@@ -106,6 +107,7 @@ namespace OpenRA.Mods.Common.Orders
 			{
 				var orderType = "PlaceBuilding";
 				var topLeft = viewport.ViewToWorld(Viewport.LastMousePos + topLeftScreenOffset);
+				var cannotBuildAudio = buildableInfo.QueuedAudio != null ? buildableInfo.QueuedAudio : queue.Info.CannotBuildAudio;
 
 				var plugInfo = actorInfo.TraitInfoOrDefault<PlugInfo>();
 				if (plugInfo != null)
@@ -113,7 +115,7 @@ namespace OpenRA.Mods.Common.Orders
 					orderType = "PlacePlug";
 					if (!AcceptsPlug(topLeft, plugInfo))
 					{
-						Game.Sound.PlayNotification(world.Map.Rules, owner, "Speech", "BuildingCannotPlaceAudio", owner.Faction.InternalName);
+						Game.Sound.PlayNotification(world.Map.Rules, owner, "Speech", cannotBuildAudio, owner.Faction.InternalName);
 						yield break;
 					}
 				}
@@ -125,7 +127,7 @@ namespace OpenRA.Mods.Common.Orders
 						foreach (var order in ClearBlockersOrders(world, topLeft))
 							yield return order;
 
-						Game.Sound.PlayNotification(world.Map.Rules, owner, "Speech", "BuildingCannotPlaceAudio", owner.Faction.InternalName);
+						Game.Sound.PlayNotification(world.Map.Rules, owner, "Speech", cannotBuildAudio, owner.Faction.InternalName);
 						yield break;
 					}
 
