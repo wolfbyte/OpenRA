@@ -138,7 +138,7 @@ namespace OpenRA.Mods.Common.Traits
 				else
 				{
 					if (!self.World.CanPlaceBuilding(order.TargetLocation, actorInfo, buildingInfo, null)
-						|| !buildingInfo.IsCloseEnoughToBase(self.World, order.Player, actorInfo, order.TargetLocation))
+						|| !buildingInfo.IsCloseEnoughToBase(self.World, order.Player, actorInfo, producer.Actor, order.TargetLocation))
 						return;
 
 					var replacementInfo = actorInfo.TraitInfoOrDefault<ReplacementInfo>();
@@ -175,9 +175,12 @@ namespace OpenRA.Mods.Common.Traits
 				{
 					// May be null if the build anywhere cheat is active
 					// BuildingInfo.IsCloseEnoughToBase has already verified that this is a valid build location
-					var provider = buildingInfo.FindBaseProvider(w, self.Owner, order.TargetLocation);
+					var provider = buildingInfo.FindBaseProvider(w, self.Owner, producer.Actor, order.TargetLocation);
 					if (provider != null)
+					{
 						provider.BeginCooldown();
+						provider.Producer = null;
+					}
 				}
 
 				if (GetNumBuildables(self.Owner) > prevItems)
