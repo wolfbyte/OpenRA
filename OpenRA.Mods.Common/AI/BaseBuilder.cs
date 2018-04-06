@@ -146,7 +146,7 @@ namespace OpenRA.Mods.Common.AI
 				else if (ai.Info.BuildingCommonNames.Refinery.Contains(currentBuilding.Item))
 					type = BuildingPlacementType.Refinery;
 
-				var location = ai.ChooseBuildLocation(currentBuilding.Item, true, type);
+				var location = ai.ChooseBuildLocation(currentBuilding.Item, true, queue.Actor, type);
 				if (location == null)
 				{
 					HackyAI.BotDebug("AI: {0} has nowhere to place {1}".F(player, currentBuilding.Item));
