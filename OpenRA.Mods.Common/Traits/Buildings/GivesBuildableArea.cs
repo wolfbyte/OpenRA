@@ -20,6 +20,8 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Types of buildable area this actor gives.")]
 		public readonly HashSet<string> AreaTypes = new HashSet<string>();
 
+		public readonly bool OnlyAllowPlacementFromSelf = false;
+
 		public override object Create(ActorInitializer init) { return new GivesBuildableArea(this); }
 	}
 
