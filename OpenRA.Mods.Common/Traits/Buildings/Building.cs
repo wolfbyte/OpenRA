@@ -143,7 +143,7 @@ namespace OpenRA.Mods.Common.Traits
 			return (off - new WVec(0, 0, off.Z)) + LocalCenterOffset;
 		}
 
-		public BaseProvider FindBaseProvider(World world, Player p, CPos topLeft)
+		public BaseProvider FindBaseProvider(World world, Player p, Actor producer, CPos topLeft)
 		{
 			var center = world.Map.CenterOfCell(topLeft) + CenterOffset(world);
 			var mapBuildRadius = world.WorldActor.TraitOrDefault<MapBuildRadius>();
@@ -157,6 +157,15 @@ namespace OpenRA.Mods.Common.Traits
 				var validOwner = bp.Actor.Owner == p || (allyBuildEnabled && bp.Actor.Owner.Stances[p] == Stance.Ally);
 				if (!validOwner || !bp.Trait.Ready())
 					continue;
+
+				if (producer != null && bp.Trait.Info.OnlyAllowPlacementFromSelf && bp.Actor != producer)
+				{
+					bp.Trait.Producer = producer;
+
+					continue;
+				}
+
+				bp.Trait.Producer = null;
 
 				// Range is counted from the center of the actor, not from each cell.
 				var target = Target.FromPos(bp.Actor.CenterPosition);
@@ -173,7 +182,7 @@ namespace OpenRA.Mods.Common.Traits
 				.SelectMany(gba => gba.AreaTypes));
 		}
 
-		public virtual bool IsCloseEnoughToBase(World world, Player p, ActorInfo ai, CPos topLeft)
+		public virtual bool IsCloseEnoughToBase(World world, Player p, ActorInfo ai, Actor producer, CPos topLeft)
 		{
 			var requiresBuildableArea = ai.TraitInfoOrDefault<RequiresBuildableAreaInfo>();
 			var mapBuildRadius = world.WorldActor.TraitOrDefault<MapBuildRadius>();
@@ -181,7 +190,7 @@ namespace OpenRA.Mods.Common.Traits
 			if (requiresBuildableArea == null || p.PlayerActor.Trait<DeveloperMode>().BuildAnywhere)
 				return true;
 
-			if (mapBuildRadius != null && mapBuildRadius.BuildRadiusEnabled && RequiresBaseProvider && FindBaseProvider(world, p, topLeft) == null)
+			if (mapBuildRadius != null && mapBuildRadius.BuildRadiusEnabled && RequiresBaseProvider && FindBaseProvider(world, p, producer, topLeft) == null)
 				return false;
 
 			var adjacent = requiresBuildableArea.Adjacent;
