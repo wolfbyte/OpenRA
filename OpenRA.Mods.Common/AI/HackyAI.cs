@@ -560,11 +560,11 @@ namespace OpenRA.Mods.Common.AI
 		// This function is currently used for placing structure in rear area.
 		// (if you invert front vector you get rear)
 		CPos? FindPosFront(CPos center, CVec front, int minRange, int maxRange,
-			string actorType, BuildingInfo bi, bool distanceToBaseIsImportant)
+			string actorType, BuildingInfo bi, bool distanceToBaseIsImportant, Actor producer)
 		{
 			// zero vector case. we can't define front or rear.
 			if (front == CVec.Zero)
-				return FindPos(center, center, minRange, maxRange, actorType, bi, distanceToBaseIsImportant);
+				return FindPos(center, center, minRange, maxRange, actorType, bi, distanceToBaseIsImportant, producer);
 
 			var ai = Map.Rules.Actors[actorType];
 			var cells = Map.FindTilesInAnnulus(center, minRange, maxRange).Shuffle(Random);
@@ -609,7 +609,7 @@ namespace OpenRA.Mods.Common.AI
 
 		// Find the buildable cell that is closest to pos and centered around center
 		CPos? FindPos(CPos center, CPos target, int minRange, int maxRange,
-			string actorType, BuildingInfo bi, bool distanceToBaseIsImportant)
+			string actorType, BuildingInfo bi, bool distanceToBaseIsImportant, Actor producer)
 		{
 			var ai = Map.Rules.Actors[actorType];
 			var cells = Map.FindTilesInAnnulus(center, minRange, maxRange);
@@ -625,7 +625,7 @@ namespace OpenRA.Mods.Common.AI
 				if (!World.CanPlaceBuilding(cell, ai, bi, null))
 					continue;
 
-				if (distanceToBaseIsImportant && !bi.IsCloseEnoughToBase(World, Player, ai, cell))
+				if (distanceToBaseIsImportant && !bi.IsCloseEnoughToBase(World, Player, ai, producer, cell))
 					continue;
 
 				return cell;
@@ -661,7 +661,7 @@ namespace OpenRA.Mods.Common.AI
 		}
 
 		CPos defenseCenter;
-		public CPos? ChooseBuildLocation(string actorType, bool distanceToBaseIsImportant, BuildingPlacementType type)
+		public CPos? ChooseBuildLocation(string actorType, bool distanceToBaseIsImportant, Actor producer, BuildingPlacementType type)
 		{
 			var ai = Map.Rules.Actors[actorType];
 			var bi = ai.TraitInfoOrDefault<BuildingInfo>();
@@ -680,7 +680,7 @@ namespace OpenRA.Mods.Common.AI
 
 						var targetCell = closestEnemy != null ? closestEnemy.Location : baseCenter;
 						return FindPos(defenseCenter, targetCell, Info.MinimumDefenseRadius, Info.MaximumDefenseRadius,
-							actorType, bi, distanceToBaseIsImportant);
+							actorType, bi, distanceToBaseIsImportant, producer);
 					}
 
 				case BuildingPlacementType.Fragile:
@@ -696,11 +696,11 @@ namespace OpenRA.Mods.Common.AI
 						// MinFragilePlacementRadius introduced to push fragile buildings away from base center.
 						// Resilient to nuke.
 						var pos = FindPosFront(baseCenter, direction, Info.MinFragilePlacementRadius, Info.MaxBaseRadius,
-							actorType, bi, distanceToBaseIsImportant);
+							actorType, bi, distanceToBaseIsImportant, producer);
 						if (pos == null) // rear placement failed but we can still try placing anywhere.
 							pos = FindPos(baseCenter, baseCenter, Info.MinBaseRadius,
 								distanceToBaseIsImportant ? Info.MaxBaseRadius : Map.Grid.MaximumTileSearchRange,
-								actorType, bi, distanceToBaseIsImportant);
+								actorType, bi, distanceToBaseIsImportant, producer);
 						return pos;
 					}
 
@@ -714,19 +714,19 @@ namespace OpenRA.Mods.Common.AI
 					foreach (var r in nearbyResources)
 					{
 						var found = FindPos(baseCenter, r, Info.MinBaseRadius, Info.MaxBaseRadius,
-							actorType, bi, distanceToBaseIsImportant);
+							actorType, bi, distanceToBaseIsImportant, producer);
 						if (found != null)
 							return found;
 					}
 
 					// Try and find a free spot somewhere else in the base
 					return FindPos(baseCenter, baseCenter, Info.MinBaseRadius, Info.MaxBaseRadius,
-						actorType, bi, distanceToBaseIsImportant);
+						actorType, bi, distanceToBaseIsImportant, producer);
 
 				case BuildingPlacementType.Building:
 					return FindPos(baseCenter, baseCenter, Info.MinBaseRadius,
 						distanceToBaseIsImportant ? Info.MaxBaseRadius : Map.Grid.MaximumTileSearchRange,
-						actorType, bi, distanceToBaseIsImportant);
+						actorType, bi, distanceToBaseIsImportant, producer);
 			}
 
 			// Can't find a build location
@@ -1171,7 +1171,7 @@ namespace OpenRA.Mods.Common.AI
 
 			if (move)
 			{
-				var desiredLocation = ChooseBuildLocation(transformsInfo.IntoActor, restrictToBase, BuildingPlacementType.Building);
+				var desiredLocation = ChooseBuildLocation(transformsInfo.IntoActor, restrictToBase, null, BuildingPlacementType.Building);
 				if (desiredLocation == null)
 					return null;
 
