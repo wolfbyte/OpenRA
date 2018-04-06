@@ -23,6 +23,7 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly WDist Range = WDist.FromCells(10);
 		public readonly int Cooldown = 0;
 		public readonly int InitialDelay = 0;
+		public readonly bool OnlyAllowPlacementFromSelf = false;
 
 		public override object Create(ActorInitializer init) { return new BaseProvider(init.Self, this); }
 	}
@@ -33,6 +34,8 @@ namespace OpenRA.Mods.Common.Traits
 		readonly Actor self;
 		readonly bool allyBuildEnabled;
 		readonly bool buildRadiusEnabled;
+
+		public Actor Producer;
 
 		Building building;
 
@@ -48,6 +51,8 @@ namespace OpenRA.Mods.Common.Traits
 			var mapBuildRadius = self.World.WorldActor.Trait<MapBuildRadius>();
 			allyBuildEnabled = mapBuildRadius.AllyBuildRadiusEnabled;
 			buildRadiusEnabled = mapBuildRadius.BuildRadiusEnabled;
+
+			Producer = null;
 		}
 
 		void INotifyCreated.Created(Actor self)
@@ -81,7 +86,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public IEnumerable<IRenderable> RangeCircleRenderables(WorldRenderer wr)
 		{
-			if (IsTraitDisabled)
+			if (IsTraitDisabled || (Producer != null && Producer != self))
 				yield break;
 
 			// Visible to player and allies

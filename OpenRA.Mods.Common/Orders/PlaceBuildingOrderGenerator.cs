@@ -84,7 +84,18 @@ namespace OpenRA.Mods.Common.Orders
 		public IEnumerable<Order> Order(World world, CPos cell, int2 worldPixel, MouseInput mi)
 		{
 			if (mi.Button == MouseButton.Right)
+			{
 				world.CancelInputMode();
+
+				if (buildingInfo.RequiresBaseProvider)
+				{
+					// May be null if the build anywhere cheat is active
+					var providers = world.ActorsWithTrait<BaseProvider>();
+					foreach (var provider in providers)
+						if (provider.Actor.Owner == queue.Actor.Owner)
+							provider.Trait.Producer = null;
+				}
+			}
 
 			var ret = InnerOrder(world, cell, mi).ToArray();
 
@@ -122,7 +133,7 @@ namespace OpenRA.Mods.Common.Orders
 				else
 				{
 					if (!world.CanPlaceBuilding(topLeft, actorInfo, buildingInfo, null)
-						|| !buildingInfo.IsCloseEnoughToBase(world, owner, actorInfo, topLeft))
+						|| !buildingInfo.IsCloseEnoughToBase(world, owner, actorInfo, queue.Actor, topLeft))
 					{
 						foreach (var order in ClearBlockersOrders(world, topLeft))
 							yield return order;
@@ -150,7 +161,18 @@ namespace OpenRA.Mods.Common.Orders
 		public void Tick(World world)
 		{
 			if (queue.CurrentItem() == null || queue.CurrentItem().Item != actorInfo.Name)
+			{
 				world.CancelInputMode();
+
+				if (buildingInfo.RequiresBaseProvider)
+				{
+					// May be null if the build anywhere cheat is active
+					var providers = world.ActorsWithTrait<BaseProvider>();
+					foreach (var provider in providers)
+						if (provider.Actor.Owner == queue.Actor.Owner)
+							provider.Trait.Producer = null;
+				}
+			}
 
 			if (preview == null)
 				return;
@@ -198,9 +220,9 @@ namespace OpenRA.Mods.Common.Orders
 
 				if (!Game.GetModifierKeys().HasModifier(Modifiers.Shift))
 					foreach (var t in BuildingUtils.GetLineBuildCells(world, topLeft, actorInfo, buildingInfo))
-						cells.Add(t.First, MakeCellType(buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, t.First), true));
+						cells.Add(t.First, MakeCellType(buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, queue.Actor, t.First), true));
 
-				cells[topLeft] = MakeCellType(buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, topLeft));
+				cells[topLeft] = MakeCellType(buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, queue.Actor, topLeft));
 			}
 			else
 			{
@@ -232,7 +254,7 @@ namespace OpenRA.Mods.Common.Orders
 					yield return r;
 
 				var res = world.WorldActor.TraitOrDefault<ResourceLayer>();
-				var isCloseEnough = buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, topLeft);
+				var isCloseEnough = buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, queue.Actor, topLeft);
 				foreach (var t in buildingInfo.Tiles(topLeft))
 					cells.Add(t, MakeCellType(isCloseEnough && world.IsCellBuildable(t, actorInfo, buildingInfo) && (res == null || res.GetResource(t) == null)));
 			}
