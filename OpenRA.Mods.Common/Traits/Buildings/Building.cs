@@ -166,9 +166,10 @@ namespace OpenRA.Mods.Common.Traits
 			return null;
 		}
 
-		bool ActorGrantsValidArea(Actor a, RequiresBuildableAreaInfo rba)
+		bool ActorGrantsValidArea(Actor a, Actor producer, RequiresBuildableAreaInfo rba)
 		{
 			return rba.AreaTypes.Overlaps(a.TraitsImplementing<GivesBuildableArea>()
+				.Where(gba => !gba.Info.OnlyAllowPlacementFromSelf || a == producer)
 				.SelectMany(gba => gba.AreaTypes));
 		}
 
@@ -205,12 +206,12 @@ namespace OpenRA.Mods.Common.Traits
 					{
 						var unitsAtPos = world.ActorMap.GetActorsAt(pos).Where(a => a.IsInWorld
 							&& (a.Owner == p || (allyBuildEnabled && a.Owner.Stances[p] == Stance.Ally))
-							&& ActorGrantsValidArea(a, requiresBuildableArea));
+							&& ActorGrantsValidArea(a, producer, requiresBuildableArea));
 
 						if (unitsAtPos.Any())
 							nearnessCandidates.Add(pos);
 					}
-					else if (buildingAtPos.IsInWorld && ActorGrantsValidArea(buildingAtPos, requiresBuildableArea)
+					else if (buildingAtPos.IsInWorld && ActorGrantsValidArea(buildingAtPos, producer, requiresBuildableArea)
 						&& (buildingAtPos.Owner == p || (allyBuildEnabled && buildingAtPos.Owner.Stances[p] == Stance.Ally)))
 						nearnessCandidates.Add(pos);
 				}
