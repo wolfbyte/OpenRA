@@ -313,6 +313,7 @@ namespace OpenRA.Mods.Common.AI
 		CPos initialBaseCenter;
 		PowerManager playerPower;
 		PlayerResources playerResource;
+		ResourceLayer resLayer;
 		int ticks;
 
 		BitArray resourceTypeIndices;
@@ -402,6 +403,7 @@ namespace OpenRA.Mods.Common.AI
 			IsEnabled = true;
 			playerPower = p.PlayerActor.Trait<PowerManager>();
 			playerResource = p.PlayerActor.Trait<PlayerResources>();
+			resLayer = World.WorldActor.TraitOrDefault<ResourceLayer>();
 
 			harvManager = new AIHarvesterManager(this, p);
 			supportPowerManager = new AISupportPowerManager(this, p);
