@@ -317,6 +317,7 @@ namespace OpenRA.Mods.Common.AI
 		SupportPowerManager supportPowerMngr;
 		PlayerResources playerResource;
 		FrozenActorLayer frozenLayer;
+		ResourceLayer resLayer;
 		int ticks;
 
 		BitArray resourceTypeIndices;
@@ -410,6 +411,7 @@ namespace OpenRA.Mods.Common.AI
 			supportPowerMngr = p.PlayerActor.Trait<SupportPowerManager>();
 			playerResource = p.PlayerActor.Trait<PlayerResources>();
 			frozenLayer = p.PlayerActor.Trait<FrozenActorLayer>();
+			resLayer = World.WorldActor.TraitOrDefault<ResourceLayer>();
 
 			harvManager = new AIHarvesterManager(this, p);
 
