@@ -343,7 +343,9 @@ namespace OpenRA.Mods.Common.Traits
 				!a.IsTraitDisabled
 				&& (owner == null || (forceAttack ? a.Info.ForceTargetStances : a.Info.TargetStances)
 					.HasStance(self.Owner.Stances[owner]))
-				&& a.Weapon.IsValidAgainst(t, self.World, self));
+				&& a.Weapon.IsValidAgainst(t, self.World, self)
+				&& (a.Weapon.RequiresForceFire ? forceAttack : true)
+				&& (a.Weapon.RequiresNormalFire ? !forceAttack : true));
 		}
 
 		public void AttackTarget(Target target, bool queued, bool allowMove, bool forceAttack = false)

@@ -80,6 +80,12 @@ namespace OpenRA.GameRules
 		[Desc("Does this weapon aim at the target's center regardless of other targetable offsets?")]
 		public readonly bool TargetActorCenter = false;
 
+		[Desc("This weapon can only be fired if the order is a force fire.")]
+		public readonly bool RequiresForceFire = false;
+
+		[Desc("This weapon can only be fired if the order is not a force fire.")]
+		public readonly bool RequiresNormalFire = false;
+
 		[FieldLoader.LoadUsing("LoadProjectile")]
 		public readonly IProjectileInfo Projectile;
 
