@@ -17,7 +17,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
 {
-	public class GrantConditionOnDeployInfo : ITraitInfo
+	public class GrantConditionOnDeployInfo : ConditionalTraitInfo
 	{
 		[GrantedConditionReference]
 		[Desc("The condition to grant while the actor is undeployed.")]
@@ -55,15 +55,14 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Play MakeAnimation only when its DeployType matches one of these types")]
 		public readonly HashSet<string> MakeAnimationDeployTypes = new HashSet<string> { "make" };
 
-		public object Create(ActorInitializer init) { return new GrantConditionOnDeploy(init, this); }
+		public override object Create(ActorInitializer init) { return new GrantConditionOnDeploy(init, this); }
 	}
 
 	public enum DeployState { Undeployed, Deploying, Deployed, Undeploying }
 
-	public class GrantConditionOnDeploy : IResolveOrder, IIssueOrder, INotifyCreated, INotifyDeployComplete, IIssueDeployOrder
+	public class GrantConditionOnDeploy : ConditionalTrait<GrantConditionOnDeployInfo>, IResolveOrder, IIssueOrder, INotifyCreated, INotifyDeployComplete, IIssueDeployOrder
 	{
 		readonly Actor self;
-		public readonly GrantConditionOnDeployInfo Info;
 		readonly bool checkTerrainType;
 		readonly bool canTurn;
 
@@ -76,9 +75,9 @@ namespace OpenRA.Mods.Common.Traits
 		public DeployState DeployState { get { return deployState; } }
 
 		public GrantConditionOnDeploy(ActorInitializer init, GrantConditionOnDeployInfo info)
+			: base(info)
 		{
 			self = init.Self;
-			Info = info;
 			checkTerrainType = info.AllowedTerrainTypes.Count > 0;
 			canTurn = self.Info.HasTraitInfo<IFacingInfo>();
 			if (init.Contains<DeployStateInit>())
@@ -118,8 +117,14 @@ namespace OpenRA.Mods.Common.Traits
 
 		public IEnumerable<IOrderTargeter> Orders
 		{
-			get { yield return new DeployOrderTargeter("GrantConditionOnDeploy", 5,
-				() => IsCursorBlocked() ? Info.DeployBlockedCursor : Info.DeployCursor); }
+			get
+			{
+				if (IsTraitDisabled)
+					yield break;
+
+				yield return new DeployOrderTargeter("GrantConditionOnDeploy", 5,
+				() => IsCursorBlocked() ? Info.DeployBlockedCursor : Info.DeployCursor);
+			}
 		}
 
 		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
