@@ -759,6 +759,10 @@
     <Compile Include="Traits\AffectsShroud.cs" />
     <Compile Include="Traits\CreatesShroud.cs" />
     <Compile Include="Traits\RevealsShroud.cs" />
+    <Compile Include="Traits\RevealsShroudToIntelligenceOwner.cs" />
+    <Compile Include="Traits\GivesIntelligence.cs" />
+    <Compile Include="Lint\CheckRevealFootprint.cs" />
+    <Compile Include="Lint\CheckHitShapes.cs" />
     <Compile Include="Traits\ThrowsShrapnel.cs" />
     <Compile Include="Traits\World\MusicPlaylist.cs" />
     <Compile Include="Traits\SpawnActorOnDeath.cs" />
