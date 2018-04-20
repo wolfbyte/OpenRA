@@ -33,8 +33,8 @@ namespace OpenRA.Mods.Common.Traits
 
 		readonly HashSet<PPos> footprint;
 
-		[Sync] CPos cachedLocation;
-		[Sync] bool cachedTraitDisabled;
+		[Sync] public CPos cachedLocation;
+		[Sync] public bool cachedTraitDisabled;
 
 		protected abstract void AddCellsToPlayerShroud(Actor self, Player player, PPos[] uv);
 		protected abstract void RemoveCellsFromPlayerShroud(Actor self, Player player);
@@ -46,7 +46,7 @@ namespace OpenRA.Mods.Common.Traits
 				footprint = new HashSet<PPos>();
 		}
 
-		PPos[] ProjectedCells(Actor self)
+		public PPos[] ProjectedCells(Actor self)
 		{
 			var map = self.World.Map;
 			var range = Range;
