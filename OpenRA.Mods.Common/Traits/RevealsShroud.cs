@@ -27,7 +27,7 @@ namespace OpenRA.Mods.Common.Traits
 	public class RevealsShroud : AffectsShroud
 	{
 		readonly RevealsShroudInfo info;
-		readonly Shroud.SourceType type;
+		public readonly Shroud.SourceType type;
 
 		public RevealsShroud(Actor self, RevealsShroudInfo info)
 			: base(self, info)
