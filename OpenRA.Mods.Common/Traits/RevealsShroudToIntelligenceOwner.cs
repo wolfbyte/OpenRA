@@ -127,6 +127,7 @@ namespace OpenRA.Mods.Common.Traits
 
 				if (hasIntel)
 				{
+					RemoveCellsFromPlayerShroud(self, p);
 					AddCellsToPlayerShroud(self, p, cells);
 
 					intelOwners.Add(p);
