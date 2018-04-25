@@ -89,7 +89,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			foreach (var p in self.World.Players)
 			{
-				var hasIntel = self.World.ActorsWithTrait<GivesIntelligence>().Where(t => t.Actor.Owner == p && t.Trait.Info.Types.Overlaps(info.Types)).Any();
+				var hasIntel = self.World.ActorsWithTrait<GivesIntelligence>().Where(t => t.Actor.Owner == p && t.Trait.Info.Types.Overlaps(info.Types) && !t.Trait.IsTraitDisabled).Any();
 
 				if (hasIntel)
 				{
