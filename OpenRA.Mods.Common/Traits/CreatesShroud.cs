@@ -28,7 +28,7 @@ namespace OpenRA.Mods.Common.Traits
 		public CreatesShroud(Actor self, CreatesShroudInfo info)
 			: base(self, info) { this.info = info; }
 
-		protected override void AddCellsToPlayerShroud(Actor self, Player p, PPos[] uv)
+		public override void AddCellsToPlayerShroud(Actor self, Player p, PPos[] uv)
 		{
 			if (!info.ValidStances.HasStance(p.Stances[self.Owner]))
 				return;
@@ -36,6 +36,6 @@ namespace OpenRA.Mods.Common.Traits
 			p.Shroud.AddSource(this, Shroud.SourceType.Shroud, uv);
 		}
 
-		protected override void RemoveCellsFromPlayerShroud(Actor self, Player p) { p.Shroud.RemoveSource(this); }
+		public override void RemoveCellsFromPlayerShroud(Actor self, Player p) { p.Shroud.RemoveSource(this); }
 	}
 }
