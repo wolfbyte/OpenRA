@@ -37,8 +37,8 @@ namespace OpenRA.Mods.Common.Traits
 		[Sync] protected WDist cachedRange;
 		[Sync] protected bool cachedTraitDisabled;
 
-		protected abstract void AddCellsToPlayerShroud(Actor self, Player player, PPos[] uv);
-		protected abstract void RemoveCellsFromPlayerShroud(Actor self, Player player);
+		public abstract void AddCellsToPlayerShroud(Actor self, Player player, PPos[] uv);
+		public abstract void RemoveCellsFromPlayerShroud(Actor self, Player player);
 
 		public AffectsShroud(Actor self, AffectsShroudInfo info)
 			: base(info)
