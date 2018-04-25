@@ -10,6 +10,7 @@
 #endregion
 
 using System.Collections.Generic;
+using System.Linq;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -24,13 +25,54 @@ namespace OpenRA.Mods.Common.Traits
 		public override object Create(ActorInitializer init) { return new GivesIntelligence(this); }
 	}
 
-	public class GivesIntelligence : ConditionalTrait<GivesIntelligenceInfo>
+	public class GivesIntelligence : ConditionalTrait<GivesIntelligenceInfo>, INotifyActorDisposing, INotifyKilled
 	{
 		public GivesIntelligence(GivesIntelligenceInfo info)
 			: base(info) { }
 
-		readonly HashSet<string> noTypes = new HashSet<string>();
+		void RemoveIntelligence(Actor self)
+		{
+			foreach (var a in self.World.ActorsWithTrait<RevealsShroudToIntelligenceOwner>().Where(rs => rs.Trait.info.Types.Overlaps(Info.Types) && !rs.Actor.Owner.NonCombatant))
+			{
+				if (!self.World.ActorsWithTrait<GivesIntelligence>().Where(gi => gi.Actor != self && gi.Actor.Owner == self.Owner && gi.Trait.Info.Types.Overlaps(a.Trait.info.Types)).Any())
+				{
+					a.Trait.RemoveCellsFromPlayerShroud(a.Actor, self.Owner);
+					a.Trait.IntelOwners.Remove(self.Owner);
+				}
+			}
+		}
 
-		public HashSet<string> Types { get { return !IsTraitDisabled ? Info.Types : noTypes; } }
+		protected override void TraitEnabled(Actor self)
+		{
+			foreach (var a in self.World.ActorsWithTrait<RevealsShroudToIntelligenceOwner>().Where(rs => rs.Trait.info.Types.Overlaps(Info.Types) && !rs.Actor.Owner.NonCombatant))
+			{
+				if (!a.Actor.IsInWorld)
+					return;
+
+				if (a.Actor.Owner.NonCombatant)
+					return;
+
+				var cells = a.Trait.ProjectedCells(a.Actor);
+
+				a.Trait.RemoveCellsFromPlayerShroud(a.Actor, self.Owner);
+				a.Trait.AddCellsToPlayerShroud(a.Actor, self.Owner, cells);
+				a.Trait.IntelOwners.Add(self.Owner);
+			}
+		}
+
+		protected override void TraitDisabled(Actor self)
+		{
+			RemoveIntelligence(self);
+		}
+
+		void INotifyKilled.Killed(Actor self, AttackInfo e)
+		{
+			RemoveIntelligence(self);
+		}
+
+		void INotifyActorDisposing.Disposing(Actor self)
+		{
+			RemoveIntelligence(self);
+		}
 	}
 }
