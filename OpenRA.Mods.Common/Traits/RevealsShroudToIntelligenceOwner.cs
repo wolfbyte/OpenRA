@@ -27,54 +27,17 @@ namespace OpenRA.Mods.Common.Traits
 	public class RevealsShroudToIntelligenceOwner : RevealsShroud, INotifyAddedToWorld, ITick
 	{
 		readonly Actor self;
-		readonly RevealsShroudToIntelligenceOwnerInfo info;
-		public List<Player> intelOwners = new List<Player>();
+		public readonly RevealsShroudToIntelligenceOwnerInfo info;
+		public List<Player> IntelOwners = new List<Player>();
 
 		public RevealsShroudToIntelligenceOwner(Actor self, RevealsShroudToIntelligenceOwnerInfo info)
 			: base(self, info)
 		{
 			this.info = info;
 			this.self = self;
-			self.World.ActorAdded += ActorAdded;
-			self.World.ActorRemoved += ActorRemoved;
 		}
 
-		public void ActorAdded(Actor a)
-		{
-			if (self.Owner.NonCombatant)
-				return;
-
-			var givesIntel = a.TraitOrDefault<GivesIntelligence>();
-			if (givesIntel != null && givesIntel.Types.Overlaps(info.Types))
-			{
-				var cells = ProjectedCells(self);
-				if (!intelOwners.Contains(a.Owner))
-				{
-					intelOwners.Add(a.Owner);
-					RemoveCellsFromPlayerShroud(self, a.Owner);
-					AddCellsToPlayerShroud(self, a.Owner, cells);
-				}
-			}
-		}
-
-		public void ActorRemoved(Actor a)
-		{
-			if (self.Owner.NonCombatant)
-				return;
-
-			var givesIntel = a.TraitOrDefault<GivesIntelligence>();
-			if (givesIntel != null && givesIntel.Types.Overlaps(info.Types))
-			{
-				// Ensure there is no other actor that gives intelligence
-				if (!a.World.ActorsWithTrait<GivesIntelligence>().Where(t => t.Actor != a && t.Actor.Owner == a.Owner && t.Trait.Types.Overlaps(info.Types)).Any())
-				{
-					intelOwners.Remove(a.Owner);
-					RemoveCellsFromPlayerShroud(self, a.Owner);
-				}
-			}
-		}
-
-		protected override void AddCellsToPlayerShroud(Actor self, Player p, PPos[] uv)
+		public override void AddCellsToPlayerShroud(Actor self, Player p, PPos[] uv)
 		{
 			p.Shroud.AddSource(this, type, uv);
 		}
@@ -87,7 +50,7 @@ namespace OpenRA.Mods.Common.Traits
 			if (self.Owner.NonCombatant)
 				return;
 
-			if (!intelOwners.Any())
+			if (!IntelOwners.Any())
 				return;
 
 			var centerPosition = self.CenterPosition;
@@ -105,13 +68,16 @@ namespace OpenRA.Mods.Common.Traits
 			foreach (var p in self.World.Players)
 			{
 				RemoveCellsFromPlayerShroud(self, p);
-				if (intelOwners.Contains(p))
+				if (IntelOwners.Contains(p))
 					AddCellsToPlayerShroud(self, p, cells);
 			}
 		}
 
 		void INotifyAddedToWorld.AddedToWorld(Actor self)
 		{
+			if (!self.IsInWorld)
+				return;
+
 			if (self.Owner.NonCombatant)
 				return;
 
@@ -123,14 +89,14 @@ namespace OpenRA.Mods.Common.Traits
 
 			foreach (var p in self.World.Players)
 			{
-				var hasIntel = self.World.ActorsWithTrait<GivesIntelligence>().Where(t => t.Actor.Owner == p && t.Trait.Types.Overlaps(info.Types)).Any();
+				var hasIntel = self.World.ActorsWithTrait<GivesIntelligence>().Where(t => t.Actor.Owner == p && t.Trait.Info.Types.Overlaps(info.Types)).Any();
 
 				if (hasIntel)
 				{
 					RemoveCellsFromPlayerShroud(self, p);
 					AddCellsToPlayerShroud(self, p, cells);
 
-					intelOwners.Add(p);
+					IntelOwners.Add(p);
 				}
 			}
 		}
