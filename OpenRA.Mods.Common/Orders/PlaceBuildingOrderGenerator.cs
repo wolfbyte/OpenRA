@@ -121,7 +121,7 @@ namespace OpenRA.Mods.Common.Orders
 			{
 				var orderType = "PlaceBuilding";
 				var topLeft = viewport.ViewToWorld(Viewport.LastMousePos + topLeftScreenOffset);
-				var cannotBuildAudio = buildableInfo.QueuedAudio != null ? buildableInfo.QueuedAudio : queue.Info.CannotBuildAudio;
+				var cannotBuildAudio = buildableInfo.CannotBuildAudio != null ? buildableInfo.CannotBuildAudio : queue.Info.CannotBuildAudio;
 
 				var plugInfo = actorInfo.TraitInfoOrDefault<PlugInfo>();
 				if (plugInfo != null)
