@@ -54,7 +54,7 @@ namespace OpenRA.Mods.Common.Traits
 		public object Create(ActorInitializer init) { return new Passenger(this); }
 	}
 
-	public class Passenger : INotifyCreated, IIssueOrder, IResolveOrder, IOrderVoice, INotifyRemovedFromWorld, ITick
+	public class Passenger : INotifyCreated, IIssueOrder, IResolveOrder, IOrderVoice, INotifyRemovedFromWorld, INotifyEnteredCargo, INotifyExitedCargo
 	{
 		public readonly PassengerInfo Info;
 		public Actor Transport;
@@ -115,27 +115,26 @@ namespace OpenRA.Mods.Common.Traits
 			return Info.Voice;
 		}
 
-		void ITick.Tick(Actor self)
+		void INotifyEnteredCargo.OnEnteredCargo(Actor self, Actor cargo)
 		{
 			string specificCargoCondition;
 			if (conditionManager != null)
 			{
-				if (Transport != null)
-				{
-					if (anyCargoToken == ConditionManager.InvalidConditionToken && Info.CargoCondition != null)
-						anyCargoToken = conditionManager.GrantCondition(self, Info.CargoCondition);
-					if (specificCargoToken == ConditionManager.InvalidConditionToken && Info.CargoConditions.TryGetValue(Transport.Info.Name, out specificCargoCondition))
-						specificCargoToken = conditionManager.GrantCondition(self, specificCargoCondition);
-				}
+				if (anyCargoToken == ConditionManager.InvalidConditionToken && Info.CargoCondition != null)
+					anyCargoToken = conditionManager.GrantCondition(self, Info.CargoCondition);
 
-				if (Transport == null)
-				{
-					if (anyCargoToken != ConditionManager.InvalidConditionToken)
-						anyCargoToken = conditionManager.RevokeCondition(self, anyCargoToken);
-					if (specificCargoToken != ConditionManager.InvalidConditionToken)
-						specificCargoToken = conditionManager.RevokeCondition(self, specificCargoToken);
-				}
+				if (specificCargoToken == ConditionManager.InvalidConditionToken && Info.CargoConditions.TryGetValue(cargo.Info.Name, out specificCargoCondition))
+					specificCargoToken = conditionManager.GrantCondition(self, specificCargoCondition);
 			}
+		}
+
+		void INotifyExitedCargo.OnExitedCargo(Actor self, Actor cargo)
+		{
+			if (anyCargoToken != ConditionManager.InvalidConditionToken)
+				anyCargoToken = conditionManager.RevokeCondition(self, anyCargoToken);
+
+			if (specificCargoToken != ConditionManager.InvalidConditionToken)
+				specificCargoToken = conditionManager.RevokeCondition(self, specificCargoToken);
 		}
 
 		public void ResolveOrder(Actor self, Order order)
