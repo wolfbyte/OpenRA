@@ -40,6 +40,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Message to show when this actor is being captured.")]
 		public readonly string ChatMessage = "One of our buildings is being captured.";
 
+		[Desc("Notification to play when this actor is being captured.")]
+		public readonly string Notification = null;
+
 		public bool CanBeTargetedBy(Actor captor, Player owner)
 		{
 			var c = captor.Info.TraitInfoOrDefault<ExternalCapturesInfo>();
@@ -87,6 +90,9 @@ namespace OpenRA.Mods.Common.Traits
 
 			if (Info.ShowChatMessage && self.World.LocalPlayer == self.Owner)
 				Game.AddChatLine(Color.White, "Battlefield Control", Info.ChatMessage);
+
+			if (Info.Notification != null)
+				Game.Sound.PlayNotification(self.World.Map.Rules, self.Owner, "Speech", Info.Notification, self.Owner.Faction.InternalName);
 
 			Captor = captor;
 		}
