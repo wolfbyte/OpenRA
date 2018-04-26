@@ -26,7 +26,6 @@ namespace OpenRA.Mods.Common.Traits
 
 	public class RevealsShroudToIntelligenceOwner : RevealsShroud, INotifyAddedToWorld, ITick
 	{
-		readonly Actor self;
 		public readonly RevealsShroudToIntelligenceOwnerInfo info;
 		public List<Player> IntelOwners = new List<Player>();
 
@@ -34,7 +33,6 @@ namespace OpenRA.Mods.Common.Traits
 			: base(self, info)
 		{
 			this.info = info;
-			this.self = self;
 		}
 
 		public override void AddCellsToPlayerShroud(Actor self, Player p, PPos[] uv)
