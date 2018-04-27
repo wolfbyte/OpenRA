@@ -84,6 +84,10 @@ namespace OpenRA.Mods.Common.Traits
 
 		void AddCashTick(Actor self, int amount)
 		{
+			var cloaks = self.TraitsImplementing<Cloak>().ToArray();
+			if (cloaks.Where(c => !c.IsVisible(self, self.World.RenderPlayer)).Any())
+				return;
+
 			self.World.AddFrameEndTask(w => w.Add(
 				new FloatingText(self.CenterPosition, self.Owner.Color.RGB, FloatingText.FormatCashTick(amount), info.DisplayDuration)));
 		}
