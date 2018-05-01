@@ -33,7 +33,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		int IReloadModifier.GetReloadModifier(string armamentName)
 		{
-			return !IsTraitDisabled && Info.Types.Any() && Info.Types.Contains(armamentName) ? Info.Modifier : 100;
+			return !IsTraitDisabled && (!Info.Types.Any() || Info.Types.Contains(armamentName)) ? Info.Modifier : 100;
 		}
 	}
 }
