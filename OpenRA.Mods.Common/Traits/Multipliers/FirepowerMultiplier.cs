@@ -33,7 +33,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		int IFirepowerModifier.GetFirepowerModifier(string armamentName)
 		{
-			return !IsTraitDisabled && Info.Types.Any() && Info.Types.Contains(armamentName) ? Info.Modifier : 100;
+			return !IsTraitDisabled && (!Info.Types.Any() || Info.Types.Contains(armamentName)) ? Info.Modifier : 100;
 		}
 	}
 }
