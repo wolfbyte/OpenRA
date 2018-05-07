@@ -83,6 +83,7 @@
     <Compile Include="Graphics\Radioactivity.cs" />
     <Compile Include="Graphics\RadBeamRenderable.cs" />
     <Compile Include="Graphics\ArcRenderable.cs" />
+    <Compile Include="Traits\LaysMinefield.cs" />
     <Compile Include="Orders\ShootableBallisticMissileMoveOrderTargeter.cs" />
     <Compile Include="Projectiles\RadBeam.cs" />
     <Compile Include="Traits\AIDeployHelper.cs" />
