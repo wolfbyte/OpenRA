@@ -91,10 +91,6 @@ namespace OpenRA.Mods.Common.Traits
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string OnHoldAudio = null;
 
-		[Desc("Notification played when user clicks on the build palette icon, but QueueLimit is reached.",
-			"The filename of the audio is defined per faction in notifications.yaml.")]
-		public readonly string UnableToComplyAudio = null;
-
 		[NotificationReference("Speech")]
 		[Desc("Notification played when player right-clicks on a build palette icon that is already on hold.",
 			"The filename of the audio is defined per faction in notifications.yaml.")]
@@ -351,10 +347,8 @@ namespace OpenRA.Mods.Common.Traits
 			}
 		}
 
-		public bool CanQueue(ActorInfo actor, out string notificationAudio)
+		public bool CanQueue(ActorInfo actor)
 		{
-			notificationAudio = Info.BlockedAudio;
-
 			var bi = actor.TraitInfoOrDefault<BuildableInfo>();
 			if (bi == null)
 				return false;
@@ -369,10 +363,7 @@ namespace OpenRA.Mods.Common.Traits
 
 				var queueCount = Queue.Count(i => i.Item == actor.Name);
 				if (Info.ItemLimit > 0 && queueCount >= Info.ItemLimit)
-				{
-					notificationAudio = Info.LimitedAudio;
 					return false;
-				}
 
 				if (bi.BuildLimit > 0)
 				{
@@ -383,7 +374,6 @@ namespace OpenRA.Mods.Common.Traits
 				}
 			}
 
-			notificationAudio = Info.QueuedAudio;
 			return true;
 		}
 
@@ -425,7 +415,13 @@ namespace OpenRA.Mods.Common.Traits
 						}
 
 						if (fromLimit <= 0)
+						{
+							var limitedAudio = bi.LimitedAudio != null ? bi.LimitedAudio : Info.LimitedAudio;
+							if (limitedAudio != null)
+								Game.Sound.PlayNotification(rules, self.Owner, "Speech", limitedAudio, self.Owner.Faction.InternalName);
+
 							return;
+						}
 					}
 
 					var cost = GetProductionCost(unit);
@@ -435,13 +431,6 @@ namespace OpenRA.Mods.Common.Traits
 					for (var n = 0; n < amountToBuild; n++)
 					{
 						var hasPlayedSound = false;
-						if (QueueLength >= Info.QueueLimit)
-						{
-							Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.UnableToComplyAudio, self.Owner.Faction.InternalName);
-
-							return;
-						}
-
 						if (cost != 0 && Info.InstantCashDrain && !playerResources.TakeCash(cost, true))
 						{
 							Game.Sound.PlayNotification(rules, self.Owner, "Speech", playerResources.Info.InsufficientFundsNotification, self.Owner.Faction.InternalName);

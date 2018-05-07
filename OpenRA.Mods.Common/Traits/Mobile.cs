@@ -158,7 +158,6 @@ namespace OpenRA.Mods.Common.Traits
 		INotifyCustomLayerChanged[] notifyCustomLayerChanged;
 		INotifyVisualPositionChanged[] notifyVisualPositionChanged;
 		INotifyFinishedMoving[] notifyFinishedMoving;
-		ConditionManager conditionManager;
 		bool turnWhileDisabled = false;
 
 		#region IFacing
