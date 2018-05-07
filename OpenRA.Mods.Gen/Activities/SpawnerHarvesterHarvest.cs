@@ -276,10 +276,9 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 			var searchRadiusSquared = searchRadius * searchRadius;
 
 			// Find any harvestable resources:
-			var passable = (uint)mobileInfo.GetMovementClass(self.World.Map.Rules.TileSet);
 			List<CPos> path;
-			using (var search = PathSearch.Search(self.World, mobileInfo, self, true,
-				loc => domainIndex.IsPassable(self.Location, loc, mobileInfo, passable)
+			using (var search = PathSearch.Search(self.World, mobileInfo.LocomotorInfo, self, true,
+				loc => domainIndex.IsPassable(self.Location, loc, mobileInfo.LocomotorInfo)
 					&& harv.CanHarvestCell(self, loc) && claimLayer.CanClaimCell(self, loc))
 				.WithCustomCost(loc =>
 				{
