@@ -293,11 +293,7 @@ namespace OpenRA.Mods.Common.Widgets
 				// Queue a new item
 				Game.Sound.Play(SoundType.UI, TabClick);
 
-				string notification;
-				var canQueue = CurrentQueue.CanQueue(buildable, out notification);
-				Game.Sound.PlayNotification(World.Map.Rules, World.LocalPlayer, "Speech", notification, World.LocalPlayer.Faction.InternalName);
-
-				if (canQueue)
+				if (CurrentQueue.CanQueue(buildable))
 				{
 					World.IssueOrder(Order.StartProduction(CurrentQueue.Actor, icon.Name, handleCount));
 					return true;

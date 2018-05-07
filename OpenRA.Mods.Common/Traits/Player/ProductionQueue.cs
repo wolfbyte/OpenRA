@@ -56,9 +56,6 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("The build time is multiplied with this value on low power.")]
 		public readonly int LowPowerSlowdown = 3;
 
-		[Desc("Only allow queueing this much actors.")]
-		public readonly int QueueLimit = int.MaxValue;
-
 		[Desc("Notification played when production is complete.",
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string ReadyAudio = "UnitReady";
@@ -84,10 +81,6 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Notification played when player right-clicks on the build palette icon.",
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string OnHoldAudio = "OnHold";
-
-		[Desc("Notification played when user clicks on the build palette icon, but QueueLimit is reached.",
-			"The filename of the audio is defined per faction in notifications.yaml.")]
-		public readonly string UnableToComplyAudio = "BuildingInProgress";
 
 		[Desc("Notification played when player right-clicks on a build palette icon that is already on hold.",
 			"The filename of the audio is defined per faction in notifications.yaml.")]
@@ -345,28 +338,20 @@ namespace OpenRA.Mods.Common.Traits
 				queue[0].Tick(playerResources);
 		}
 
-		public bool CanQueue(ActorInfo actor, out string notificationAudio)
+		public bool CanQueue(ActorInfo actor)
 		{
-			notificationAudio = Info.BlockedAudio;
-
 			var bi = actor.TraitInfoOrDefault<BuildableInfo>();
 			if (bi == null)
 				return false;
 
 			if (!developerMode.AllTech)
 			{
-				if (Info.QueueLimit > 0 && queue.Count >= Info.QueueLimit)
-				{
-					notificationAudio = Info.LimitedAudio;
+				if (Info.QueueLimit > 0 && QueueLength >= Info.QueueLimit)
 					return false;
-				}
 
 				var queueCount = queue.Count(i => i.Item == actor.Name);
 				if (Info.ItemLimit > 0 && queueCount >= Info.ItemLimit)
-				{
-					notificationAudio = Info.LimitedAudio;
 					return false;
-				}
 
 				if (bi.BuildLimit > 0)
 				{
@@ -377,7 +362,6 @@ namespace OpenRA.Mods.Common.Traits
 				}
 			}
 
-			notificationAudio = Info.QueuedAudio;
 			return true;
 		}
 
@@ -406,7 +390,7 @@ namespace OpenRA.Mods.Common.Traits
 					if (!developerMode.AllTech)
 					{
 						if (Info.QueueLimit > 0)
-							fromLimit = Info.QueueLimit - queue.Count;
+							fromLimit = Info.QueueLimit - QueueLength;
 
 						if (Info.ItemLimit > 0)
 							fromLimit = Math.Min(fromLimit, Info.ItemLimit - queue.Count(i => i.Item == order.TargetString));
@@ -419,7 +403,13 @@ namespace OpenRA.Mods.Common.Traits
 						}
 
 						if (fromLimit <= 0)
+						{
+							var limitedAudio = bi.LimitedAudio != null ? bi.LimitedAudio : Info.LimitedAudio;
+							if (limitedAudio != null)
+								Game.Sound.PlayNotification(rules, self.Owner, "Speech", limitedAudio, self.Owner.Faction.InternalName);
+
 							return;
+						}
 					}
 
 					var cost = GetProductionCost(unit);
@@ -429,13 +419,6 @@ namespace OpenRA.Mods.Common.Traits
 					for (var n = 0; n < amountToBuild; n++)
 					{
 						var hasPlayedSound = false;
-						if (QueueLength >= Info.QueueLimit)
-						{
-							Game.Sound.PlayNotification(rules, self.Owner, "Speech", Info.UnableToComplyAudio, self.Owner.Faction.InternalName);
-
-							return;
-						}
-
 						if (cost != 0 && Info.InstantCashDrain && !playerResources.TakeCash(cost, true))
 						{
 							Game.Sound.PlayNotification(rules, self.Owner, "Speech", playerResources.Info.InsufficientFundsNotification, self.Owner.Faction.InternalName);
