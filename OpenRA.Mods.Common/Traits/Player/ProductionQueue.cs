@@ -111,7 +111,7 @@ namespace OpenRA.Mods.Common.Traits
 		readonly Actor self;
 
 		// A list of things we could possibly build
-		protected readonly Dictionary<ActorInfo, ProductionState> Producible = new Dictionary<ActorInfo, ProductionState>();
+		public readonly Dictionary<ActorInfo, ProductionState> Producible = new Dictionary<ActorInfo, ProductionState>();
 		protected readonly List<ProductionItem> Queue = new List<ProductionItem>();
 		readonly IEnumerable<ActorInfo> allProducibles;
 		readonly IEnumerable<ActorInfo> buildableProducibles;
@@ -198,7 +198,7 @@ namespace OpenRA.Mods.Common.Traits
 		void INotifyTransform.OnTransform(Actor self) { }
 		void INotifyTransform.AfterTransform(Actor self) { }
 
-		void CacheProducibles(Actor playerActor)
+		public void CacheProducibles(Actor playerActor)
 		{
 			Producible.Clear();
 			if (!Enabled)
@@ -226,21 +226,33 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void PrerequisitesAvailable(string key)
 		{
+			if (self.Info.TraitInfos<ConditionPrerequisiteInfo>().Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
+				return;
+
 			Producible[self.World.Map.Rules.Actors[key]].Buildable = true;
 		}
 
 		public void PrerequisitesUnavailable(string key)
 		{
+			if (self.Info.TraitInfos<ConditionPrerequisiteInfo>().Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
+				return;
+
 			Producible[self.World.Map.Rules.Actors[key]].Buildable = false;
 		}
 
 		public void PrerequisitesItemHidden(string key)
 		{
+			if (self.Info.TraitInfos<ConditionPrerequisiteInfo>().Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
+				return;
+
 			Producible[self.World.Map.Rules.Actors[key]].Visible = false;
 		}
 
 		public void PrerequisitesItemVisible(string key)
 		{
+			if (self.Info.TraitInfos<ConditionPrerequisiteInfo>().Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
+				return;
+
 			Producible[self.World.Map.Rules.Actors[key]].Visible = true;
 		}
 
