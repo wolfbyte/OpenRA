@@ -399,6 +399,7 @@
     <Compile Include="Traits\Passenger.cs" />
     <Compile Include="Traits\CustomProductionCost.cs" />
     <Compile Include="Traits\CustomProductionTime.cs" />
+    <Compile Include="Traits\ConditionPrerequisite.cs" />
     <Compile Include="Traits\Multipliers\CashTricklerMultiplier.cs" />
     <Compile Include="Traits\Multipliers\DamageMultiplier.cs" />
     <Compile Include="Traits\Multipliers\FirepowerMultiplier.cs" />
