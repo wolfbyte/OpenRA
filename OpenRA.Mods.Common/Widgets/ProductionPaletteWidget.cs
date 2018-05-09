@@ -427,7 +427,8 @@ namespace OpenRA.Mods.Common.Widgets
 					ProductionQueue = currentQueue
 				};
 
-				icons.Add(rect, pi);
+				if (!icons.ContainsKey(rect))
+					icons.Add(rect, pi);
 
 				if (iconLocation > DisplayedIconCount)
 					DisplayedIconCount = iconLocation + 1;
