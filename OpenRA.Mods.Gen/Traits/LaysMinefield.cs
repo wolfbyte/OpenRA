@@ -58,11 +58,11 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (--ticks < 0)
 			{
 				ticks = Info.RecreationInterval;
-				SpawnMinesPart(self);
+				SpawnMines(self);
 			}
 		}
 
-		public void SpawnMinesPart(Actor self)
+		public void SpawnMines(Actor self)
 		{
 			var building = self.TraitOrDefault<Building>();
 			if (building != null && building.Locked)
@@ -103,7 +103,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		void INotifyBuildComplete.BuildingComplete(Actor self)
 		{
 			if (!IsTraitDisabled && !IsTraitPaused)
-				SpawnMinesPart(self);
+				SpawnMines(self);
 		}
 
 		void INotifyOwnerChanged.OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)
