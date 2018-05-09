@@ -400,8 +400,9 @@ namespace OpenRA.Mods.Common.Traits
 						if (Info.QueueLimit > 0)
 							fromLimit = Info.QueueLimit - QueueLength;
 
-						if (Info.ItemLimit > 0)
-							fromLimit = Math.Min(fromLimit, Info.ItemLimit - queue.Count(i => i.Item == order.TargetString));
+						var itemLimit = bi.QueueLimit >= 0 ? bi.QueueLimit : Info.ItemLimit;
+						if (itemLimit > 0)
+							fromLimit = Math.Min(fromLimit, itemLimit - queue.Count(i => i.Item == order.TargetString));
 
 						if (bi.BuildLimit > 0)
 						{
