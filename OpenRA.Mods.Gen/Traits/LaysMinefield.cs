@@ -23,14 +23,15 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		[Desc("Types of mines to place, if multipile is defined, a random one will be selected.")]
 		public readonly HashSet<string> Mines = new HashSet<string>();
 
-		[Desc("Range, in cells, to place mines around.")]
-		public readonly int Range = 3;
+		[FieldLoader.Require]
+		[Desc("Locations to place the mines, from top-left of the building.")]
+		public readonly CVec[] Locations = { };
 
 		[Desc("Initial delay to create the mines.")]
 		public readonly int InitialDelay = 1;
 
 		[Desc("Recreate the mines, if they are destroyed after this much of time.")]
-		public readonly int RecreationInterval = 250;
+		public readonly int RecreationInterval = 2500;
 
 		[Desc("Remove the mines if the trait gets disabled.")]
 		public readonly bool RemoveOnDisable = true;
@@ -57,52 +58,37 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (--ticks < 0)
 			{
 				ticks = Info.RecreationInterval;
-				SpawnMinesPart1(self);
+				SpawnMinesPart(self);
 			}
 		}
 
-		public void SpawnMinesPart1(Actor self)
+		public void SpawnMinesPart(Actor self)
 		{
 			var building = self.TraitOrDefault<Building>();
 			if (building != null && building.Locked)
 				return;
 
-			if (building != null)
+			foreach (var offset in Info.Locations)
 			{ 
-				foreach (var buildingCell in building.OccupiedCells())
-				{ 
-					foreach (var cell in self.World.Map.FindTilesInCircle(buildingCell.First, Info.Range))
+				var cell = self.Location + offset;
+				{
+					foreach (var actor in Info.Mines)
 					{
-						SpawnMinesPart2(self, cell);
+						var ai = self.World.Map.Rules.Actors[actor];
+						var ip = ai.TraitInfo<IPositionableInfo>();
+
+						if (!ip.CanEnterCell(self.World, null, cell))
+							continue;
+
+						var mine = self.World.CreateActor(actor.ToLowerInvariant(), new TypeDictionary
+						{
+							new OwnerInit(self.Owner),
+							new LocationInit(cell)
+						});
+
+						mines.Add(mine);
 					}
 				}
-			}
-			else
-			{
-				foreach (var cell in self.World.Map.FindTilesInCircle(self.World.Map.CellContaining(self.CenterPosition), Info.Range))
-				{
-					SpawnMinesPart2(self, cell);
-				}
-			}
-		}
-
-		public void SpawnMinesPart2(Actor self, CPos cell)
-		{
-			foreach (var actor in Info.Mines)
-			{
-				var ai = self.World.Map.Rules.Actors[actor];
-				var ip = ai.TraitInfo<IPositionableInfo>();
-
-				if (!ip.CanEnterCell(self.World, null, cell))
-					continue;
-
-				var mine = self.World.CreateActor(actor.ToLowerInvariant(), new TypeDictionary
-					{
-						new OwnerInit(self.Owner),
-						new LocationInit(cell)
-					});
-
-				mines.Add(mine);
 			}
 		}
 
@@ -117,7 +103,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		void INotifyBuildComplete.BuildingComplete(Actor self)
 		{
 			if (!IsTraitDisabled && !IsTraitPaused)
-				SpawnMinesPart1(self);
+				SpawnMinesPart(self);
 		}
 
 		protected override void TraitDisabled(Actor self)
