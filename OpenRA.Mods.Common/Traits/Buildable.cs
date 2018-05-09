@@ -58,6 +58,9 @@ namespace OpenRA.Mods.Common.Traits
 		// TODO: UI fluff; doesn't belong here
 		public readonly bool ForceIconLocation = false;
 
+		[Desc("Maximum number of this item that can be queued (0 = infinite, -1 use queue's value).")]
+		public readonly int QueueLimit = -1;
+
 		[Desc("Text shown in the production tooltip.")]
 		[Translate] public readonly string Description = "";
 
