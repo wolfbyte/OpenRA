@@ -29,10 +29,9 @@ namespace OpenRA.Mods.Common.Traits
 		public override object Create(ActorInitializer init) { return new ConditionPrerequisite(init.Self, this); }
 	}
 
-	public class ConditionPrerequisite : PausableConditionalTrait<ConditionPrerequisiteInfo>
+	public class ConditionPrerequisite : PausableConditionalTrait<ConditionPrerequisiteInfo>, INotifyCreated
 	{
 		Actor playerActor;
-		TechTree techTree;
 		ProductionQueue[] queues;
 
 		public ConditionPrerequisite(Actor self, ConditionPrerequisiteInfo info)
@@ -43,9 +42,31 @@ namespace OpenRA.Mods.Common.Traits
 			// so we must query other player traits from self, knowing that
 			// it refers to the same actor as self.Owner.PlayerActor
 			playerActor = self.Info.Name == "player" ? self : self.Owner.PlayerActor;
-
-			techTree = playerActor.Trait<TechTree>();
+			
 			queues = self.TraitsImplementing<ProductionQueue>().Where(t => Info.Queue.Contains(t.Info.Type)).ToArray();
+		}
+
+		void INotifyCreated.Created(Actor self)
+		{
+			if (Info.RequiresCondition == null)
+			{
+				foreach (var queue in queues.Where(t => t.Enabled))
+				{
+					queue.CacheProducibles(playerActor);
+					queue.producible[self.World.Map.Rules.Actors[Info.Actor]].Visible = true;
+					if (!IsTraitPaused)
+						queue.producible[self.World.Map.Rules.Actors[Info.Actor]].Buildable = true;
+				}
+			}
+
+			if (IsTraitDisabled)
+			{
+				foreach (var queue in queues.Where(t => t.Enabled))
+				{
+					queue.CacheProducibles(playerActor);
+					queue.producible[self.World.Map.Rules.Actors[Info.Actor]].Visible = false;
+				}
+			}
 		}
 
 		protected override void TraitEnabled(Actor self)

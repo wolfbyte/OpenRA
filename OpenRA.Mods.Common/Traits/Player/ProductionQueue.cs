@@ -110,6 +110,7 @@ namespace OpenRA.Mods.Common.Traits
 		readonly IEnumerable<ActorInfo> buildableProducibles;
 
 		Production[] productionTraits;
+		ConditionPrerequisiteInfo[] conditionPrerequisites;
 
 		// Will change if the owner changes
 		PowerManager playerPower;
@@ -155,7 +156,8 @@ namespace OpenRA.Mods.Common.Traits
 			// so we must query other player traits from self, knowing that
 			// it refers to the same actor as self.Owner.PlayerActor
 			playerPower = (self.Info.Name == "player" ? self : self.Owner.PlayerActor).TraitOrDefault<PowerManager>();
-			productionTraits = self.TraitsImplementing<Production>().ToArray();
+			productionTraits = self.TraitsImplementing<Production>().Where(p => p.Info.Produces.Contains(Info.Type)).ToArray();
+			conditionPrerequisites = self.Info.TraitInfos<ConditionPrerequisiteInfo>().ToArray();
 		}
 
 		protected void ClearQueue()
@@ -206,7 +208,12 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void CacheProducibles(Actor playerActor)
 		{
-			producible.Clear();
+			foreach (var a in self.World.Map.Rules.Actors.Values)
+			{ 
+				if (!self.Info.TraitInfos<ConditionPrerequisiteInfo>().Where(t => t.Queue.Contains(Info.Type) && t.Actor == a.Name).Any())
+					producible.Remove(a);
+			}
+
 			if (!Enabled)
 				return;
 
@@ -216,7 +223,8 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				var bi = a.TraitInfo<BuildableInfo>();
 
-				producible.Add(a, new ProductionState());
+				if (!producible.ContainsKey(a))
+					producible.Add(a, new ProductionState());
 				ttc.Add(a.Name, bi.Prerequisites, bi.BuildLimit, this);
 			}
 		}
@@ -232,7 +240,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void PrerequisitesAvailable(string key)
 		{
-			if (self.Info.TraitInfos<ConditionPrerequisiteInfo>().Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
+			if (conditionPrerequisites.Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
 				return;
 
 			producible[self.World.Map.Rules.Actors[key]].Buildable = true;
@@ -240,7 +248,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void PrerequisitesUnavailable(string key)
 		{
-			if (self.Info.TraitInfos<ConditionPrerequisiteInfo>().Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
+			if (conditionPrerequisites.Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
 				return;
 
 			producible[self.World.Map.Rules.Actors[key]].Buildable = false;
@@ -248,7 +256,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void PrerequisitesItemHidden(string key)
 		{
-			if (self.Info.TraitInfos<ConditionPrerequisiteInfo>().Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
+			if (conditionPrerequisites.Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
 				return;
 
 			producible[self.World.Map.Rules.Actors[key]].Visible = false;
@@ -256,7 +264,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void PrerequisitesItemVisible(string key)
 		{
-			if (self.Info.TraitInfos<ConditionPrerequisiteInfo>().Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
+			if (conditionPrerequisites.Where(t => t.Queue.Contains(Info.Type) && t.Actor == key).Any())
 				return;
 
 			producible[self.World.Map.Rules.Actors[key]].Visible = true;
