@@ -59,6 +59,9 @@ namespace OpenRA.Mods.Common.Activities
 				{
 					self.World.Add(new FlashTarget(target.Actor, self.Owner));
 					self.World.Add(new FlashTarget(self));
+
+					if (capturable.Info.FlashBeep != null)
+						Game.Sound.Play(SoundType.World, capturable.Info.FlashBeep, target.CenterPosition);
 				}
 
 				if (capturable.CaptureProgressTime == capturable.Info.CaptureCompleteTime * 25)
