@@ -43,6 +43,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Notification to play when this actor is being captured.")]
 		public readonly string Notification = null;
 
+		[Desc("Sound to play at the same time actor flashes during capture.")]
+		public readonly string FlashBeep = null;
+
 		public bool CanBeTargetedBy(Actor captor, Player owner)
 		{
 			var c = captor.Info.TraitInfoOrDefault<ExternalCapturesInfo>();
