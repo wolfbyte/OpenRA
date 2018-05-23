@@ -140,7 +140,7 @@ namespace OpenRA.Mods.Common.Traits
 			return new Order("GrantConditionOnDeploy", self, false);
 		}
 
-		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return true; }
+		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return !IsTraitDisabled; }
 
 		public void ResolveOrder(Actor self, Order order)
 		{
