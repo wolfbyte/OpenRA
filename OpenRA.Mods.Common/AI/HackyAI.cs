@@ -34,6 +34,7 @@ namespace OpenRA.Mods.Common.AI
 			public readonly HashSet<string> Dozer = new HashSet<string>();
 			public readonly HashSet<string> NavalUnits = new HashSet<string>();
 			public readonly HashSet<string> Seige = new HashSet<string>();
+			public readonly HashSet<string> Harvester = new HashSet<string>();
 			public readonly HashSet<string> Collector = new HashSet<string>();
 			public readonly HashSet<string> FragileDeployer = new HashSet<string>();
 			public readonly HashSet<string> ExcludeFromSquads = new HashSet<string>();
@@ -1054,7 +1055,9 @@ namespace OpenRA.Mods.Common.AI
 			var allEnemyBaseBuilder = FindEnemyConstructionYards();
 			var ownUnits = activeUnits
 				.Where(unit => unit.IsIdle && unit.Info.HasTraitInfo<AttackBaseInfo>()
-					&& !unit.Info.HasTraitInfo<AircraftInfo>() && !unit.Info.HasTraitInfo<HarvesterInfo>()).ToList();
+					&& !unit.Info.HasTraitInfo<AircraftInfo>()
+					&& (Info.UnitsCommonNames.Harvester == null || !Info.UnitsCommonNames.Harvester.Contains(unit.Info.Name))
+					&& (Info.UnitsCommonNames.Collector == null || !Info.UnitsCommonNames.Collector.Contains(unit.Info.Name))).ToList();
 
 			if (!allEnemyBaseBuilder.Any() || (ownUnits.Count < Info.SquadSize))
 				return;
@@ -1096,7 +1099,7 @@ namespace OpenRA.Mods.Common.AI
 			if (!protectSq.IsValid)
 			{
 				var ownUnits = World.FindActorsInCircle(World.Map.CenterOfCell(GetRandomBaseCenter()), WDist.FromCells(Info.ProtectUnitScanRadius))
-					.Where(unit => unit.Owner == Player && !unit.Info.HasTraitInfo<BuildingInfo>() && !unit.Info.HasTraitInfo<HarvesterInfo>()
+					.Where(unit => unit.Owner == Player && !unit.Info.HasTraitInfo<BuildingInfo>() && !Info.UnitsCommonNames.ExcludeFromSquads.Contains(unit.Info.Name)
 						&& unit.Info.HasTraitInfo<AttackBaseInfo>());
 
 				foreach (var a in ownUnits)
@@ -1381,10 +1384,10 @@ namespace OpenRA.Mods.Common.AI
 			if (unit == null)
 				return;
 
-			if (unit.TraitInfoOrDefault<HarvesterInfo>() == null && Info.ProductionMinimumCash > playerResource.Cash)
-				return;
-
 			var name = unit.Name;
+
+			if (!(Info.UnitsCommonNames.Harvester != null && Info.UnitsCommonNames.Harvester.Contains(name)) && !(Info.UnitsCommonNames.Collector != null && Info.UnitsCommonNames.Collector.Contains(name)) && Info.ProductionMinimumCash > playerResource.Cash)
+				return;
 
 			if (Info.UnitsToBuild != null && !Info.UnitsToBuild.ContainsKey(name))
 				return;
@@ -1394,8 +1397,8 @@ namespace OpenRA.Mods.Common.AI
 				World.Actors.Count(a => a.Owner == Player && a.Info.Name == name) >= Info.UnitLimits[name])
 				return;
 
-			if (Info.UnitsCommonNames.Collector != null && resLayer != null &&
-				Info.UnitsCommonNames.Collector.Contains(name) && resLayer.IsResourceLayerEmpty)
+			if (Info.UnitsCommonNames.Harvester != null && resLayer != null &&
+				Info.UnitsCommonNames.Harvester.Contains(name) && resLayer.IsResourceLayerEmpty)
 				return;
 
 			QueueOrder(Order.StartProduction(queue.Actor, name, 1));
@@ -1438,8 +1441,10 @@ namespace OpenRA.Mods.Common.AI
 				return;
 
 			// Protected priority assets, MCVs, harvesters and buildings
-			if ((self.Info.HasTraitInfo<HarvesterInfo>() || self.Info.HasTraitInfo<BuildingInfo>() || self.Info.HasTraitInfo<BaseBuildingInfo>()) &&
-				Player.Stances[e.Attacker.Owner] == Stance.Enemy)
+			if (((Info.UnitsCommonNames.Harvester != null && Info.UnitsCommonNames.Harvester.Contains(self.Info.Name))
+				|| (Info.UnitsCommonNames.Collector != null && Info.UnitsCommonNames.Collector.Contains(self.Info.Name))
+				|| self.Info.HasTraitInfo<BuildingInfo>() || self.Info.HasTraitInfo<BaseBuildingInfo>())
+				&& Player.Stances[e.Attacker.Owner] == Stance.Enemy)
 			{
 				defenseCenter = e.Attacker.Location;
 				ProtectOwn(e.Attacker);
@@ -1450,7 +1455,7 @@ namespace OpenRA.Mods.Common.AI
 					return;
 
 				// HARDCODE: Aurora keep target
-				if (self.Info.Name == "mig")
+				if (self.Info.Name == "aircraft.aurora" && self.Info.Name == "aircraft.aurora_alpha")
 					return;
 
 				// U2 or spawned stuff

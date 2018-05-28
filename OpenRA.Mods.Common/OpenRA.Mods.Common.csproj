@@ -903,14 +903,8 @@
     -->
     <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(SolutionDir)mods/common/" Condition="'$(OS)' == 'Windows_NT'" />
     <Copy SourceFiles="$(TargetPath).mdb" DestinationFolder="$(SolutionDir)mods/common/" Condition="'$(OS)' == 'Unix'" />
-    <Copy
-      SourceFiles="$(TargetDir)$(TargetName).pdb"
-      DestinationFolder="$(SolutionDir)mods/common/"
-      Condition="Exists('$(TargetDir)$(TargetName).pdb')"/>
-    <Copy
-      SourceFiles="$(TargetPath).mdb"
-      DestinationFolder="$(SolutionDir)mods/common/"
-      Condition="Exists('$(TargetPath).mdb')"/>
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb" DestinationFolder="$(SolutionDir)mods/common/" Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+    <Copy SourceFiles="$(TargetPath).mdb" DestinationFolder="$(SolutionDir)mods/common/" Condition="Exists('$(TargetPath).mdb')" />
     <!-- Uncomment these lines when debugging or adding to this target
     <Message Text="DEBUG OS:                     $(OS)"/>
     <Message Text="DEBUG SolutionDir:            $(SolutionDir)"/>
