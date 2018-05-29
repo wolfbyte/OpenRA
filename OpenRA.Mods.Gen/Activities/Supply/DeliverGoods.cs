@@ -48,7 +48,6 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 			self.SetTargetLine(Target.FromActor(center), Color.Green, false);
 
 			CPos cell;
-			var random = new MersenneTwister();
 			var centerTrait = center.Trait<SupplyCenter>();
 			if (mobile != null)
 				cell = self.ClosestCell(centerTrait.Info.DeliveryOffsets.Where(c => mobile.CanEnterCell(center.Location + c)).Select(c => center.Location + c));
@@ -106,7 +105,6 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 						wsdo.Visible = true;
 						wsdo.Anim.PlayThen(wsdo.Info.Sequence, () => wsdo.Visible = false);
 						collector.DeliveryAnimPlayed = true;
-						var sequence = wsb.DefaultAnimation.GetSequence(wsdo.Info.Sequence);
 						return ActivityUtils.SequenceActivities(new Wait(wsdo.Info.WaitDelay), this);
 					}
 				}
