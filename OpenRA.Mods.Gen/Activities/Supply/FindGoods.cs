@@ -48,7 +48,6 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 			self.SetTargetLine(Target.FromActor(dock), Color.Green, false);
 
 			CPos cell;
-			var random = new MersenneTwister();
 			var dockTrait = dock.Trait<SupplyDock>();
 			var offsets = (mobile == null || collectorInfo.IsAircraft) && dockTrait.Info.AircraftCollectionOffsets.Any() ? dockTrait.Info.AircraftCollectionOffsets : dockTrait.Info.CollectionOffsets;
 			if (mobile != null)
@@ -92,7 +91,6 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 					wsco.Visible = true;
 					wsco.Anim.PlayThen(wsco.Info.Sequence, () => wsco.Visible = false);
 					collector.DeliveryAnimPlayed = true;
-					var sequence = wsb.DefaultAnimation.GetSequence(wsco.Info.Sequence);
 					return ActivityUtils.SequenceActivities(new Wait(wsco.Info.WaitDelay), this);
 				}
 			}
