@@ -54,7 +54,7 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 			else
 				cell = self.ClosestCell(centerTrait.Info.DeliveryOffsets.Select(c => center.Location + c));
 
-			if (!centerTrait.Info.DeliveryOffsets.Select(o => center.Location + o).Contains(self.Location))
+			if (!centerTrait.Info.DeliveryOffsets.Select(c => center.Location + c).Contains(self.Location))
             {
                 return ActivityUtils.SequenceActivities(move.MoveTo(cell, 2), this);
             }
