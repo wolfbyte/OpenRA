@@ -9,6 +9,7 @@ The plugin is maintained by
 
  * Holloweye
    > SmokeParticle(Emitter) basic implementation
+   > SupplyCollector basic implementation
 
  * lucasss
    > (Gives)ProximityBounty basic implementation
