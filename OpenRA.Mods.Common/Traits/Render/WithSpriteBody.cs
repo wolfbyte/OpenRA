@@ -30,11 +30,14 @@ namespace OpenRA.Mods.Common.Traits.Render
 		[Desc("Identifier used to assign modifying traits to this sprite body.")]
 		public readonly string Name = "body";
 
+		[Desc("Set this to true, if you want this body to render in a preview, even tho it isn't enabled by default.")]
+		public readonly bool RenderInPreview = false;
+
 		public override object Create(ActorInitializer init) { return new WithSpriteBody(init, this); }
 
 		public virtual IEnumerable<IActorPreview> RenderPreviewSprites(ActorPreviewInitializer init, RenderSpritesInfo rs, string image, int facings, PaletteReference p)
 		{
-			if (!EnabledByDefault)
+			if (!EnabledByDefault && !RenderInPreview)
 				yield break;
 
 			var anim = new Animation(init.World, image);
