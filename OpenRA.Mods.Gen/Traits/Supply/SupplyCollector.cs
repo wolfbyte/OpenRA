@@ -68,7 +68,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public object Create(ActorInitializer init) { return new SupplyCollector(init.Self, this); }
     }
-    public class SupplyCollector : IIssueOrder, IResolveOrder, IPips, ISync, INotifyCreated, INotifyIdle, INotifyBlockingMove
+    public class SupplyCollector : IIssueOrder, IResolveOrder, IOrderVoice, IPips, ISync, INotifyCreated, INotifyIdle, INotifyBlockingMove
     {
 		public  readonly SupplyCollectorInfo Info;
         readonly Mobile mobile;
@@ -150,10 +150,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
         {
             get
             {
-                yield return new GenericTargeter<BuildingInfo>("Trade", 5,
+                yield return new GenericTargeter<BuildingInfo>("Collect", 5,
                     a => IsEmpty && a.TraitOrDefault<SupplyDock>() != null && Info.SupplyTypes.Overlaps(a.Trait<SupplyDock>().Info.SupplyTypes) && !a.Trait<SupplyDock>().IsEmpty && (Info.CollectionStances.HasStance(self.Owner.Stances[a.Owner])),
                     a => "enter");
-                yield return new GenericTargeter<BuildingInfo>("DeliverTrade", 5,
+                yield return new GenericTargeter<BuildingInfo>("Deliver", 5,
                     a => !IsEmpty && a.TraitOrDefault<SupplyCenter>() != null && Info.SupplyTypes.Overlaps(a.Trait<SupplyCenter>().Info.SupplyTypes) && (Info.DeliveryStances.HasStance(self.Owner.Stances[a.Owner])),
                     a => "enter");
             }
@@ -161,21 +161,21 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
         public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
         {
-            if (order.OrderID == "Trade")
+            if (order.OrderID == "Collect")
                 return new Order(order.OrderID, self, target, queued);
 
-            if (order.OrderID == "DeliverTrade")
+            if (order.OrderID == "Deliver")
                 return new Order(order.OrderID, self, target, queued);
 
             return null;
         }
 
-		public string VoicePhraseForOrder(Actor self, Order order)
+		string IOrderVoice.VoicePhraseForOrder(Actor self, Order order)
 		{
-			if (Info.CollectVoice != null && order.OrderString == "Trade")
+			if (Info.CollectVoice != null && order.OrderString == "Collect")
 				return Info.CollectVoice;
 
-			if (Info.DeliverVoice != null && order.OrderString == "DeliverTrade" && !IsEmpty)
+			if (Info.DeliverVoice != null && order.OrderString == "Deliver" && !IsEmpty)
 				return Info.DeliverVoice;
 
 			return null;
@@ -183,7 +183,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public void ResolveOrder(Actor self, Order order)
         {
-            if (order.OrderString == "Trade")
+            if (order.OrderString == "Collect")
             {
                 var dock = order.TargetActor.TraitOrDefault<SupplyDock>();
                 if (dock == null || !Info.SupplyTypes.Overlaps(dock.Info.SupplyTypes))
@@ -206,7 +206,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
                 var next = new FindGoods(self);
                 self.QueueActivity(next);
             }
-            else if (order.OrderString == "DeliverTrade")
+            else if (order.OrderString == "Deliver")
             {
                 var center = order.TargetActor.TraitOrDefault<SupplyCenter>();
                 if (center == null || !Info.SupplyTypes.Overlaps(center.Info.SupplyTypes))
