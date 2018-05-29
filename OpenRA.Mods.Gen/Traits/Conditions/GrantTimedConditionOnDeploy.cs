@@ -1,4 +1,4 @@
-﻿#region Copyright & License Information
+#region Copyright & License Information
 /*
  * Copyright 2015- OpenRA.Mods.AS Developers (see AUTHORS)
  * This file is a part of a third-party plugin for OpenRA, which is
@@ -18,11 +18,9 @@ using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Traits.Render;
 using OpenRA.Traits;
 
-/* Works without base engine modification */
-
 namespace OpenRA.Mods.Yupgi_alert.Traits
 {
-	public class GrantTimedConditionOnDeployInfo : ITraitInfo
+	public class GrantTimedConditionOnDeployInfo : PausableConditionalTraitInfo
 	{
 		[GrantedConditionReference]
 		[Desc("The condition granted during deploying.")]
@@ -64,16 +62,15 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public readonly Color ChargingColor = Color.DarkRed;
 		public readonly Color DischargingColor = Color.DarkMagenta;
 
-		public object Create(ActorInitializer init) { return new GrantTimedConditionOnDeploy(init, this); }
+		public override object Create(ActorInitializer init) { return new GrantTimedConditionOnDeploy(init.Self, this); }
 	}
 
 	public enum TimedDeployState { Charging, Ready, Active, Deploying, Undeploying }
 
-	public class GrantTimedConditionOnDeploy : IResolveOrder, IIssueOrder, INotifyCreated, ISelectionBar, IOrderVoice,
-		ISync, ITick, IIssueDeployOrder
+	public class GrantTimedConditionOnDeploy : PausableConditionalTrait<GrantTimedConditionOnDeployInfo>,
+		IResolveOrder, IIssueOrder, INotifyCreated, ISelectionBar, IOrderVoice, ISync, ITick, IIssueDeployOrder
 	{
 		readonly Actor self;
-		readonly GrantTimedConditionOnDeployInfo info;
 		readonly bool canTurn;
 		readonly Lazy<WithSpriteBody> body;
 		int deployedToken = ConditionManager.InvalidConditionToken;
@@ -83,10 +80,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		[Sync] int ticks;
 		TimedDeployState deployState;
 
-		public GrantTimedConditionOnDeploy(ActorInitializer init, GrantTimedConditionOnDeployInfo info)
+		public GrantTimedConditionOnDeploy(Actor self, GrantTimedConditionOnDeployInfo info)
+			: base(info)
 		{
-			self = init.Self;
-			this.info = info;
+			this.self = self;
 			canTurn = self.Info.HasTraitInfo<IFacingInfo>();
 			body = Exts.Lazy(self.TraitOrDefault<WithSpriteBody>);
 		}
@@ -95,62 +92,66 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		{
 			manager = self.Trait<ConditionManager>();
 
-			if (info.StartsFullyCharged)
+			if (Info.StartsFullyCharged)
 			{
-				ticks = info.DeployedTicks;
+				ticks = Info.DeployedTicks;
 				deployState = TimedDeployState.Ready;
 			}
 			else
 			{
-				ticks = info.CooldownTicks;
+				ticks = Info.CooldownTicks;
 				deployState = TimedDeployState.Charging;
 			}
 		}
 
+		Order IIssueDeployOrder.IssueDeployOrder(Actor self)
+		{
+			return new Order("GrantTimedConditionOnDeploy", self, false);
+		}
+
+		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return !IsTraitPaused && !IsTraitDisabled; }
+
 		IEnumerable<IOrderTargeter> IIssueOrder.Orders
 		{
-			get { yield return new DeployOrderTargeter("GrantConditionOnDeploy", 5,
-				() => IsCursorBlocked() ? info.DeployBlockedCursor : info.DeployCursor); }
+			get
+			{
+				if (!IsTraitDisabled)
+					yield return new DeployOrderTargeter("GrantTimedConditionOnDeploy", 5,
+						() => IsCursorBlocked() ? Info.DeployBlockedCursor : Info.DeployCursor);
+			}
 		}
 
 		Order IIssueOrder.IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
 		{
-			if (order.OrderID == "GrantConditionOnDeploy")
+			if (order.OrderID == "GrantTimedConditionOnDeploy")
 				return new Order(order.OrderID, self, queued);
 
 			return null;
 		}
 
-		Order IIssueDeployOrder.IssueDeployOrder(Actor self)
-		{
-			return new Order("GrantConditionOnDeploy", self, false);
-		}
-
-		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return true; }
-
 		void IResolveOrder.ResolveOrder(Actor self, Order order)
 		{
-			if (order.OrderString != "GrantConditionOnDeploy" || deployState != TimedDeployState.Ready)
+			if (order.OrderString != "GrantTimedConditionOnDeploy" || deployState != TimedDeployState.Ready)
 				return;
 
 			if (!order.Queued)
 				self.CancelActivity();
 
 			// Turn to the required facing.
-			if (info.Facing != -1 && canTurn)
-				self.QueueActivity(new Turn(self, info.Facing));
+			if (Info.Facing != -1 && canTurn)
+				self.QueueActivity(new Turn(self, Info.Facing));
 
 			self.QueueActivity(new CallFunc(Deploy));
 		}
 
 		bool IsCursorBlocked()
 		{
-			return deployState != TimedDeployState.Ready;
+			return deployState != TimedDeployState.Ready && !IsTraitPaused;
 		}
 
 		string IOrderVoice.VoicePhraseForOrder(Actor self, Order order)
 		{
-			return order.OrderString == "GrantConditionOnDeploy" && deployState == TimedDeployState.Ready ? info.Voice : null;
+			return order.OrderString == "GrantTimedConditionOnDeploy" && deployState == TimedDeployState.Ready ? Info.Voice : null;
 		}
 
 		void Deploy()
@@ -161,25 +162,25 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 			deployState = TimedDeployState.Deploying;
 
-			if (!string.IsNullOrEmpty(info.DeploySound))
-				Game.Sound.Play(SoundType.World, info.DeploySound, self.CenterPosition);
+			if (!string.IsNullOrEmpty(Info.DeploySound))
+				Game.Sound.Play(SoundType.World, Info.DeploySound, self.CenterPosition);
 
 			// If there is no animation to play just grant the upgrades that are used while deployed.
 			// Alternatively, play the deploy animation and then grant the upgrades.
-			if (string.IsNullOrEmpty(info.DeployAnimation) || body.Value == null)
+			if (string.IsNullOrEmpty(Info.DeployAnimation) || body.Value == null)
 				OnDeployCompleted();
 			else
 			{
-				if (manager != null && !string.IsNullOrEmpty(info.DeployingCondition) && deployingToken == ConditionManager.InvalidConditionToken)
-					deployingToken = manager.GrantCondition(self, info.DeployingCondition);
-				body.Value.PlayCustomAnimation(self, info.DeployAnimation, OnDeployCompleted);
+				if (manager != null && !string.IsNullOrEmpty(Info.DeployingCondition) && deployingToken == ConditionManager.InvalidConditionToken)
+					deployingToken = manager.GrantCondition(self, Info.DeployingCondition);
+				body.Value.PlayCustomAnimation(self, Info.DeployAnimation, OnDeployCompleted);
 			}
 		}
 
 		void OnDeployCompleted()
 		{
-			if (manager != null && !string.IsNullOrEmpty(info.DeployedCondition) && deployedToken == ConditionManager.InvalidConditionToken)
-				deployedToken = manager.GrantCondition(self, info.DeployedCondition);
+			if (manager != null && !string.IsNullOrEmpty(Info.DeployedCondition) && deployedToken == ConditionManager.InvalidConditionToken)
+				deployedToken = manager.GrantCondition(self, Info.DeployedCondition);
 
 			if (deployingToken != ConditionManager.InvalidConditionToken)
 				deployingToken = manager.RevokeCondition(self, deployingToken);
@@ -191,16 +192,16 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		{
 			deployState = TimedDeployState.Undeploying;
 
-			if (!string.IsNullOrEmpty(info.UndeploySound))
-				Game.Sound.Play(SoundType.World, info.UndeploySound, self.CenterPosition);
+			if (!string.IsNullOrEmpty(Info.UndeploySound))
+				Game.Sound.Play(SoundType.World, Info.UndeploySound, self.CenterPosition);
 
-			if (string.IsNullOrEmpty(info.DeployAnimation) || body.Value == null)
+			if (string.IsNullOrEmpty(Info.DeployAnimation) || body.Value == null)
 				OnUndeployCompleted();
 			else
 			{
-				if (manager != null && !string.IsNullOrEmpty(info.DeployingCondition) && deployingToken == ConditionManager.InvalidConditionToken)
-					deployingToken = manager.GrantCondition(self, info.DeployingCondition);
-				body.Value.PlayCustomAnimationBackwards(self, info.DeployAnimation, OnUndeployCompleted);
+				if (manager != null && !string.IsNullOrEmpty(Info.DeployingCondition) && deployingToken == ConditionManager.InvalidConditionToken)
+					deployingToken = manager.GrantCondition(self, Info.DeployingCondition);
+				body.Value.PlayCustomAnimationBackwards(self, Info.DeployAnimation, OnUndeployCompleted);
 			}
 		}
 
@@ -213,11 +214,14 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				deployingToken = manager.RevokeCondition(self, deployingToken);
 
 			deployState = TimedDeployState.Charging;
-			ticks = info.CooldownTicks;
+			ticks = Info.CooldownTicks;
 		}
 
 		void ITick.Tick(Actor self)
 		{
+			if (IsTraitPaused || IsTraitDisabled)
+				return;
+
 			if (deployState == TimedDeployState.Ready || deployState == TimedDeployState.Deploying)
 				return;
 
@@ -225,7 +229,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			{
 				if (deployState == TimedDeployState.Charging)
 				{
-					ticks = info.DeployedTicks;
+					ticks = Info.DeployedTicks;
 					deployState = TimedDeployState.Ready;
 				}
 				else
@@ -237,19 +241,19 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		float ISelectionBar.GetValue()
 		{
-			if (!info.ShowSelectionBar || deployState == TimedDeployState.Undeploying)
+			if (IsTraitDisabled || !Info.ShowSelectionBar || deployState == TimedDeployState.Undeploying)
 				return 0f;
 
 			if (deployState == TimedDeployState.Deploying || deployState == TimedDeployState.Ready)
 				return 1f;
 
 			return deployState == TimedDeployState.Charging
-				? (float)(info.CooldownTicks - ticks) / info.CooldownTicks
-				: (float)ticks / info.DeployedTicks;
+				? (float)(Info.CooldownTicks - ticks) / Info.CooldownTicks
+				: (float)ticks / Info.DeployedTicks;
 		}
 
-		bool ISelectionBar.DisplayWhenEmpty { get { return info.ShowSelectionBar; } }
+		bool ISelectionBar.DisplayWhenEmpty { get { return !IsTraitDisabled && Info.ShowSelectionBar; } }
 
-		Color ISelectionBar.GetColor() { return deployState == TimedDeployState.Charging ? info.ChargingColor : info.DischargingColor; }
+		Color ISelectionBar.GetColor() { return deployState == TimedDeployState.Charging ? Info.ChargingColor : Info.DischargingColor; }
 	}
 }
