@@ -45,17 +45,20 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
             }
 
 			var dock = collector.collectionBuilding;
+			var center = collector.deliveryBuilding;
 			self.SetTargetLine(Target.FromActor(dock), Color.Green, false);
 
 			CPos cell;
 			var dockTrait = dock.Trait<SupplyDock>();
+			var centerTrait = center == null || !center.IsInWorld ? null : center.Trait<SupplyCenter>();
 			var offsets = (mobile == null || collectorInfo.IsAircraft) && dockTrait.Info.AircraftCollectionOffsets.Any() ? dockTrait.Info.AircraftCollectionOffsets : dockTrait.Info.CollectionOffsets;
+			var deliveryOffsets = centerTrait?.Info.DeliveryOffsets;
 			if (mobile != null)
-				cell = self.ClosestCell(offsets.Where(c => mobile.CanEnterCell(dock.Location + c)).Select(c => dock.Location + c));
+				cell = self.ClosestCell(offsets.Select(c => dock.Location + c).Where(c => mobile.CanEnterCell(c) && (centerTrait == null || !deliveryOffsets.Select(d => center.Location + d).Contains(c))));
 			else
-				cell = self.ClosestCell(offsets.Select(c => dock.Location + c));
+				cell = self.ClosestCell(offsets.Select(c => dock.Location + c).Where(c => centerTrait == null || !deliveryOffsets.Select(d => center.Location + d).Contains(c)));
 
-			if (!offsets.Select(o => dock.Location + o).Contains(self.Location))
+			if (!offsets.Select(c => dock.Location + c).Where(c => centerTrait == null || !deliveryOffsets.Select(d => center.Location + d).Contains(c)).Contains(self.Location))
 			{
                 return ActivityUtils.SequenceActivities(move.MoveTo(cell, 2), this);
             }
