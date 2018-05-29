@@ -52,7 +52,7 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 			var dockTrait = dock.Trait<SupplyDock>();
 			var centerTrait = center == null || !center.IsInWorld ? null : center.Trait<SupplyCenter>();
 			var offsets = (mobile == null || collectorInfo.IsAircraft) && dockTrait.Info.AircraftCollectionOffsets.Any() ? dockTrait.Info.AircraftCollectionOffsets : dockTrait.Info.CollectionOffsets;
-			var deliveryOffsets = centerTrait?.Info.DeliveryOffsets;
+			var deliveryOffsets = centerTrait != null ? centerTrait.Info.DeliveryOffsets : null;
 			if (mobile != null)
 				cell = self.ClosestCell(offsets.Select(c => dock.Location + c).Where(c => mobile.CanEnterCell(c) && (centerTrait == null || !deliveryOffsets.Select(d => center.Location + d).Contains(c))));
 			else
