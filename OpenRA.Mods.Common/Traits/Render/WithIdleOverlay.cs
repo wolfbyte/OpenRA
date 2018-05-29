@@ -38,11 +38,14 @@ namespace OpenRA.Mods.Common.Traits.Render
 		// TODO: Remove this when the buildComplete code is replaced with conditions.
 		public readonly bool RenderBeforeBuildComplete = false;
 
+		[Desc("Set this to true, if you want this overlay to render in a preview, even tho it isn't enabled by default.")]
+		public readonly bool RenderInPreview = false;
+
 		public override object Create(ActorInitializer init) { return new WithIdleOverlay(init.Self, this); }
 
 		public IEnumerable<IActorPreview> RenderPreviewSprites(ActorPreviewInitializer init, RenderSpritesInfo rs, string image, int facings, PaletteReference p)
 		{
-			if (!EnabledByDefault)
+			if (!EnabledByDefault && !RenderInPreview)
 				yield break;
 
 			if (Palette != null)
