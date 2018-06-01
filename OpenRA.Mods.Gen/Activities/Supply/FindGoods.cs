@@ -18,7 +18,6 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 		readonly SupplyCollectorInfo collectorInfo;
 		readonly IMove move;
 		readonly Mobile mobile;
-		readonly IPathFinder pathFinder;
 
 		public FindGoods(Actor self)
 		{
@@ -26,7 +25,6 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 			collectorInfo = self.Info.TraitInfo<SupplyCollectorInfo>();
             move = self.Trait<IMove>();
 			mobile = self.TraitOrDefault<Mobile>();
-			pathFinder = self.World.WorldActor.Trait<IPathFinder>();
 		}
 
         public override Activity Tick(Actor self)
