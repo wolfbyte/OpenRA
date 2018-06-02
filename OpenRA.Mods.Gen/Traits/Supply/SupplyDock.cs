@@ -44,7 +44,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 	public class SupplyDock : IProvideTooltipInfo, INotifyCreated
 	{
-		readonly Actor self;
 		public readonly SupplyDockInfo Info;
 		public int Amount;
 
@@ -53,7 +52,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public SupplyDock(Actor self, SupplyDockInfo info)
 		{
-			this.self = self;
 			Info = info;
 			Amount = Info.Capacity;
 		}
