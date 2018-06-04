@@ -95,13 +95,14 @@ namespace OpenRA.Mods.Common.Traits
 		public SupportPowerInfo() { OrderName = GetType().Name + "Order"; }
 	}
 
-	public class SupportPower : PausableConditionalTrait<SupportPowerInfo>
+	public class SupportPower : PausableConditionalTrait<SupportPowerInfo>, INotifyOwnerChanged
 	{
 		public readonly Actor Self;
 		readonly SupportPowerInfo info;
-		readonly TechTree techTree;
 		protected RadarPing ping;
-		protected DeveloperMode developerMode;
+
+		DeveloperMode developerMode;
+		TechTree techTree;
 
 		public SupportPower(Actor self, SupportPowerInfo info)
 			: base(info)
@@ -125,6 +126,12 @@ namespace OpenRA.Mods.Common.Traits
 			var level = availables.Any() ? availables.Max(p => p.Key) : 0;
 
 			return developerMode.AllTech ? Info.Prerequisites.Max(p => p.Key) : level;
+		}
+
+		void INotifyOwnerChanged.OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)
+		{
+			techTree = newOwner.PlayerActor.Trait<TechTree>();
+			developerMode = newOwner.PlayerActor.Trait<DeveloperMode>();
 		}
 
 		public virtual void Charging(Actor self, string key)
