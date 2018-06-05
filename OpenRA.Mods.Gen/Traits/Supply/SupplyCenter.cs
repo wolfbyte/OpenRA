@@ -43,7 +43,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public virtual object Create(ActorInitializer init) { return new SupplyCenter(init.Self, this); }
 	}
 
-	public class SupplyCenter : ITick, IResourceExchange, INotifyOwnerChanged, ISync
+	public class SupplyCenter : ITick, IResourceExchange, INotifyOwnerChanged
 	{
 		readonly Actor self;
 		public readonly SupplyCenterInfo Info;
