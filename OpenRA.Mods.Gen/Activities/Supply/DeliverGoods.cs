@@ -32,7 +32,7 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
             if (IsCanceled || NextActivity != null)
                 return NextActivity;
 
-            if (collector.deliveryBuilding == null || !collector.deliveryBuilding.IsInWorld)
+            if (collector.deliveryBuilding == null || !collector.deliveryBuilding.IsInWorld || !collectorInfo.DeliveryStances.HasStance(self.Owner.Stances[collector.deliveryBuilding.Owner]))
             {
 				collector.deliveryBuilding = collector.ClosestDeliveryBuilding(self);
             }
