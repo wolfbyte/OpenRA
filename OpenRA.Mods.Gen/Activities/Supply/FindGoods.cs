@@ -32,7 +32,7 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
             if (IsCanceled || NextActivity != null)
                 return NextActivity;
 
-            if (collector.collectionBuilding == null || !collector.collectionBuilding.IsInWorld || collector.collectionBuilding.Trait<SupplyDock>().IsEmpty)
+            if (collector.collectionBuilding == null || !collector.collectionBuilding.IsInWorld || !collectorInfo.CollectionStances.HasStance(self.Owner.Stances[collector.collectionBuilding.Owner]) || collector.collectionBuilding.Trait<SupplyDock>().IsEmpty)
             {
 				collector.collectionBuilding = collector.ClosestTradeBuilding(self);
             }
