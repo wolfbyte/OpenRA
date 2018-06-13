@@ -37,8 +37,8 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("When this actor is sold should all of its passengers be unloaded?")]
 		public readonly bool EjectOnSell = true;
 
-		[Desc("When this actor dies should all of its passengers be unloaded?")]
-		public readonly bool EjectOnDeath = false;
+		[Desc("When this actor dies this much percent of passengers total health is dealt to them.")]
+		public readonly int EjectOnDeathDamage = 100;
 
 		[Desc("Terrain types that this actor is allowed to eject actors onto. Leave empty for all terrain types.")]
 		public readonly HashSet<string> UnloadTerrainTypes = new HashSet<string>();
@@ -378,28 +378,31 @@ namespace OpenRA.Mods.Common.Traits
 
 		void INotifyKilled.Killed(Actor self, AttackInfo e)
 		{
-			if (Info.EjectOnDeath)
-				while (!IsEmpty(self) && CanUnload())
+			while (!IsEmpty(self) && CanUnload())
+			{
+				var passenger = Unload(self);
+				var cp = self.CenterPosition;
+				var inAir = self.World.Map.DistanceAboveTerrain(cp).Length != 0;
+				var positionable = passenger.Trait<IPositionable>();
+				var health = passenger.TraitOrDefault<Health>();
+				positionable.SetPosition(passenger, self.Location);
+
+				if (self.Owner.WinState != WinState.Lost && !inAir && positionable.CanEnterCell(self.Location, self, false))
 				{
-					var passenger = Unload(self);
-					var cp = self.CenterPosition;
-					var inAir = self.World.Map.DistanceAboveTerrain(cp).Length != 0;
-					var positionable = passenger.Trait<IPositionable>();
-					positionable.SetPosition(passenger, self.Location);
+					self.World.AddFrameEndTask(w => w.Add(passenger));
+					var nbm = passenger.TraitOrDefault<INotifyBlockingMove>();
+					if (nbm != null)
+						nbm.OnNotifyBlockingMove(passenger, passenger);
 
-					if (self.Owner.WinState != WinState.Lost && !inAir && positionable.CanEnterCell(self.Location, self, false))
+					if (Info.EjectOnDeathDamage > 0 && health != null)
 					{
-						self.World.AddFrameEndTask(w => w.Add(passenger));
-						var nbm = passenger.TraitOrDefault<INotifyBlockingMove>();
-						if (nbm != null)
-							nbm.OnNotifyBlockingMove(passenger, passenger);
+						var damage = (health.MaxHP * Info.EjectOnDeathDamage) / 100;
+						health.InflictDamage(passenger, e.Attacker, new Damage(damage, e.Damage.DamageTypes), true);
 					}
-					else
-						passenger.Kill(e.Attacker);
 				}
-
-			foreach (var c in cargo)
-				c.Kill(e.Attacker);
+				else
+					passenger.Kill(e.Attacker);
+			}
 
 			cargo.Clear();
 		}
