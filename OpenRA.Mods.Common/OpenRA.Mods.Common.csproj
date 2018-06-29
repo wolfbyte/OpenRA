@@ -95,6 +95,7 @@
     <Compile Include="Activities\DonateCash.cs" />
     <Compile Include="Activities\DonateExperience.cs" />
     <Compile Include="Activities\Enter.cs" />
+    <Compile Include="Activities\EnterSharedTransport.cs" />
     <Compile Include="Activities\EnterTransport.cs" />
     <Compile Include="Activities\ExternalCaptureActor.cs" />
     <Compile Include="Activities\FindResources.cs" />
@@ -121,6 +122,7 @@
     <Compile Include="Activities\Turn.cs" />
     <Compile Include="Activities\UndeployForGrantedCondition.cs" />
     <Compile Include="Activities\UnloadCargo.cs" />
+    <Compile Include="Activities\UnloadSharedCargo.cs" />
     <Compile Include="Activities\Wait.cs" />
     <Compile Include="Activities\WaitForTransport.cs" />
     <Compile Include="ActorExts.cs" />
@@ -152,6 +154,7 @@
     <Compile Include="Effects\SpriteEffect.cs" />
     <Compile Include="Graphics\RailgunRenderable.cs" />
     <Compile Include="Effects\LaunchEffect.cs" />
+    <Compile Include="Orders\EnterSharedTransportTargeter.cs" />
     <Compile Include="Projectiles\AreaBeam.cs" />
     <Compile Include="Projectiles\Bullet.cs" />
     <Compile Include="Projectiles\InstantHit.cs" />
@@ -320,6 +323,9 @@
     <Compile Include="Traits\DockClient.cs" />
     <Compile Include="Traits\DockManager.cs" />
     <Compile Include="Traits\Dock.cs" />
+    <Compile Include="Traits\Player\SharedCargoManager.cs" />
+    <Compile Include="Traits\SharedCargo.cs" />
+    <Compile Include="Traits\SharedPassenger.cs" />
     <Compile Include="Traits\ShootsMissiles.cs" />
     <Compile Include="Traits\ChangesTerrain.cs" />
     <Compile Include="Traits\CommandBarBlacklist.cs" />
