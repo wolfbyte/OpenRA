@@ -11,32 +11,36 @@
  * information, see COPYING.
  */
 #endregion
-
+ 
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
 
-/* Works without base engine modification */
-
 namespace OpenRA.Mods.Yupgi_alert.Traits
 {
-	public class GrantConditionOnAttackInfo : ITraitInfo
+	public enum ActivityType { FlyAttack, Fly, HeliAttack, HeliFly, ReturnToBase, HeliReturnToBase }
+
+	public class GrantConditionOnActivityInfo : ITraitInfo
 	{
+		[Desc("Activity to grant condition on",
+			"Currently valid activities are `Fly`, `HeliFly`, `FlyAttack`, `HeliAttack`, `ReturnToBase` and `HeliReturnToBase`.")]
+		public readonly ActivityType Activity = ActivityType.FlyAttack;
+
 		[GrantedConditionReference]
 		[Desc("The condition to grant")]
 		public readonly string Condition = null;
 
-		public object Create(ActorInitializer init) { return new GrantConditionOnAttack(init, this); }
+		public object Create(ActorInitializer init) { return new GrantConditionOnActivity(init, this); }
 	}
 
-	public class GrantConditionOnAttack : INotifyCreated, ITick
+	public class GrantConditionOnActivity : INotifyCreated, ITick
 	{
-		readonly GrantConditionOnAttackInfo info;
+		readonly GrantConditionOnActivityInfo info;
 
 		ConditionManager manager;
 		int token = ConditionManager.InvalidConditionToken;
 
-		public GrantConditionOnAttack(ActorInitializer init, GrantConditionOnAttackInfo info)
+		public GrantConditionOnActivity(ActorInitializer init, GrantConditionOnActivityInfo info)
 		{
 			this.info = info;
 		}
@@ -68,10 +72,24 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			token = manager.RevokeCondition(self, token);
 		}
 
-		bool IsAttacking(Actor self)
+		bool IsValidActivity(Actor self)
 		{
-			// Currently only FlyAttack is supported, as I'm making this for Aurora.
-			if (self.CurrentActivity is FlyAttack)
+			if (self.CurrentActivity is Fly && info.Activity == ActivityType.Fly)
+				return true;
+
+			if (self.CurrentActivity is HeliFly && info.Activity == ActivityType.HeliFly)
+				return true;
+
+			if (self.CurrentActivity is FlyAttack && info.Activity == ActivityType.FlyAttack)
+				return true;
+
+			if (self.CurrentActivity is HeliAttack && info.Activity == ActivityType.HeliAttack)
+				return true;
+
+			if (self.CurrentActivity is ReturnToBase && info.Activity == ActivityType.ReturnToBase)
+				return true;
+
+			if (self.CurrentActivity is HeliReturnToBase && info.Activity == ActivityType.HeliReturnToBase)
 				return true;
 
 			return false;
@@ -79,7 +97,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		void ITick.Tick(Actor self)
 		{
-			if (IsAttacking(self))
+			if (IsValidActivity(self))
 			{
 				if (token == ConditionManager.InvalidConditionToken)
 					GrantCondition(self, info.Condition);
