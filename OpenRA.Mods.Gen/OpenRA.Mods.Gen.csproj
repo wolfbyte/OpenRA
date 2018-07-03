@@ -97,9 +97,8 @@
     <Compile Include="Traits\MissileSpawnerSlave.cs" />
     <Compile Include="Traits\ChronoHarvester.cs" />
     <Compile Include="Traits\Buildings\PeriodicProducer.cs" />
-    <Compile Include="Traits\Conditions\GrantStackableConditionOnFire.cs" />
     <Compile Include="Traits\Conditions\GrantConditionAfterDelay.cs" />
-    <Compile Include="Traits\Conditions\GrantConditionOnAttack.cs" />
+    <Compile Include="Traits\Conditions\GrantConditionOnActivity.cs" />
     <Compile Include="Traits\Conditions\GrantConditionOnCapture.cs" />
     <Compile Include="Traits\Conditions\GrantConditionOnHealth.cs" />
     <Compile Include="Traits\Conditions\GrantConditionOnProduction.cs" />
