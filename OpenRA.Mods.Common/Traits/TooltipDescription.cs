@@ -41,6 +41,9 @@ namespace OpenRA.Mods.Common.Traits
 			if (IsTraitDisabled)
 				return false;
 
+			if (forPlayer == null)
+				return true;
+
 			var stance = forPlayer.Stances[self.Owner];
 			if (!Info.ValidStances.HasStance(stance))
 				return false;
