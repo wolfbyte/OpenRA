@@ -104,6 +104,7 @@
     <Compile Include="Traits\Conditions\GrantConditionOnProduction.cs" />
     <Compile Include="Traits\Conditions\HordeBonus.cs" />
     <Compile Include="Traits\Conditions\GrantHordeBonus.cs" />
+    <Compile Include="Traits\Radar\RadarIcon.cs" />
     <Compile Include="Traits\Render\WithSupplyCollectionOverlay.cs" />
     <Compile Include="Traits\Render\WithSupplyDeliveryOverlay.cs" />
     <Compile Include="Traits\TransformOnCondition.cs" />
