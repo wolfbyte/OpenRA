@@ -25,6 +25,7 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly int Delay = 50;
 
 		public readonly bool ShowSelectionBar = true;
+		public readonly bool ShowFullBarAfterGranted = true;
 		public readonly Color SelectionBarColor = Color.Magenta;
 
 		public override object Create(ActorInitializer init) { return new GrantConditionAfterDelay(this); }
@@ -77,8 +78,11 @@ namespace OpenRA.Mods.Common.Traits
 
 		float ISelectionBar.GetValue()
 		{
-			if (IsTraitDisabled || !Info.ShowSelectionBar)
+			if (IsTraitDisabled || !Info.ShowSelectionBar || ((1f - (float)Ticks / Info.Delay) > 1f && !info.ShowFullBarAfterGranted))
 				return 0f;
+
+			if ((1f - (float)Ticks / Info.Delay) > 1f && info.ShowFullBarAfterGranted)
+				return 1f;
 
 			return 1f - (float)Ticks / Info.Delay;
 		}
