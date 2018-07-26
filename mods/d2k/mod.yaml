@@ -36,7 +36,6 @@ Rules:
 	d2k|rules/vehicles.yaml
 	d2k|rules/aircraft.yaml
 	d2k|rules/structures.yaml
-	d2k|rules/starport.yaml
 	d2k|rules/husks.yaml
 	d2k|rules/arrakis.yaml
 
@@ -149,30 +148,30 @@ ChromeMetrics:
 	d2k|metrics.yaml
 
 Fonts:
-	Tiny:
-		Font: common|FreeSans.ttf
-		Size: 10
-	TinyBold:
-		Font: common|FreeSansBold.ttf
-		Size: 10
-	Small:
-		Font: common|FreeSans.ttf
-		Size: 12
 	Regular:
 		Font: common|FreeSans.ttf
-		Size: 14
+		Size:14
 	Bold:
 		Font: common|FreeSansBold.ttf
-		Size: 14
-	MediumBold:
-		Font: common|FreeSansBold.ttf
-		Size: 18
-	BigBold:
-		Font: common|FreeSansBold.ttf
-		Size: 24
+		Size:14
 	Title:
 		Font: d2k|Dune2k.ttf
-		Size: 32
+		Size:32
+	MediumBold:
+		Font: common|FreeSansBold.ttf
+		Size:18
+	BigBold:
+		Font: common|FreeSansBold.ttf
+		Size:24
+	Small:
+		Font: common|FreeSans.ttf
+		Size:12
+	Tiny:
+		Font: common|FreeSans.ttf
+		Size:10
+	TinyBold:
+		Font: common|FreeSansBold.ttf
+		Size:10
 
 Missions:
 	d2k|missions.yaml

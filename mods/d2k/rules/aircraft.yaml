@@ -46,6 +46,11 @@ carryall.reinforce:
 		BuildDuration: 648
 		BuildDurationModifier: 40
 		Description: Large winged, planet-bound ship\n  Automatically lifts harvesters from and to Spice.\n  Lifts vehicles to Repair Pads when ordered.
+	Buildable@Starport:
+		BuildDuration: 648
+		BuildDurationModifier: 40
+		Description: Large winged, planet-bound ship\n  Automatically lifts harvesters from and to Spice.\n  Lifts vehicles to Repair Pads when ordered.
+		BuildCost: 1500
 
 carryall:
 	Inherits: carryall.reinforce
@@ -66,6 +71,9 @@ carryall:
 		RequiresCondition: !cruising
 	Buildable:
 		Queue: Aircraft
+		BuildPaletteOrder: 10
+	Buildable@Starport:
+		Queue: Starport
 		BuildPaletteOrder: 120
 
 frigate:

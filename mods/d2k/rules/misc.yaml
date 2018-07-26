@@ -172,6 +172,7 @@ carryall.colorpicker:
 	Aircraft:
 		InitialFacing: 104
 	-Buildable:
+	-Buildable@Starport:
 	-EditorTilesetFilter:
 	RenderSprites:
 		Image: carryall
