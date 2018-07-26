@@ -128,7 +128,7 @@ namespace OpenRA.Mods.Common.Traits
 				.Where(p => p.Instances.Any(i => !i.IsTraitDisabled && i.Self == a));
 		}
 
-		public void PrerequisitesAvailable(string key)
+		public void PrerequisitesAvailable(string key, BuildableInfo bi)
 		{
 			SupportPowerInstance sp;
 			if (!Powers.TryGetValue(key, out sp))
@@ -137,7 +137,7 @@ namespace OpenRA.Mods.Common.Traits
 			sp.PrerequisitesAvailable(true);
 		}
 
-		public void PrerequisitesUnavailable(string key)
+		public void PrerequisitesUnavailable(string key, BuildableInfo bi)
 		{
 			SupportPowerInstance sp;
 			if (!Powers.TryGetValue(key, out sp))
@@ -147,8 +147,8 @@ namespace OpenRA.Mods.Common.Traits
 			sp.RemainingTime = sp.TotalTime;
 		}
 
-		public void PrerequisitesItemHidden(string key) { }
-		public void PrerequisitesItemVisible(string key) { }
+		public void PrerequisitesItemHidden(string key, BuildableInfo bi) { }
+		public void PrerequisitesItemVisible(string key, BuildableInfo bi) { }
 	}
 
 	public class SupportPowerInstance

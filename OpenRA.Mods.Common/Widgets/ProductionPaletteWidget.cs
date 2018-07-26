@@ -26,6 +26,7 @@ namespace OpenRA.Mods.Common.Widgets
 	public class ProductionIcon
 	{
 		public ActorInfo Actor;
+		public BuildableInfo Buildable;
 		public string Name;
 		public HotkeyReference Hotkey;
 		public Sprite Sprite;
@@ -183,14 +184,14 @@ namespace OpenRA.Mods.Common.Widgets
 			IconRowOffset = 0;
 		}
 
-		public IEnumerable<ActorInfo> AllBuildables
+		public IEnumerable<Producible> AllBuildables
 		{
 			get
 			{
 				if (CurrentQueue == null)
-					return Enumerable.Empty<ActorInfo>();
+					return Enumerable.Empty<Producible>();
 
-				return CurrentQueue.AllItems().OrderBy(a => a.TraitInfo<BuildableInfo>().BuildPaletteOrder);
+				return CurrentQueue.AllItems().OrderBy(a => a.BuildableInfo.BuildPaletteOrder);
 			}
 		}
 
@@ -275,14 +276,16 @@ namespace OpenRA.Mods.Common.Widgets
 				return true;
 			}
 
-			var buildable = CurrentQueue.BuildableItems().FirstOrDefault(a => a.Name == icon.Name);
+			var prod = CurrentQueue.BuildableItems().FirstOrDefault(p => p.ActorInfo.Name == icon.Name);
 
-			if (buildable != null)
+			if (prod != null)
 			{
+				var buildable = prod.ActorInfo;
+
 				// Queue a new item
 				Game.Sound.Play(SoundType.UI, TabClick);
 				string notification;
-				var canQueue = CurrentQueue.CanQueue(buildable, out notification);
+				var canQueue = CurrentQueue.CanQueue(prod, out notification);
 				Game.Sound.PlayNotification(World.Map.Rules, World.LocalPlayer, "Speech", notification, World.LocalPlayer.Faction.InternalName);
 
 				if (canQueue)
@@ -387,22 +390,23 @@ namespace OpenRA.Mods.Common.Widgets
 				var y = DisplayedIconCount / Columns;
 				var rect = new Rectangle(rb.X + x * (IconSize.X + IconMargin.X), rb.Y + y * (IconSize.Y + IconMargin.Y), IconSize.X, IconSize.Y);
 
-				var rsi = item.TraitInfo<RenderSpritesInfo>();
-				var icon = new Animation(World, rsi.GetImage(item, World.Map.Rules.Sequences, faction));
-				var bi = item.TraitInfo<BuildableInfo>();
+				var rsi = item.ActorInfo.TraitInfo<RenderSpritesInfo>();
+				var icon = new Animation(World, rsi.GetImage(item.ActorInfo, World.Map.Rules.Sequences, faction));
+				var bi = item.BuildableInfo;
 				icon.Play(bi.Icon);
 
 				var pi = new ProductionIcon()
 				{
-					Actor = item,
-					Name = item.Name,
+					Actor = item.ActorInfo,
+					Buildable = item.BuildableInfo,
+					Name = item.ActorInfo.Name,
 					Hotkey = DisplayedIconCount < HotkeyCount ? hotkeys[DisplayedIconCount] : null,
 					Sprite = icon.Image,
 					Palette = worldRenderer.Palette(bi.IconPalette),
 					IconClockPalette = worldRenderer.Palette(ClockPalette),
 					IconDarkenPalette = worldRenderer.Palette(NotBuildablePalette),
 					Pos = new float2(rect.Location),
-					Queued = currentQueue.AllQueued().Where(a => a.Item == item.Name).ToList(),
+					Queued = currentQueue.AllQueued().Where(a => a.Item == item.ActorInfo.Name).ToList(),
 					ProductionQueue = currentQueue
 				};
 
@@ -454,7 +458,7 @@ namespace OpenRA.Mods.Common.Widgets
 
 					WidgetUtils.DrawSHPCentered(clock.Image, icon.Pos + iconOffset, icon.IconClockPalette);
 				}
-				else if (!buildableItems.Any(a => a.Name == icon.Name))
+				else if (!buildableItems.Any(a => a.ActorInfo.Name == icon.Name))
 					WidgetUtils.DrawSHPCentered(cantBuild.Image, icon.Pos + iconOffset, icon.IconDarkenPalette);
 			}
 

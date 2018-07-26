@@ -67,7 +67,7 @@ namespace OpenRA.Mods.Common.Traits
 			}
 		}
 
-		public void PrerequisitesAvailable(string key)
+		public void PrerequisitesAvailable(string key, BuildableInfo bi)
 		{
 			List<Pair<Actor, GrantConditionOnPrerequisite>> list;
 			if (!upgradables.TryGetValue(key, out list))
@@ -77,7 +77,7 @@ namespace OpenRA.Mods.Common.Traits
 				u.Second.PrerequisitesUpdated(u.First, true);
 		}
 
-		public void PrerequisitesUnavailable(string key)
+		public void PrerequisitesUnavailable(string key, BuildableInfo bi)
 		{
 			List<Pair<Actor, GrantConditionOnPrerequisite>> list;
 			if (!upgradables.TryGetValue(key, out list))
@@ -87,7 +87,7 @@ namespace OpenRA.Mods.Common.Traits
 				u.Second.PrerequisitesUpdated(u.First, false);
 		}
 
-		public void PrerequisitesItemHidden(string key) { }
-		public void PrerequisitesItemVisible(string key) { }
+		public void PrerequisitesItemHidden(string key, BuildableInfo bi) { }
+		public void PrerequisitesItemVisible(string key, BuildableInfo bi) { }
 	}
 }

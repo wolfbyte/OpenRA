@@ -370,7 +370,7 @@ namespace OpenRA.Mods.Common.AI
 			if (!buildableThings.Any())
 				return null;
 
-			var unit = buildableThings.Random(Random);
+			var unit = buildableThings.Select(p => p.ActorInfo).Random(Random);
 			return HasAdequateAirUnitReloadBuildings(unit) ? unit : null;
 		}
 
@@ -386,7 +386,7 @@ namespace OpenRA.Mods.Common.AI
 				.Select(a => a.Info.Name).ToList();
 
 			foreach (var unit in Info.UnitsToBuild.Shuffle(Random))
-				if (buildableThings.Any(b => b.Name == unit.Key))
+				if (buildableThings.Any(b => b.ActorInfo.Name == unit.Key))
 					if (myUnits.Count(a => a == unit.Key) < unit.Value * myUnits.Count)
 						if (HasAdequateAirUnitReloadBuildings(Map.Rules.Actors[unit.Key]))
 							return Map.Rules.Actors[unit.Key];

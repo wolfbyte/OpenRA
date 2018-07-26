@@ -119,7 +119,7 @@ namespace OpenRA.Mods.Common.Widgets
 					continue;
 
 				var faction = queue.Trait.Actor.Owner.Faction.InternalName;
-				var actor = queue.Trait.AllItems().FirstOrDefault(a => a.Name == current.Item);
+				var actor = queue.Trait.AllItems().FirstOrDefault(a => a.ActorInfo.Name == current.Item).ActorInfo;
 				if (actor == null)
 					continue;
 

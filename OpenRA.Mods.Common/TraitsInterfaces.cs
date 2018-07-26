@@ -219,10 +219,10 @@ namespace OpenRA.Mods.Common.Traits
 
 	public interface ITechTreeElement
 	{
-		void PrerequisitesAvailable(string key);
-		void PrerequisitesUnavailable(string key);
-		void PrerequisitesItemHidden(string key);
-		void PrerequisitesItemVisible(string key);
+		void PrerequisitesAvailable(string key, BuildableInfo bi);
+		void PrerequisitesUnavailable(string key, BuildableInfo bi);
+		void PrerequisitesItemHidden(string key, BuildableInfo bi);
+		void PrerequisitesItemVisible(string key, BuildableInfo bi);
 	}
 
 	public interface IProductionIconOverlay

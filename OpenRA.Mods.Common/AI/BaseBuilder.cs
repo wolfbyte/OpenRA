@@ -205,7 +205,7 @@ namespace OpenRA.Mods.Common.AI
 
 		ActorInfo ChooseBuildingToBuild(ProductionQueue queue)
 		{
-			var buildableThings = queue.BuildableItems();
+			var buildableThings = queue.BuildableItems().Select(p => p.ActorInfo);
 
 			// This gets used quite a bit, so let's cache it here
 			var power = GetProducibleBuilding(ai.Info.BuildingCommonNames.Power, buildableThings,

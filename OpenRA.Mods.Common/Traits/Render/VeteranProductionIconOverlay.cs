@@ -109,19 +109,19 @@ namespace OpenRA.Mods.Common.Traits.Render
 			return key.Substring(Prefix.Length);
 		}
 
-		public void PrerequisitesAvailable(string key)
+		public void PrerequisitesAvailable(string key, BuildableInfo bi)
 		{
 			var ai = self.World.Map.Rules.Actors[GetName(key)];
 			overlayActive[ai] = true;
 		}
 
-		public void PrerequisitesUnavailable(string key)
+		public void PrerequisitesUnavailable(string key, BuildableInfo bi)
 		{
 			var ai = self.World.Map.Rules.Actors[GetName(key)];
 			overlayActive[ai] = false;
 		}
 
-		public void PrerequisitesItemHidden(string key) { }
-		public void PrerequisitesItemVisible(string key) { }
+		public void PrerequisitesItemHidden(string key, BuildableInfo bi) { }
+		public void PrerequisitesItemVisible(string key, BuildableInfo bi) { }
 	}
 }

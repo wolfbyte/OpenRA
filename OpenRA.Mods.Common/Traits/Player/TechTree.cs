@@ -37,8 +37,8 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void ActorChanged(Actor a)
 		{
-			var bi = a.Info.TraitInfoOrDefault<BuildableInfo>();
-			if (a.Owner == player && (a.Info.HasTraitInfo<ITechTreePrerequisiteInfo>() || (bi != null && bi.BuildLimit > 0)))
+			var bis = a.Info.TraitInfos<BuildableInfo>();
+			if (a.Owner == player && (a.Info.HasTraitInfo<ITechTreePrerequisiteInfo>() || (bis.Where(bi => bi.BuildLimit > 0).Any())))
 				Update();
 		}
 
@@ -49,9 +49,9 @@ namespace OpenRA.Mods.Common.Traits
 				w.Update(ownedPrerequisites);
 		}
 
-		public void Add(string key, string[] prerequisites, int limit, ITechTreeElement tte)
+		public void Add(string key, string[] prerequisites, int limit, ITechTreeElement tte, BuildableInfo bi = null)
 		{
-			watchers.Add(new Watcher(key, prerequisites, limit, tte));
+			watchers.Add(new Watcher(key, prerequisites, limit, tte, bi));
 		}
 
 		public void Remove(string key)
@@ -100,7 +100,7 @@ namespace OpenRA.Mods.Common.Traits
 					  a.Actor.IsInWorld &&
 					  !a.Actor.IsDead &&
 					  !ret.ContainsKey(a.Actor.Info.Name) &&
-					  a.Actor.Info.TraitInfo<BuildableInfo>().BuildLimit > 0)
+					  a.Actor.Info.TraitInfos<BuildableInfo>().Where(bi => bi.BuildLimit > 0).Any())
 				  .Do(b => ret[b.Actor.Info.Name].Add(b.Actor));
 
 			return ret;
@@ -112,6 +112,7 @@ namespace OpenRA.Mods.Common.Traits
 			public ITechTreeElement RegisteredBy { get { return watcher; } }
 
 			// Strings may be either actor type, or "alternate name" key
+			readonly BuildableInfo bi;
 			readonly string[] prerequisites;
 			readonly ITechTreeElement watcher;
 			bool hasPrerequisites;
@@ -119,9 +120,10 @@ namespace OpenRA.Mods.Common.Traits
 			bool hidden;
 			bool initialized = false;
 
-			public Watcher(string key, string[] prerequisites, int limit, ITechTreeElement watcher)
+			public Watcher(string key, string[] prerequisites, int limit, ITechTreeElement watcher, BuildableInfo bi)
 			{
 				Key = key;
+				this.bi = bi;
 				this.prerequisites = prerequisites;
 				this.watcher = watcher;
 				hasPrerequisites = false;
@@ -174,16 +176,16 @@ namespace OpenRA.Mods.Common.Traits
 
 				// Hide the item from the UI if a prereq annotated with '~' is not met.
 				if (nowHidden && !hidden)
-					watcher.PrerequisitesItemHidden(Key);
+					watcher.PrerequisitesItemHidden(Key, bi);
 
 				if (!nowHidden && hidden)
-					watcher.PrerequisitesItemVisible(Key);
+					watcher.PrerequisitesItemVisible(Key, bi);
 
 				if (nowHasPrerequisites && !hasPrerequisites)
-					watcher.PrerequisitesAvailable(Key);
+					watcher.PrerequisitesAvailable(Key, bi);
 
 				if (!nowHasPrerequisites && hasPrerequisites)
-					watcher.PrerequisitesUnavailable(Key);
+					watcher.PrerequisitesUnavailable(Key, bi);
 
 				hidden = nowHidden;
 				hasPrerequisites = nowHasPrerequisites;

@@ -46,15 +46,20 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Percentage modifier to apply to the build duration.")]
 		public readonly int BuildDurationModifier = 60;
 
+		[Desc("How much does this actor cost to produce.",
+			"Use -1 to use `Valued:`>`Cost`")]
+		public readonly int BuildCost = -1;
+
 		// TODO: UI fluff; doesn't belong here
 		public readonly int BuildPaletteOrder = 9999;
 
 		[Desc("Text shown in the production tooltip.")]
 		[Translate] public readonly string Description = "";
 
-		public static string GetInitialFaction(ActorInfo ai, string defaultFaction)
+		public static string GetInitialFaction(ActorInfo ai, string defaultFaction, BuildableInfo bi = null)
 		{
-			var bi = ai.TraitInfoOrDefault<BuildableInfo>();
+			if (bi == null)
+				 bi = ai.TraitInfoOrDefault<BuildableInfo>();
 			return bi != null ? bi.ForceFaction ?? defaultFaction : defaultFaction;
 		}
 	}

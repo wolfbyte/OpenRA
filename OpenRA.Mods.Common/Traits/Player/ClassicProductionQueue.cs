@@ -34,7 +34,7 @@ namespace OpenRA.Mods.Common.Traits
 
 	public class ClassicProductionQueue : ProductionQueue
 	{
-		static readonly ActorInfo[] NoItems = { };
+		static readonly Producible[] NoItems = { };
 
 		readonly Actor self;
 		readonly ClassicProductionQueueInfo info;
@@ -69,12 +69,12 @@ namespace OpenRA.Mods.Common.Traits
 			TickInner(self, !isActive);
 		}
 
-		public override IEnumerable<ActorInfo> AllItems()
+		public override IEnumerable<Producible> AllItems()
 		{
 			return Enabled ? base.AllItems() : NoItems;
 		}
 
-		public override IEnumerable<ActorInfo> BuildableItems()
+		public override IEnumerable<Producible> BuildableItems()
 		{
 			return Enabled ? base.BuildableItems() : NoItems;
 		}
@@ -92,11 +92,8 @@ namespace OpenRA.Mods.Common.Traits
 			return unpaused.Trait != null ? unpaused : productionActors.FirstOrDefault();
 		}
 
-		protected override bool BuildUnit(ActorInfo unit)
+		protected override bool BuildUnit(ActorInfo unit, BuildableInfo bi)
 		{
-			// Find a production structure to build this actor
-			var bi = unit.TraitInfo<BuildableInfo>();
-
 			// Some units may request a specific production type, which is ignored if the AllTech cheat is enabled
 			var type = developerMode.AllTech ? Info.Type : (bi.BuildAtProductionType ?? Info.Type);
 
@@ -121,7 +118,7 @@ namespace OpenRA.Mods.Common.Traits
 				var inits = new TypeDictionary
 				{
 					new OwnerInit(self.Owner),
-					new FactionInit(BuildableInfo.GetInitialFaction(unit, p.Trait.Faction))
+					new FactionInit(BuildableInfo.GetInitialFaction(unit, p.Trait.Faction, bi))
 				};
 
 				if (p.Trait.Produce(p.Actor, unit, type, inits))
