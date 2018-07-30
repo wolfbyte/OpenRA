@@ -322,6 +322,7 @@
     <Compile Include="Traits\DockManager.cs" />
     <Compile Include="Traits\Dock.cs" />
     <Compile Include="Traits\Player\SharedCargoManager.cs" />
+    <Compile Include="Traits\Player\Taunts.cs" />
     <Compile Include="Traits\SharedCargo.cs" />
     <Compile Include="Traits\SharedPassenger.cs" />
     <Compile Include="Traits\ShootsMissiles.cs" />
