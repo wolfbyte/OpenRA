@@ -9,7 +9,9 @@
  */
 #endregion
 
+using System;
 using OpenRA.Graphics;
+using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Commands
@@ -20,17 +22,27 @@ namespace OpenRA.Mods.Common.Commands
 	public class PlayerCommands : IChatCommand, IWorldLoaded
 	{
 		World world;
+		Taunts taunts;
 
 		public void WorldLoaded(World w, WorldRenderer wr)
 		{
 			world = w;
+
+			if (world.LocalPlayer != null)
+				taunts = world.LocalPlayer.PlayerActor.Trait<Taunts>();
+
 			var console = world.WorldActor.Trait<ChatCommands>();
 			var help = world.WorldActor.Trait<HelpCommand>();
 
-			console.RegisterCommand("pause", this);
-			help.RegisterHelp("pause", "pause or unpause the game");
-			console.RegisterCommand("surrender", this);
-			help.RegisterHelp("surrender", "self-destruct everything and lose the game");
+			Action<string, string> register = (name, helpText) =>
+			{
+				console.RegisterCommand(name, this);
+				help.RegisterHelp(name, helpText);
+			};
+
+			register("pause", "pause or unpause the game");
+			register("surrender", "self-destruct everything and lose the game");
+			register("taunt", "plays a taunt");
 		}
 
 		public void InvokeCommand(string name, string arg)
@@ -45,6 +57,17 @@ namespace OpenRA.Mods.Common.Commands
 				case "surrender":
 					if (world.LocalPlayer != null)
 						world.IssueOrder(new Order("Surrender", world.LocalPlayer.PlayerActor, false));
+
+					break;
+				case "taunt":
+					if (!taunts.Enabled)
+					{
+						Game.Debug("Taunts are disabled.");
+						return;
+					}
+
+					if (world.LocalPlayer != null)
+						world.IssueOrder(new Order("Taunt", world.LocalPlayer.PlayerActor, false) { TargetString = arg });
 
 					break;
 			}
