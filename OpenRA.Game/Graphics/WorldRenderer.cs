@@ -167,7 +167,7 @@ namespace OpenRA.Graphics
 
 			if (debugVis.Value != null && lastDepthPreviewEnabled != debugVis.Value.DepthBuffer)
 			{
-				lastDepthPreviewEnabled = debugVis.Value.ShowDepthPreview;
+				lastDepthPreviewEnabled = debugVis.Value.DepthBuffer;
 				Game.Renderer.WorldSpriteRenderer.SetDepthPreviewEnabled(lastDepthPreviewEnabled);
 			}
 
