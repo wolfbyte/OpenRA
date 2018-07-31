@@ -16,6 +16,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OpenRA.GameRules;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 /* Works without base engine modification. */
@@ -41,7 +42,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public readonly int DamageThreshold = 0;
 
 		[Desc("DeathType(s) that trigger the explosion. Leave empty to always trigger an explosion.")]
-		public readonly HashSet<string> DeathTypes = new HashSet<string>();
+		public readonly BitSet<DamageType> DeathTypes = default(BitSet<DamageType>);
 
 		[Desc("Possible values are CenterPosition (explosion at the actors' center) and ",
 			"Footprint (explosion on each occupied cell).")]
@@ -84,7 +85,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (self.World.SharedRandom.Next(100) > Info.Chance)
 				return;
 
-			if (Info.DeathTypes.Count > 0 && !e.Damage.DamageTypes.Overlaps(Info.DeathTypes))
+			if (!Info.DeathTypes.IsEmpty && !e.Damage.DamageTypes.Overlaps(Info.DeathTypes))
 				return;
 
 			var weapon = ChooseWeaponForExplosion(self);

@@ -12,13 +12,14 @@ using System.Collections.Generic;
 using System.Linq;
 using OpenRA.GameRules;
 using OpenRA.Mods.Yupgi_alert.Warheads;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Yupgi_alert.Traits
 {
 	public class DelayedWeaponTrigger
 	{
-		public readonly HashSet<string> DeathTypes;
+		public readonly BitSet<DamageType> DeathTypes;
 
 		public readonly int TriggerTime;
 
