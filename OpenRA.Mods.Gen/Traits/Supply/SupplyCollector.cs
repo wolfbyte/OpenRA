@@ -182,24 +182,29 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		}
 
 		public void ResolveOrder(Actor self, Order order)
-        {
-            if (order.OrderString == "Collect")
+		{
+			// TODO: Add support for FrozenActors
+			if (order.Target.Type != TargetType.Actor)
+				return;
+
+			var targetActor = order.Target.Actor;
+			if (order.OrderString == "Collect")
             {
-                var dock = order.TargetActor.TraitOrDefault<SupplyDock>();
+                var dock = targetActor.TraitOrDefault<SupplyDock>();
                 if (dock == null || !Info.SupplyTypes.Overlaps(dock.Info.SupplyTypes))
                     return;
 
                 if (IsFull)
                     return;
 
-                if (order.TargetActor != collectionBuilding)
-                    collectionBuilding = order.TargetActor;
+                if (targetActor != collectionBuilding)
+                    collectionBuilding = targetActor;
 
                 idleSmart = true;
 				Waiting = false;
 				DeliveryAnimPlayed = false;
 
-				self.SetTargetLine(Target.FromOrder(self.World, order), Color.Green);
+				self.SetTargetLine(order.Target, Color.Green);
 
                 self.CancelActivity();
 
@@ -208,21 +213,21 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
             }
             else if (order.OrderString == "Deliver")
             {
-                var center = order.TargetActor.TraitOrDefault<SupplyCenter>();
+                var center = targetActor.TraitOrDefault<SupplyCenter>();
                 if (center == null || !Info.SupplyTypes.Overlaps(center.Info.SupplyTypes))
                     return;
 
                 if (IsEmpty)
                     return;
 
-                if (order.TargetActor != deliveryBuilding)
-                    deliveryBuilding = order.TargetActor;
+                if (targetActor != deliveryBuilding)
+                    deliveryBuilding = targetActor;
 
                 idleSmart = true;
 				Waiting = false;
 				DeliveryAnimPlayed = false;
 
-				self.SetTargetLine(Target.FromOrder(self.World, order), Color.Green);
+				self.SetTargetLine(order.Target, Color.Green);
 
                 self.CancelActivity();
 

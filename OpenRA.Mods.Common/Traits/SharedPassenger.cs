@@ -107,7 +107,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public string VoicePhraseForOrder(Actor self, Order order)
 		{
-			if (order.OrderString != "EnterSharedTransport" || !CanEnter(order.TargetActor))
+			if (order.OrderString != "EnterSharedTransport")
 				return null;
 
 			return Info.Voice;
@@ -137,18 +137,26 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void ResolveOrder(Actor self, Order order)
 		{
-			if (order.OrderString == "EnterSharedTransport")
-			{
-				if (order.TargetActor == null) return;
-				if (!CanEnter(order.TargetActor)) return;
-				if (!IsCorrectCargoType(order.TargetActor)) return;
+			if (order.OrderString != "EnterSharedTransport")
+				return;
 
-				var target = Target.FromOrder(self.World, order);
-				self.SetTargetLine(target, Color.Green);
+			// Enter orders are only valid for own/allied actors,
+			// which are guaranteed to never be frozen.
+			if (order.Target.Type != TargetType.Actor)
+				return;
 
+			var targetActor = order.Target.Actor;
+			if (!CanEnter(targetActor))
+				return;
+
+			if (!IsCorrectCargoType(targetActor))
+				return;
+
+			if (!order.Queued)
 				self.CancelActivity();
-				self.QueueActivity(new EnterSharedTransport(self, order.TargetActor));
-			}
+		
+			self.SetTargetLine(order.Target, Color.Green);
+			self.QueueActivity(new EnterSharedTransport(self, targetActor));
 		}
 
 		public bool Reserve(Actor self, SharedCargo cargo)

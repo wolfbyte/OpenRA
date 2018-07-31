@@ -161,7 +161,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		static bool IsValidOrder(Actor self, Order order)
 		{
 			// Not targeting a frozen actor
-			if (order.ExtraData == 0 && order.TargetActor == null)
+			if (order.ExtraData == 0 && order.Target.Actor == null)
 				return false;
 
 			// The owner must own at least two nydus canals.
@@ -170,7 +170,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 			// primary buildings are where entered units exit.
 			// You don't want to put them in the primary building.
-			return !order.TargetActor.IsPrimaryNydusExit();
+			return !order.Target.Actor.IsPrimaryNydusExit();
 		}
 
 		public string VoicePhraseForOrder(Actor self, Order order)
