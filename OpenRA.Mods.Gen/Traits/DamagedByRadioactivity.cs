@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 /* Works without base engine modification */
@@ -34,7 +35,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public readonly int DamageInterval = 16;
 
 		[Desc("Apply the damage using these damagetypes.")]
-		public readonly HashSet<string> DamageTypes = new HashSet<string>();
+		public readonly BitSet<DamageType> DamageTypes = default(BitSet<DamageType>);
 
 		[Desc("Receive damage from the radioactivity layer with this name.")]
 		public readonly string RadioactivityLayerName = "radioactivity";

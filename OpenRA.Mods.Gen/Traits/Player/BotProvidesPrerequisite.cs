@@ -30,6 +30,12 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		// Don't set this to false, even though you can.
 		[Desc("Should it recheck everything when it is captured?")]
 		public readonly bool ResetOnOwnerChange = true;
+
+		IEnumerable<string> ITechTreePrerequisiteInfo.Prerequisites(ActorInfo info)
+		{
+			return new string[] { Prerequisite ?? info.Name };
+		}
+
 		public object Create(ActorInitializer init) { return new BotProvidesPrerequisite(init, this); }
 	}
 
