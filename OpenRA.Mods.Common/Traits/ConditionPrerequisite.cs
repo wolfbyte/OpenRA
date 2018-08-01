@@ -29,7 +29,7 @@ namespace OpenRA.Mods.Common.Traits
 		public override object Create(ActorInitializer init) { return new ConditionPrerequisite(init.Self, this); }
 	}
 
-	public class ConditionPrerequisite : PausableConditionalTrait<ConditionPrerequisiteInfo>, INotifyCreated
+	public class ConditionPrerequisite : PausableConditionalTrait<ConditionPrerequisiteInfo>, INotifyCreated, INotifyOwnerChanged
 	{
 		Actor playerActor;
 		ProductionQueue[] queues;
@@ -67,6 +67,11 @@ namespace OpenRA.Mods.Common.Traits
 					queue.producible[self.World.Map.Rules.Actors[Info.Actor]].Visible = false;
 				}
 			}
+		}
+
+		void INotifyOwnerChanged.OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)
+		{
+			playerActor = newOwner.PlayerActor;
 		}
 
 		protected override void TraitEnabled(Actor self)
