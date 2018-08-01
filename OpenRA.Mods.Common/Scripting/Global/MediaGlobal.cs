@@ -52,6 +52,13 @@ namespace OpenRA.Mods.Common.Scripting
 		}
 
 		[ScriptContext(ScriptContextType.Mission)]
+		[Desc("Play a taunt listed in taunts.yaml")]
+		public void PlayTauntNotification(Player player, string notification)
+		{
+			Game.Sound.PlayNotification(world.Map.Rules, world.LocalPlayer, "Taunts", notification, player != null ? player.Faction.InternalName : null);
+		}
+
+		[ScriptContext(ScriptContextType.Mission)]
 		[Desc("Play a sound file")]
 		public void PlaySound(string file)
 		{
