@@ -34,6 +34,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("A list of actor types that are initially spawned into this actor.")]
 		public readonly string[] InitialUnits = { };
 
+		[Desc("When cargo is full, unload the first passenger instead of disabling loading.")]
+		public readonly bool ReplaceFirstWhenFull = false;
+
 		[Desc("When this actor is sold should all of its passengers be unloaded?")]
 		public readonly bool EjectOnSell = true;
 
@@ -269,7 +272,7 @@ namespace OpenRA.Mods.Common.Traits
 			return Info.UnloadVoice;
 		}
 
-		public bool HasSpace(int weight) { return totalWeight + reservedWeight + weight <= Info.MaxWeight; }
+		public bool HasSpace(int weight) { return Info.ReplaceFirstWhenFull || totalWeight + reservedWeight + weight <= Info.MaxWeight; }
 		public bool IsEmpty(Actor self) { return cargo.Count == 0; }
 
 		public Actor Peek(Actor self) { return cargo.Peek(); }
@@ -343,9 +346,30 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void Load(Actor self, Actor a)
 		{
-			cargo.Push(a);
 			var w = GetWeight(a);
 			totalWeight += w;
+
+			while (Info.ReplaceFirstWhenFull && totalWeight > Info.MaxWeight)
+			{
+				var passenger = Unload(self);
+				var cp = self.CenterPosition;
+				var inAir = self.World.Map.DistanceAboveTerrain(cp).Length != 0;
+				var positionable = passenger.Trait<IPositionable>();
+				var health = passenger.TraitOrDefault<Health>();
+				positionable.SetPosition(passenger, self.Location);
+
+				if (self.Owner.WinState != WinState.Lost && !inAir && positionable.CanEnterCell(self.Location, self, false))
+				{
+					self.World.AddFrameEndTask(world => world.Add(passenger));
+					var nbms = passenger.TraitsImplementing<INotifyBlockingMove>();
+					foreach (var nbm in nbms)
+						nbm.OnNotifyBlockingMove(passenger, passenger);
+				}
+				else
+					passenger.Kill(self);
+			}
+
+			cargo.Push(a);
 			if (reserves.Contains(a))
 			{
 				reservedWeight -= w;
@@ -390,8 +414,8 @@ namespace OpenRA.Mods.Common.Traits
 				if (self.Owner.WinState != WinState.Lost && !inAir && positionable.CanEnterCell(self.Location, self, false))
 				{
 					self.World.AddFrameEndTask(w => w.Add(passenger));
-					var nbm = passenger.TraitOrDefault<INotifyBlockingMove>();
-					if (nbm != null)
+					var nbms = passenger.TraitsImplementing<INotifyBlockingMove>();
+					foreach (var nbm in nbms)
 						nbm.OnNotifyBlockingMove(passenger, passenger);
 
 					if (Info.EjectOnDeathDamage > 0 && health != null)
