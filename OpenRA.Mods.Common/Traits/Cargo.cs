@@ -355,7 +355,6 @@ namespace OpenRA.Mods.Common.Traits
 				var cp = self.CenterPosition;
 				var inAir = self.World.Map.DistanceAboveTerrain(cp).Length != 0;
 				var positionable = passenger.Trait<IPositionable>();
-				var health = passenger.TraitOrDefault<Health>();
 				positionable.SetPosition(passenger, self.Location);
 
 				if (self.Owner.WinState != WinState.Lost && !inAir && positionable.CanEnterCell(self.Location, self, false))
