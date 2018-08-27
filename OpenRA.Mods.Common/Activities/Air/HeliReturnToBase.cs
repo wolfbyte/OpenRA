@@ -41,7 +41,7 @@ namespace OpenRA.Mods.Common.Activities
 		{
 			return self.World.ActorsHavingTrait<DockManager>().Where(a =>
 				a.Owner == self.Owner &&
-				heli.Info.RearmBuildings.Contains(a.Info.Name) &&
+				aircraft.Info.RearmBuildings.Contains(a.Info.Name) &&
 				!a.IsDead &&
 				!a.Disposed);
 		}
@@ -92,7 +92,7 @@ namespace OpenRA.Mods.Common.Activities
 				// Probably the owner is having a crisis lol.
 				// Doesn't matter if the unit just sits there or do what ever NextActivity is.
 				return ActivityUtils.SequenceActivities(
-					new Turn(self, heli.Info.InitialFacing),
+					new Turn(self, aircraft.Info.InitialFacing),
 					new HeliLand(self, true),
 					NextActivity);
 			}
@@ -118,7 +118,7 @@ namespace OpenRA.Mods.Common.Activities
 				var target = Target.FromPos(dest.CenterPosition + randomPosition);
 
 				Queue(ActivityUtils.SequenceActivities(
-					new HeliFly(self, target, WDist.Zero, heli.Info.WaitDistanceFromResupplyBase),
+					new HeliFly(self, target, WDist.Zero, aircraft.Info.WaitDistanceFromResupplyBase),
 					new Wait(29),
 					new HeliReturnToBase(self, abortOnResupply, null, alwaysLand)));
 				return NextActivity;
