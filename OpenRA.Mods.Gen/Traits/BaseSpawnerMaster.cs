@@ -14,6 +14,7 @@
 
 using System;
 using System.Linq;
+using OpenRA.Mods.Common;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Primitives;
 using OpenRA.Traits;
@@ -57,6 +58,9 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		[Desc("Only spawn initial load of slaves?")]
 		public readonly bool NoRegeneration = false;
+
+		[Desc("Set slave subcell to this if it allows.")]
+		public readonly int SubCell = -1;
 
 		[Desc("Spawn all slaves at once when regenerating slaves, instead of one by one?")]
 		public readonly bool SpawnAllAtOnce = false;
@@ -167,9 +171,12 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (entry.IsValid)
 				throw new InvalidOperationException("Replenish must not be run on a valid entry!");
 
+			var td = new TypeDictionary { new OwnerInit(self.Owner) };
+			if (Info.SubCell > 0)
+				td.Add(new SubCellInit(Info.SubCell));
+
 			// Some members are missing. Create a new one.
-			var slave = self.World.CreateActor(false, entry.ActorName,
-				new TypeDictionary { new OwnerInit(self.Owner) });
+			var slave = self.World.CreateActor(false, entry.ActorName, td);
 
 			// Initialize slave entry
 			InitializeSlaveEntry(slave, entry);
@@ -239,7 +246,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				var location = self.World.Map.CellContaining(centerPosition + spawnOffset);
 
 				var mv = slave.Trait<IMove>();
-				slave.QueueActivity(mv.MoveIntoWorld(slave, location));
+				slave.QueueActivity(mv.MoveIntoWorld(slave, location, Info.SubCell > 0 ? (SubCell)Info.SubCell : SubCell.Any));
 
 				// Move to rally point if any.
 				if (rallyPoint != null)

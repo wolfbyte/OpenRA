@@ -47,8 +47,11 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		[Desc("Can the slaves be controlled independently?")]
 		public readonly bool SlavesHaveFreeWill = false;
 
-		[Desc("This is a dummy spawner like cin C&C Generals and use virtual position and health.")]
+		[Desc("This is a dummy spawner like in C&C Generals and use virtual position and health.")]
 		public readonly bool AggregateHealth = true;
+
+		[Desc("Spawn actors with this offset to nexus.")]
+		public readonly WVec Offset = WVec.Zero;
 
 		public readonly int AggregateHealthUpdateDelay = 17; // Just a visual parameter, Doesn't affect the game.
 
@@ -206,8 +209,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				return;
 
 			foreach (var se in slaveEntries)
+			{
 				if (se.IsValid && !se.Actor.IsInWorld)
-					SpawnIntoWorld(self, se.Actor, centerPosition);
+					SpawnIntoWorld(self, se.Actor, centerPosition + Info.Offset);
+			}
 		}
 
 		public override void OnSlaveKilled(Actor self, Actor slave)
