@@ -33,33 +33,17 @@ namespace OpenRA.Mods.Common.Activities
 			this.dest = dest;
 		}
 
-<<<<<<< HEAD
-		public Actor ChooseResupplier(Actor self, bool unreservedOnly)
-		{
-			var rearmBuildings = aircraft.Info.RearmBuildings;
-			return self.World.Actors.Where(a => a.Owner == self.Owner
-				&& rearmBuildings.Contains(a.Info.Name)
-				&& (!unreservedOnly || !Reservable.IsReserved(a)))
-				.ClosestTo(self);
-=======
 		IEnumerable<Actor> GetHelipads(Actor self)
 		{
 			return self.World.ActorsHavingTrait<DockManager>().Where(a =>
 				a.Owner == self.Owner &&
-				heli.Info.RearmBuildings.Contains(a.Info.Name) &&
+				aircraft.Info.RearmBuildings.Contains(a.Info.Name) &&
 				!a.IsDead &&
 				!a.Disposed);
->>>>>>> Upload Engine for Generals Alpha
 		}
 
 		IEnumerable<Actor> GetDockableHelipads(Actor self)
 		{
-<<<<<<< HEAD
-			// Refuse to take off if it would land immediately again.
-			// Special case: Don't kill other deploy hotkey activities.
-			if (aircraft.ForceLanding)
-				return NextActivity;
-=======
 			foreach (var pad in GetHelipads(self))
 			{
 				var dockManager = pad.Trait<DockManager>();
@@ -67,7 +51,6 @@ namespace OpenRA.Mods.Common.Activities
 					yield return pad;
 			}
 		}
->>>>>>> Upload Engine for Generals Alpha
 
 		protected override void OnFirstRun(Actor self)
 		{
@@ -82,45 +65,6 @@ namespace OpenRA.Mods.Common.Activities
 			if (IsCanceled)
 				return NextActivity;
 
-<<<<<<< HEAD
-			if (dest == null || dest.IsDead || Reservable.IsReserved(dest))
-				dest = ChooseResupplier(self, true);
-
-			var initialFacing = aircraft.Info.InitialFacing;
-
-			if (dest == null || dest.IsDead)
-			{
-				var nearestResupplier = ChooseResupplier(self, false);
-
-				// If a heli was told to return and there's no (available) RearmBuilding, going to the probable next queued activity (HeliAttack)
-				// would be pointless (due to lack of ammo), and possibly even lead to an infinite loop due to HeliAttack.cs:L79.
-				if (nearestResupplier == null && aircraft.Info.LandWhenIdle)
-				{
-					if (aircraft.Info.TurnToLand)
-						return ActivityUtils.SequenceActivities(new Turn(self, initialFacing), new HeliLand(self, true));
-
-					return new HeliLand(self, true);
-				}
-				else if (nearestResupplier == null && !aircraft.Info.LandWhenIdle)
-					return null;
-				else
-				{
-					var distanceFromResupplier = (nearestResupplier.CenterPosition - self.CenterPosition).HorizontalLength;
-					var distanceLength = aircraft.Info.WaitDistanceFromResupplyBase.Length;
-
-					// If no pad is available, move near one and wait
-					if (distanceFromResupplier > distanceLength)
-					{
-						var randomPosition = WVec.FromPDF(self.World.SharedRandom, 2) * distanceLength / 1024;
-
-						var target = Target.FromPos(nearestResupplier.CenterPosition + randomPosition);
-
-						return ActivityUtils.SequenceActivities(new HeliFly(self, target, WDist.Zero, aircraft.Info.WaitDistanceFromResupplyBase), this);
-					}
-
-					return this;
-				}
-=======
 			// Check status and make dest correct.
 			// Priorities:
 			// 1. closest reloadable hpad
@@ -136,23 +80,18 @@ namespace OpenRA.Mods.Common.Activities
 					dest = hpads.ClosestTo(self);
 				else
 					dest = null;
->>>>>>> Upload Engine for Generals Alpha
 			}
 
 			// Owner doesn't have any feasible helipad, in this case.
 			if (dest == null)
 			{
-<<<<<<< HEAD
-				aircraft.MakeReservation(dest);
-=======
 				// Probably the owner is having a crisis lol.
 				// Doesn't matter if the unit just sits there or do what ever NextActivity is.
 				return ActivityUtils.SequenceActivities(
-					new Turn(self, heli.Info.InitialFacing),
+					new Turn(self, aircraft.Info.InitialFacing),
 					new HeliLand(self, true),
 					NextActivity);
 			}
->>>>>>> Upload Engine for Generals Alpha
 
 			// Do we need to land and reload/repair?
 			if (!ShouldLandAtBuilding(self, dest))
@@ -172,7 +111,7 @@ namespace OpenRA.Mods.Common.Activities
 				var target = Target.FromPos(dest.CenterPosition + randomPosition);
 
 				Queue(ActivityUtils.SequenceActivities(
-					new HeliFly(self, target, WDist.Zero, heli.Info.WaitDistanceFromResupplyBase),
+					new HeliFly(self, target, WDist.Zero, aircraft.Info.WaitDistanceFromResupplyBase),
 					new Wait(29),
 					new HeliReturnToBase(self, abortOnResupply, null, alwaysLand)));
 				return NextActivity;

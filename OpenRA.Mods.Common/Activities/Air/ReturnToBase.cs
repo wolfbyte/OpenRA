@@ -45,12 +45,6 @@ namespace OpenRA.Mods.Common.Activities
 
 		void CalculateLandingPath(Actor self, Dock dock, out WPos w1, out WPos w2, out WPos w3)
 		{
-			if (dest == null || dest.IsDead || Reservable.IsReserved(dest))
-				dest = ChooseResupplier(self, true);
-
-			if (dest == null)
-				return;
-
 			var landPos = dock.CenterPosition;
 			var altitude = aircraftInfo.CruiseAltitude.Length;
 

@@ -69,7 +69,7 @@ namespace OpenRA.Mods.Common.Activities
 
 			// If all valid weapons have depleted their ammo and RearmBuilding is defined, return to RearmBuilding
 			if (!autoReloads && aircraft.Info.RearmBuildings.Any() && attackHeli.Armaments.All(x => x.IsTraitPaused || !x.Weapon.IsValidAgainst(target, self.World, self)))
-				return ActivityUtils.SequenceActivities(new HeliReturnToBase(self, helicopter.Info.AbortOnResupply));
+				return ActivityUtils.SequenceActivities(new HeliReturnToBase(self, aircraft.Info.AbortOnResupply));
 
 			var dist = targetPos - pos;
 
