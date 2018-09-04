@@ -974,6 +974,9 @@ namespace OpenRA.Mods.Common.AI
 
 			foreach (var a in newUnits)
 			{
+				if (Info.UnitsCommonNames.ExcludeFromSquads.Contains(a.Info.Name))
+					continue;
+
 				if (a.Info.HasTraitInfo<HarvesterInfo>())
 					harvesters.Add(a);
 
