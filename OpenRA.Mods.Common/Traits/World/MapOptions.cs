@@ -19,6 +19,26 @@ namespace OpenRA.Mods.Common.Traits
 	public class MapOptionsInfo : ITraitInfo, ILobbyOptions, IRulesetLoaded
 	{
 		[Translate]
+		[Desc("Descriptive label for the crates checkbox in the lobby.")]
+		public readonly string CratesCheckboxLabel = "Crates";
+
+		[Translate]
+		[Desc("Tooltip description for the crates checkbox in the lobby.")]
+		public readonly string CratesCheckboxDescription = "Collect crates with units to recieve random bonuses or penalties";
+
+		[Desc("Default value of the crates checkbox in the lobby.")]
+		public readonly bool CratesCheckboxEnabled = true;
+
+		[Desc("Prevent the crates state from being changed in the lobby.")]
+		public readonly bool CratesCheckboxLocked = false;
+
+		[Desc("Whether to display the crates checkbox in the lobby.")]
+		public readonly bool CratesCheckboxVisible = true;
+
+		[Desc("Display order for the crates checkbox in the lobby.")]
+		public readonly int CratesCheckboxDisplayOrder = 0;
+
+		[Translate]
 		[Desc("Descriptive label for the short game checkbox in the lobby.")]
 		public readonly string ShortGameCheckboxLabel = "Short Game";
 
@@ -80,6 +100,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		IEnumerable<LobbyOption> ILobbyOptions.LobbyOptions(Ruleset rules)
 		{
+			yield return new LobbyBooleanOption("crates", CratesCheckboxLabel, CratesCheckboxDescription,
+				CratesCheckboxVisible,CratesCheckboxDisplayOrder, CratesCheckboxEnabled, CratesCheckboxLocked);
+
 			yield return new LobbyBooleanOption("shortgame", ShortGameCheckboxLabel, ShortGameCheckboxDescription,
 				ShortGameCheckboxVisible, ShortGameCheckboxDisplayOrder, ShortGameCheckboxEnabled, ShortGameCheckboxLocked);
 
