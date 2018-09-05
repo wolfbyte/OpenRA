@@ -58,6 +58,9 @@ namespace OpenRA.Mods.Common.Traits
 		[GrantedConditionReference]
 		[Desc("The condition to grant to self while cloaked.")]
 		public readonly string CloakedCondition = null;
+		
+		[Desc("This units uncloaks if only units of the player are cloakable.")]
+		public readonly bool UncloakWhenAlone = true;
 
 		public override object Create(ActorInitializer init) { return new Cloak(this); }
 	}
@@ -185,6 +188,9 @@ namespace OpenRA.Mods.Common.Traits
 		public bool IsVisible(Actor self, Player viewer)
 		{
 			if (!Cloaked || self.Owner.IsAlliedWith(viewer))
+				return true;
+
+			if ((Info.UncloakWhenAlone && !self.World.Actors.Where(a => a.Owner == self.Owner && a.IsInWorld && a.TraitsImplementing<IPositionable>().Any() && !a.TraitsImplementing<Cloak>().Where(t => !t.IsTraitDisabled).Any()).Any()))
 				return true;
 
 			return self.World.ActorsWithTrait<DetectCloaked>().Any(a => !a.Trait.IsTraitDisabled && a.Actor.Owner.IsAlliedWith(viewer)
