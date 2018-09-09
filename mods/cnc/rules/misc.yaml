@@ -58,6 +58,10 @@ mpspawn:
 		QuantizedFacings: 1
 	EditorTilesetFilter:
 		Categories: System
+	LobbyMapIcon:
+		Image: lobby-bits
+		Sequence: spawn-unclaimed
+		Spawnpoint: true
 
 waypoint:
 	Interactable:

@@ -362,6 +362,10 @@ aircraft.upgraded:
 
 mpspawn:
 	Interactable:
+	LobbyMapIcon:
+		Image: lobby-bits
+		Sequence: spawn-unclaimed
+		Spawnpoint: true
 	EditorOnlyTooltip:
 		Name: (multiplayer player starting point)
 	AlwaysVisible:
