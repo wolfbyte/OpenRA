@@ -421,8 +421,8 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			{
 				var spawns = currentMap.SpawnPoints;
 				var occupants = server.Clients
-					.Where(c => (c.SpawnPoint - 1 >= 0) && (c.SpawnPoint - 1 < spawns.Length))
-					.ToDictionary(c => spawns[c.SpawnPoint - 1], c => new SpawnOccupant(c, disableFactionDisplay));
+					.Where(c => (c.SpawnPoint - 1 >= 0) && (c.SpawnPoint - 1 < spawns.Count()))
+					.ToDictionary(c => spawns.Keys.ToArray()[c.SpawnPoint - 1], c => new SpawnOccupant(c, disableFactionDisplay));
 
 				mapPreview.SpawnOccupants = () => occupants;
 			}

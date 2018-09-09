@@ -11,6 +11,8 @@
 
 using System;
 using System.Linq;
+using OpenRA.Mods.Common.Traits;
+using OpenRA.Traits;
 using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Common.Widgets.Logic
@@ -21,7 +23,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		public SpawnSelectorTooltipLogic(Widget widget, TooltipContainerWidget tooltipContainer, MapPreviewWidget preview, bool showUnoccupiedSpawnpoints)
 		{
 			bool showTooltip = true;
-			widget.IsVisible = () => preview.TooltipSpawnIndex != -1 && showTooltip;
+			widget.IsVisible = () => preview.TooltipIconIndex != -1 && showTooltip;
 			var label = widget.Get<LabelWidget>("LABEL");
 			var flag = widget.Get<ImageWidget>("FLAG");
 			var team = widget.Get<LabelWidget>("TEAM");
@@ -41,29 +43,46 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			tooltipContainer.BeforeRender = () =>
 			{
 				showTooltip = true;
-				var occupant = preview.SpawnOccupants().Values.FirstOrDefault(c => c.SpawnPoint == preview.TooltipSpawnIndex);
+				var occupant = preview.SpawnOccupants().Values.FirstOrDefault(c => c.SpawnPoint == preview.TooltipIconIndex);
 
 				var teamWidth = 0;
-				if (occupant == null)
+				var actor = preview.HoveredIconActor;
+				if (actor != null && !actor.TraitInfo<LobbyMapIconInfo>().Spawnpoint)
 				{
-					if (!showUnoccupiedSpawnpoints)
-					{
-						showTooltip = false;
-						return;
-					}
+					var lmitooltip = actor.TraitInfo<LobbyMapIconInfo>().Tooltip;
+					var tooltips = actor.TraitInfos<TooltipInfo>().Where(t => t.EnabledByDefault);
+					var tooltip = tooltips.Any() ? tooltips.First() : null;
+					var name = tooltip != null ? tooltip.Name : null;
+					labelText = lmitooltip ?? tooltip.Name;
 
-					labelText = "Available spawn";
-					playerFaction = null;
-					playerTeam = 0;
+					if (labelText == null)
+						label.Text = actor.Name;
+
 					widget.Bounds.Height = singleHeight;
 				}
 				else
 				{
-					labelText = occupant.PlayerName;
-					playerFaction = occupant.Faction;
-					playerTeam = occupant.Team;
-					widget.Bounds.Height = playerTeam > 0 ? doubleHeight : singleHeight;
-					teamWidth = teamFont.Measure(team.GetText()).X;
+					if (occupant == null)
+					{
+						if (!showUnoccupiedSpawnpoints)
+						{
+							showTooltip = false;
+							return;
+						}
+
+						labelText = "Available spawn";
+						playerFaction = null;
+						playerTeam = 0;
+						widget.Bounds.Height = singleHeight;
+					}
+					else
+					{
+						labelText = occupant.PlayerName;
+						playerFaction = occupant.Faction;
+						playerTeam = occupant.Team;
+						widget.Bounds.Height = playerTeam > 0 ? doubleHeight : singleHeight;
+						teamWidth = teamFont.Measure(team.GetText()).X;
+					}
 				}
 
 				label.Bounds.X = playerFaction != null ? flag.Bounds.Right + labelMargin : labelMargin;

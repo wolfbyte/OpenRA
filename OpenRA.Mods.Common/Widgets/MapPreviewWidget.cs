@@ -16,6 +16,7 @@ using System.Linq;
 using OpenRA.Graphics;
 using OpenRA.Network;
 using OpenRA.Widgets;
+using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Widgets
 {
@@ -63,8 +64,7 @@ namespace OpenRA.Mods.Common.Widgets
 		public readonly string TooltipContainer;
 		public readonly string TooltipTemplate = "SPAWN_TOOLTIP";
 		readonly Lazy<TooltipContainerWidget> tooltipContainer;
-
-		readonly Sprite spawnClaimed, spawnUnclaimed;
+		
 		readonly SpriteFont spawnFont;
 		readonly Color spawnColor, spawnContrastColor;
 		readonly int2 spawnLabelOffset;
@@ -72,8 +72,9 @@ namespace OpenRA.Mods.Common.Widgets
 		public Func<MapPreview> Preview = () => null;
 		public Func<Dictionary<CPos, SpawnOccupant>> SpawnOccupants = () => new Dictionary<CPos, SpawnOccupant>();
 		public Action<MouseInput> OnMouseDown = _ => { };
-		public int TooltipSpawnIndex = -1;
+		public int TooltipIconIndex = -1;
 		public bool ShowUnoccupiedSpawnpoints = true;
+		public ActorInfo HoveredIconActor = null;
 
 		Rectangle mapRect;
 		float previewScale = 0;
@@ -83,8 +84,6 @@ namespace OpenRA.Mods.Common.Widgets
 		{
 			tooltipContainer = Exts.Lazy(() => Ui.Root.Get<TooltipContainerWidget>(TooltipContainer));
 
-			spawnClaimed = ChromeProvider.GetImage("lobby-bits", "spawn-claimed");
-			spawnUnclaimed = ChromeProvider.GetImage("lobby-bits", "spawn-unclaimed");
 			spawnFont = Game.Renderer.Fonts[ChromeMetrics.Get<string>("SpawnFont")];
 			spawnColor = ChromeMetrics.Get<Color>("SpawnColor");
 			spawnContrastColor = ChromeMetrics.Get<Color>("SpawnContrastColor");
@@ -104,8 +103,6 @@ namespace OpenRA.Mods.Common.Widgets
 
 			tooltipContainer = Exts.Lazy(() => Ui.Root.Get<TooltipContainerWidget>(TooltipContainer));
 
-			spawnClaimed = ChromeProvider.GetImage("lobby-bits", "spawn-claimed");
-			spawnUnclaimed = ChromeProvider.GetImage("lobby-bits", "spawn-unclaimed");
 			spawnFont = Game.Renderer.Fonts[ChromeMetrics.Get<string>("SpawnFont")];
 			spawnColor = ChromeMetrics.Get<Color>("SpawnColor");
 			spawnContrastColor = ChromeMetrics.Get<Color>("SpawnContrastColor");
@@ -179,31 +176,58 @@ namespace OpenRA.Mods.Common.Widgets
 
 			Game.Renderer.RgbaSpriteRenderer.DrawSprite(minimap, new float2(mapRect.Location), new float2(mapRect.Size));
 
-			TooltipSpawnIndex = -1;
+			TooltipIconIndex = -1;
+			HoveredIconActor = null;
+			var iconActors = preview.IconActors;
+			var gridType = preview.GridType;
+			foreach (var icon in iconActors)
+			{
+				var actor = preview.Rules.Actors[icon.Value];
+				var lmi = actor.TraitInfo<LobbyMapIconInfo>();
+
+				var pos = ConvertToPreview(icon.Key, gridType);
+				var sprite = ChromeProvider.GetImage(lmi.Image, lmi.Sequence);
+				var offset = new int2(sprite.Bounds.Width, sprite.Bounds.Height) / 2;
+
+				Game.Renderer.RgbaSpriteRenderer.DrawSprite(sprite, pos - offset);
+
+				if (lmi.ShowTooltip && ((pos - Viewport.LastMousePos).ToFloat2() / offset.ToFloat2()).LengthSquared <= 1)
+				{
+					TooltipIconIndex = iconActors.Keys.ToArray().IndexOf(icon.Key) + 1;
+					HoveredIconActor = actor;
+				}
+			}
+
 			if (ShowSpawnPoints)
 			{
 				var colors = SpawnOccupants().ToDictionary(c => c.Key, c => c.Value.Color.RGB);
-
 				var spawnPoints = preview.SpawnPoints;
-				var gridType = preview.GridType;
 				foreach (var p in spawnPoints)
 				{
-					var owned = colors.ContainsKey(p);
-					var pos = ConvertToPreview(p, gridType);
+					var actor = preview.Rules.Actors[p.Value];
+					var lmi = actor.TraitInfo<LobbyMapIconInfo>();
+
+					var spawnClaimed = ChromeProvider.GetImage(lmi.Image, lmi.ClaimedSequence);
+					var spawnUnclaimed = ChromeProvider.GetImage(lmi.Image, lmi.Sequence);
+					var owned = colors.ContainsKey(p.Key);
+					var pos = ConvertToPreview(p.Key, gridType);
 					var sprite = owned ? spawnClaimed : spawnUnclaimed;
 					var offset = new int2(sprite.Bounds.Width, sprite.Bounds.Height) / 2;
 
 					if (owned)
-						WidgetUtils.FillEllipseWithColor(new Rectangle(pos.X - offset.X + 1, pos.Y - offset.Y + 1, sprite.Bounds.Width - 2, sprite.Bounds.Height - 2), colors[p]);
+						WidgetUtils.FillEllipseWithColor(new Rectangle(pos.X - offset.X + 1, pos.Y - offset.Y + 1, sprite.Bounds.Width - 2, sprite.Bounds.Height - 2), colors[p.Key]);
 
 					Game.Renderer.RgbaSpriteRenderer.DrawSprite(sprite, pos - offset);
-					var number = Convert.ToChar('A' + spawnPoints.IndexOf(p)).ToString();
+					var number = Convert.ToChar('A' + spawnPoints.Keys.ToArray().IndexOf(p.Key)).ToString();
 					var textOffset = spawnFont.Measure(number) / 2 + spawnLabelOffset;
 
 					spawnFont.DrawTextWithContrast(number, pos - textOffset, spawnColor, spawnContrastColor, 1);
 
-					if (((pos - Viewport.LastMousePos).ToFloat2() / offset.ToFloat2()).LengthSquared <= 1)
-						TooltipSpawnIndex = spawnPoints.IndexOf(p) + 1;
+					if (lmi.ShowTooltip && ((pos - Viewport.LastMousePos).ToFloat2() / offset.ToFloat2()).LengthSquared <= 1)
+					{
+						TooltipIconIndex = spawnPoints.Keys.ToArray().IndexOf(p.Key) + 1;
+						HoveredIconActor = actor;
+					}
 				}
 			}
 		}

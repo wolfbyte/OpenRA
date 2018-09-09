@@ -22,6 +22,7 @@ using System.Threading;
 using OpenRA.FileSystem;
 using OpenRA.Graphics;
 using OpenRA.Primitives;
+using OpenRA.Traits;
 
 namespace OpenRA
 {
@@ -76,7 +77,8 @@ namespace OpenRA
 			public string TileSet;
 			public MapPlayers Players;
 			public int PlayerCount;
-			public CPos[] SpawnPoints;
+			public Dictionary<CPos, string> SpawnPoints;
+			public Dictionary<CPos, string> IconActors;
 			public MapGridType GridType;
 			public Rectangle Bounds;
 			public Bitmap Preview;
@@ -129,7 +131,8 @@ namespace OpenRA
 			}
 		}
 
-		static readonly CPos[] NoSpawns = new CPos[] { };
+		static readonly Dictionary<CPos, string> NoSpawns = new Dictionary<CPos, string> { };
+		static readonly Dictionary<CPos, string> NoActors = new Dictionary<CPos, string> { };
 		readonly MapCache cache;
 		readonly ModData modData;
 
@@ -145,7 +148,8 @@ namespace OpenRA
 		public string TileSet { get { return innerData.TileSet; } }
 		public MapPlayers Players { get { return innerData.Players; } }
 		public int PlayerCount { get { return innerData.PlayerCount; } }
-		public CPos[] SpawnPoints { get { return innerData.SpawnPoints; } }
+		public Dictionary<CPos, string> SpawnPoints { get { return innerData.SpawnPoints; } }
+		public Dictionary<CPos, string> IconActors { get { return innerData.IconActors; } }
 		public MapGridType GridType { get { return innerData.GridType; } }
 		public Rectangle Bounds { get { return innerData.Bounds; } }
 		public Bitmap Preview { get { return innerData.Preview; } }
@@ -207,6 +211,7 @@ namespace OpenRA
 				Players = null,
 				PlayerCount = 0,
 				SpawnPoints = NoSpawns,
+				IconActors = NoActors,
 				GridType = gridType,
 				Bounds = Rectangle.Empty,
 				Preview = null,
@@ -273,22 +278,33 @@ namespace OpenRA
 				MiniYaml actorDefinitions;
 				if (yaml.TryGetValue("Actors", out actorDefinitions))
 				{
-					var spawns = new List<CPos>();
-					foreach (var kv in actorDefinitions.Nodes.Where(d => d.Value.Value == "mpspawn"))
+					var rules = modData.DefaultRules;
+					var iconActorTypes = rules.Actors.Values.Where(a => a.HasTraitInfo<LobbyMapIconInfo>()).Select(a => a.Name).ToArray();
+					var iconActors = new Dictionary<CPos, string>();
+					var spawns = new Dictionary<CPos, string>();
+					foreach (var kv in actorDefinitions.Nodes.Where(d => iconActorTypes.Contains(d.Value.Value)))
 					{
 						var s = new ActorReference(kv.Value.Value, kv.Value.ToDictionary());
-						spawns.Add(s.InitDict.Get<LocationInit>().Value(null));
+
+						if (rules.Actors[kv.Value.Value].TraitInfo<LobbyMapIconInfo>().Spawnpoint)
+							spawns.Add(s.InitDict.Get<LocationInit>().Value(null), kv.Value.Value);
+						else
+							iconActors.Add(s.InitDict.Get<LocationInit>().Value(null), kv.Value.Value);
 					}
 
-					newData.SpawnPoints = spawns.ToArray();
+					newData.SpawnPoints = spawns;
+					newData.IconActors = iconActors;
 				}
 				else
-					newData.SpawnPoints = new CPos[0];
+				{
+					newData.SpawnPoints = new Dictionary<CPos, string> { };
+					newData.IconActors = new Dictionary<CPos, string> { };
+				}
 			}
 			catch (Exception)
 			{
-				newData.SpawnPoints = new CPos[0];
-				newData.Status = MapStatus.Unavailable;
+				newData.SpawnPoints = new Dictionary<CPos, string> { };
+				newData.IconActors = new Dictionary<CPos, string> { };
 			}
 
 			try
@@ -370,9 +386,9 @@ namespace OpenRA
 					newData.Bounds = r.bounds;
 					newData.TileSet = r.tileset;
 
-					var spawns = new CPos[r.spawnpoints.Length / 2];
+					var spawns = new Dictionary<CPos, string> { };
 					for (var j = 0; j < r.spawnpoints.Length; j += 2)
-						spawns[j / 2] = new CPos(r.spawnpoints[j], r.spawnpoints[j + 1]);
+						spawns.Add(new CPos(r.spawnpoints[j], r.spawnpoints[j + 1]), "mpspawn");
 					newData.SpawnPoints = spawns;
 					newData.GridType = r.map_grid_type;
 					try

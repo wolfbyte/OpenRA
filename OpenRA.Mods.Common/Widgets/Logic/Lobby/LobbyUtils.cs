@@ -227,16 +227,16 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 		{
 			var spawns = preview.SpawnPoints;
 			return lobbyInfo.Clients
-				.Where(c => (c.SpawnPoint - 1 >= 0) && (c.SpawnPoint - 1 < spawns.Length))
-				.ToDictionary(c => spawns[c.SpawnPoint - 1], c => new SpawnOccupant(c));
+				.Where(c => (c.SpawnPoint - 1 >= 0) && (c.SpawnPoint - 1 < spawns.Count()))
+				.ToDictionary(c => spawns.Keys.ToArray()[c.SpawnPoint - 1], c => new SpawnOccupant(c));
 		}
 
 		public static Dictionary<CPos, SpawnOccupant> GetSpawnOccupants(IEnumerable<GameInformation.Player> players, MapPreview preview)
 		{
 			var spawns = preview.SpawnPoints;
 			return players
-					.Where(c => (c.SpawnPoint - 1 >= 0) && (c.SpawnPoint - 1 < spawns.Length))
-					.ToDictionary(c => spawns[c.SpawnPoint - 1], c => new SpawnOccupant(c));
+					.Where(c => (c.SpawnPoint - 1 >= 0) && (c.SpawnPoint - 1 < spawns.Count()))
+					.ToDictionary(c => spawns.Keys.ToArray()[c.SpawnPoint - 1], c => new SpawnOccupant(c));
 		}
 
 		public static void SelectSpawnPoint(OrderManager orderManager, MapPreviewWidget mapPreview, MapPreview preview, MouseInput mi)
@@ -248,7 +248,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 				return;
 
 			var spawnSize = new float2(ChromeProvider.GetImage("lobby-bits", "spawn-unclaimed").Bounds.Size);
-			var selectedSpawn = preview.SpawnPoints
+			var selectedSpawn = preview.SpawnPoints.Keys
 				.Select((sp, i) => Pair.New(mapPreview.ConvertToPreview(sp, preview.GridType), i))
 				.Where(a => ((a.First - mi.Location).ToFloat2() / spawnSize * 2).LengthSquared <= 1)
 				.Select(a => a.Second + 1)
@@ -535,7 +535,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			dropdown.IsDisabled = () => s.LockSpawn || orderManager.LocalClient.IsReady;
 			dropdown.OnMouseDown = _ =>
 			{
-				var spawnPoints = Enumerable.Range(0, map.SpawnPoints.Length + 1).Except(
+				var spawnPoints = Enumerable.Range(0, map.SpawnPoints.Count() + 1).Except(
 					orderManager.LobbyInfo.Clients.Where(
 					client => client != c && client.SpawnPoint != 0).Select(client => client.SpawnPoint));
 				ShowSpawnDropDown(dropdown, c, orderManager, spawnPoints);

@@ -750,7 +750,7 @@ namespace OpenRA.Mods.Common.Server
 
 			int spawnPoint;
 			if (!Exts.TryParseIntegerInvariant(parts[1], out spawnPoint)
-				|| spawnPoint < 0 || spawnPoint > server.Map.SpawnPoints.Length)
+				|| spawnPoint < 0 || spawnPoint > server.Map.SpawnPoints.Count())
 			{
 				Log.Write("server", "Invalid spawn point: {0}", parts[1]);
 				return true;
