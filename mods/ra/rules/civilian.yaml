@@ -77,6 +77,8 @@ FCOM:
 		HP: 80000
 	Armor:
 		Type: Wood
+	LobbyMapIcon:
+		Sequence: command
 	Tooltip:
 		Name: Forward Command
 	TooltipDescription@ally:
@@ -110,6 +112,8 @@ HOSP:
 	Inherits@shape: ^2x2Shape
 	OwnerLostAction:
 		Action: ChangeOwner
+	LobbyMapIcon:
+		Sequence: hospital
 	Selectable:
 		Priority: 0
 		Bounds: 48,48
@@ -385,6 +389,8 @@ MISS:
 		Bounds: 72,48
 	OwnerLostAction:
 		Action: ChangeOwner
+	LobbyMapIcon:
+		Sequence: radar
 	Building:
 		Footprint: xxx xxx ===
 		Dimensions: 3,3
@@ -424,6 +430,8 @@ BIO:
 		Bounds: 48,48
 	OwnerLostAction:
 		Action: ChangeOwner
+	LobbyMapIcon:
+		Sequence: lab
 	Building:
 		Footprint: xx xx
 		Dimensions: 2,2
@@ -458,6 +466,8 @@ OILB:
 		Bounds: 48,48
 	OwnerLostAction:
 		Action: ChangeOwner
+	LobbyMapIcon:
+		Sequence: derrick
 	Building:
 		Footprint: xx xx
 		Dimensions: 2,2
