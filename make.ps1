@@ -71,6 +71,7 @@ function Version-Command
 	
 	if ($version -ne $null)
 	{
+		$version | out-file ".\VERSION"
 		$mods = @("mods/ra/mod.yaml", "mods/cnc/mod.yaml", "mods/d2k/mod.yaml", "mods/ts/mod.yaml", "mods/modchooser/mod.yaml", "mods/all/mod.yaml")
 		foreach ($mod in $mods)
 		{
