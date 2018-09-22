@@ -40,7 +40,6 @@
     <ErrorReport>prompt</ErrorReport>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>TRACE;DEBUG;</DefineConstants>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>5</LangVersion>
   </PropertyGroup>
@@ -52,7 +51,6 @@
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x86</PlatformTarget>
     <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <Optimize>true</Optimize>
   </PropertyGroup>
   <ItemGroup>
@@ -85,6 +83,7 @@
     <Compile Include="Traits\World\D2kEditorResourceLayer.cs" />
     <Compile Include="Lint\CheckImportActors.cs" />
     <Compile Include="PackageLoaders\D2kSoundResources.cs" />
+    <Compile Include="Warheads\DamagesConcreteWarhead.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OpenRA.Game\OpenRA.Game.csproj">
