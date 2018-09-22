@@ -1,4 +1,4 @@
-#region Copyright & License Information
+﻿#region Copyright & License Information
 /*
  * Copyright 2015- OpenRA.Mods.AS Developers (see AUTHORS)
  * This file is a part of a third-party plugin for OpenRA, which is
@@ -8,6 +8,8 @@
  */
 #endregion
 
+using System.Collections.Generic;
+using System.Linq;
 using OpenRA.Mods.Common.Effects;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Primitives;
@@ -15,35 +17,38 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.AS.Traits
 {
-	public class ProximityBountyInfo : ConditionalTraitInfo
+	[Desc("Periodically collects cash from actors with CashCollectable traits.")]
+	public class CashCollectorInfo : ConditionalTraitInfo
 	{
 		[FieldLoader.Require]
-		[Desc("The range within bounty gets collected.")]
+		[Desc("The range within cash gets collected.")]
 		public readonly WDist Range;
 
-		[Desc("The maximum vertical range above terrain within bounty gets collected.",
-		      "Ignored if 0 (actors are upgraded regardless of vertical distance).")]
+		[Desc("The maximum vertical range above terrain within cash gets collected.",
+			  "Ignored if 0 (actors are upgraded regardless of vertical distance).")]
 		public readonly WDist MaximumVerticalOffset = WDist.Zero;
 
-		[Desc("What killer diplomatic stances gathers bounty.")]
-		public readonly Stance ValidStances = Stance.Ally | Stance.Neutral | Stance.Enemy;
+		[Desc("What diplomatic stances cash is collected from.")]
+		public readonly Stance ValidStances = Stance.Ally;
 
-		[Desc("Delay between awarding the bounty.")]
-		public readonly int Delay = 50;
+		[FieldLoader.Require]
+		[Desc("Delay between two collections.")]
+		public readonly int Delay;
 
-		[Desc("The type which allows the actor to collect nearby bounty.")]
-		public readonly BitSet<ProximityBountyType> BountyType = default(BitSet<ProximityBountyType>);
+		[FieldLoader.Require]
+		[Desc("The type which allows the actor to collect nearby cash.")]
+		public readonly BitSet<CashCollectableType> Type = default(BitSet<CashCollectableType>);
 
-		[Desc("Whether to show a floating text announcing the won bounty.")]
-		public readonly bool ShowBounty = true;
+		[Desc("Whether to show a floating text.")]
+		public readonly bool ShowTicks = true;
 
 		public readonly string EnableSound = null;
 		public readonly string DisableSound = null;
 
-		public override object Create(ActorInitializer init) { return new ProximityBounty(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new CashCollector(init.Self, this); }
 	}
 
-	public class ProximityBounty : ConditionalTrait<ProximityBountyInfo>, ITick, INotifyAddedToWorld, INotifyRemovedFromWorld, INotifyOtherProduction
+	public class CashCollector : ConditionalTrait<CashCollectorInfo>, ITick, INotifyAddedToWorld, INotifyRemovedFromWorld, INotifyOtherProduction
 	{
 		readonly Actor self;
 
@@ -54,17 +59,19 @@ namespace OpenRA.Mods.AS.Traits
 		WDist cachedVRange;
 		WDist desiredVRange;
 
+		HashSet<CashCollectable> collectables;
+
 		bool cachedDisabled = true;
-		int currentBounty;
 		int ticks;
 
-		public ProximityBounty(Actor self, ProximityBountyInfo info)
+		public CashCollector(Actor self, CashCollectorInfo info)
 			: base(info)
 		{
 			this.self = self;
 			cachedRange = info.Range;
 			cachedVRange = info.MaximumVerticalOffset;
 			ticks = Info.Delay;
+			collectables = new HashSet<CashCollectable>();
 		}
 
 		void INotifyAddedToWorld.AddedToWorld(Actor self)
@@ -76,7 +83,7 @@ namespace OpenRA.Mods.AS.Traits
 		void INotifyRemovedFromWorld.RemovedFromWorld(Actor self)
 		{
 			self.World.ActorMap.RemoveProximityTrigger(proximityTrigger);
-			GrantBounty();
+			CollectCash();
 		}
 
 		void ITick.Tick(Actor self)
@@ -99,32 +106,28 @@ namespace OpenRA.Mods.AS.Traits
 				self.World.ActorMap.UpdateProximityTrigger(proximityTrigger, cachedPosition, cachedRange, cachedVRange);
 			}
 
-			if (--ticks < 0)
+			if (!IsTraitDisabled && --ticks < 0)
 			{
-				GrantBounty();
+				CollectCash();
 
 				ticks = Info.Delay;
 			}
 		}
 
-		void GrantBounty()
+		void CollectCash()
 		{
-			if (currentBounty > 0)
+			var cash = 0;
+
+			foreach (var trait in collectables)
 			{
-				var grantedBounty = currentBounty;
-
-				if (Info.ShowBounty && self.Owner.IsAlliedWith(self.World.RenderPlayer))
-					self.World.AddFrameEndTask(w => w.Add(new FloatingText(self.CenterPosition, self.Owner.Color.RGB, FloatingText.FormatCashTick(grantedBounty), 30)));
-
-				self.Owner.PlayerActor.Trait<PlayerResources>().GiveCash(currentBounty);
-
-				currentBounty = 0;
+				if (!trait.IsTraitDisabled)
+					cash += trait.Info.Value;
 			}
-		}
 
-		public void AddBounty(int bounty)
-		{
-			currentBounty += bounty;
+			if (Info.ShowTicks && self.Owner.IsAlliedWith(self.World.RenderPlayer))
+				self.World.AddFrameEndTask(w => w.Add(new FloatingText(self.CenterPosition, self.Owner.Color.RGB, FloatingText.FormatCashTick(cash), 30)));
+
+			self.Owner.PlayerActor.Trait<PlayerResources>().GiveCash(cash);
 		}
 
 		void ActorEntered(Actor a)
@@ -136,31 +139,28 @@ namespace OpenRA.Mods.AS.Traits
 			if (!Info.ValidStances.HasStance(stance))
 				return;
 
-			var gpbs = a.TraitsImplementing<GivesProximityBounty>();
-			foreach (var gpb in gpbs)
-				gpb.Collectors.Add(this);
+			var cc = a.TraitsImplementing<CashCollectable>().Where(t => t.Info.Types.Overlaps(Info.Type));
+			foreach (var trait in cc)
+				collectables.Add(trait);
 		}
 
 		void INotifyOtherProduction.UnitProducedByOther(Actor self, Actor producer, Actor produced, string productionType)
 		{
-			// If the produced Actor doesn't occupy space, it can't be in range
 			if (produced.OccupiesSpace == null)
 				return;
 
-			// We don't grant upgrades when disabled
 			if (IsTraitDisabled)
 				return;
 
-			// Work around for actors produced within the region not triggering until the second tick
 			if ((produced.CenterPosition - self.CenterPosition).HorizontalLengthSquared <= Info.Range.LengthSquared)
 			{
 				var stance = self.Owner.Stances[produced.Owner];
 				if (!Info.ValidStances.HasStance(stance))
 					return;
 
-				var gpbs = produced.TraitsImplementing<GivesProximityBounty>();
-				foreach (var gpb in gpbs)
-					gpb.Collectors.Add(this);
+				var cc = produced.TraitsImplementing<CashCollectable>().Where(t => t.Info.Types.Overlaps(Info.Type));
+				foreach (var trait in cc)
+					collectables.Add(trait);
 			}
 		}
 
@@ -173,9 +173,9 @@ namespace OpenRA.Mods.AS.Traits
 			if (!Info.ValidStances.HasStance(stance))
 				return;
 
-			var gpbs = a.TraitsImplementing<GivesProximityBounty>();
-			foreach (var gpb in gpbs)
-				gpb.Collectors.Remove(this);
+			var cc = a.TraitsImplementing<CashCollectable>().Where(t => t.Info.Types.Overlaps(Info.Type));
+			foreach (var trait in cc)
+				collectables.Remove(trait);
 		}
 	}
 }
