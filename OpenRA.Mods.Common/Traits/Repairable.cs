@@ -20,7 +20,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("This actor can be sent to a structure for repairs.")]
-	class RepairableInfo : ITraitInfo, Requires<HealthInfo>, Requires<IMoveInfo>
+	class RepairableInfo : ITraitInfo, Requires<IHealthInfo>, Requires<IMoveInfo>
 	{
 		public readonly HashSet<string> RepairBuildings = new HashSet<string> { "fix" };
 
@@ -35,14 +35,14 @@ namespace OpenRA.Mods.Common.Traits
 	class Repairable : IIssueOrder, IResolveOrder, IOrderVoice
 	{
 		public readonly RepairableInfo Info;
-		readonly Health health;
+		readonly IHealth health;
 		readonly IMove movement;
 		readonly AmmoPool[] ammoPools;
 
 		public Repairable(Actor self, RepairableInfo info)
 		{
 			Info = info;
-			health = self.Trait<Health>();
+			health = self.Trait<IHealth>();
 			movement = self.Trait<IMove>();
 			ammoPools = self.TraitsImplementing<AmmoPool>().ToArray();
 		}
@@ -124,7 +124,7 @@ namespace OpenRA.Mods.Common.Traits
 			// will need to be rewritten anyway, so this is OK for now.
 			self.QueueActivity(movement.MoveTo(self.World.Map.CellContaining(targetActor.CenterPosition), targetActor));
 			if (CanRearmAt(targetActor) && CanRearm())
-				self.QueueActivity(new Rearm(self));
+				self.QueueActivity(new Rearm(self, targetActor, new WDist(512)));
 
 			// Add a CloseEnough range of 512 to ensure we're at the host actor
 			self.QueueActivity(new Repair(self, targetActor, new WDist(512)));

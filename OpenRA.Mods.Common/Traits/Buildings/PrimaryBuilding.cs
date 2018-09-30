@@ -32,8 +32,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("The condition to grant to self while this is the primary building.")]
 		public readonly string PrimaryCondition = null;
 
+		[NotificationReference("Speech")]
 		[Desc("The speech notification to play when selecting a primary building.")]
-		public readonly string SelectionNotification = "PrimaryBuildingSelected";
+		public readonly string SelectionNotification = null;
 
 		[Desc("List of production queues for which the primary flag should be set.",
 			"If empty, the list given in the `Produces` property of the `Production` trait will be used.")]

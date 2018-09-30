@@ -19,7 +19,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("This actor's experience increases when it has killed a GivesExperience actor.")]
-	public class GainsExperienceInfo : ITraitInfo, Requires<ValuedInfo>
+	public class GainsExperienceInfo : ITraitInfo
 	{
 		[FieldLoader.Require]
 		[Desc("Condition to grant at each level.",
@@ -33,8 +33,14 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Palette for the level up sprite.")]
 		[PaletteReference] public readonly string LevelUpPalette = "effect";
 
+		[Desc("Multiplier to apply to the Conditions keys. Defaults to the actor's value.")]
+		public readonly int ExperienceModifier = -1;
+
 		[Desc("Should the level-up animation be suppressed when actor is created?")]
 		public readonly bool SuppressLevelupAnimation = true;
+
+		[NotificationReference("Sounds")]
+		public readonly string LevelUpNotification = null;
 
 		public object Create(ActorInitializer init) { return new GainsExperience(init, this); }
 	}
@@ -60,9 +66,6 @@ namespace OpenRA.Mods.Common.Traits
 			this.info = info;
 
 			MaxLevel = info.Conditions.Count;
-			var cost = self.Info.TraitInfo<ValuedInfo>().Cost;
-			foreach (var kv in info.Conditions)
-				nextLevel.Add(Pair.New(kv.Key * cost, kv.Value));
 
 			if (init.Contains<ExperienceInit>())
 				initialExperience = init.Get<ExperienceInit, int>();
@@ -70,6 +73,11 @@ namespace OpenRA.Mods.Common.Traits
 
 		void INotifyCreated.Created(Actor self)
 		{
+			var valued = self.Info.TraitInfoOrDefault<ValuedInfo>();
+			var requiredExperience = info.ExperienceModifier < 0 ? (valued != null ? valued.Cost : 1) : info.ExperienceModifier;
+			foreach (var kv in info.Conditions)
+				nextLevel.Add(Pair.New(kv.Key * requiredExperience, kv.Value));
+
 			conditionManager = self.TraitOrDefault<ConditionManager>();
 			if (initialExperience > 0)
 				GiveExperience(initialExperience, info.SuppressLevelupAnimation);
@@ -88,7 +96,7 @@ namespace OpenRA.Mods.Common.Traits
 			if (amount < 0)
 				throw new ArgumentException("Revoking experience is not implemented.", "amount");
 
-			experience += amount;
+			experience = (experience + amount).Clamp(0, nextLevel[MaxLevel - 1].First);
 
 			while (Level < MaxLevel && experience >= nextLevel[Level].First)
 			{
@@ -99,7 +107,7 @@ namespace OpenRA.Mods.Common.Traits
 
 				if (!silent)
 				{
-					Game.Sound.PlayNotification(self.World.Map.Rules, self.Owner, "Sounds", "LevelUp", self.Owner.Faction.InternalName);
+					Game.Sound.PlayNotification(self.World.Map.Rules, self.Owner, "Sounds", info.LevelUpNotification, self.Owner.Faction.InternalName);
 					self.World.AddFrameEndTask(w => w.Add(new CrateEffect(self, "levelup", info.LevelUpPalette)));
 				}
 			}

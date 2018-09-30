@@ -21,7 +21,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 {
 	public class IngameMenuLogic : ChromeLogic
 	{
-		Widget menu;
+		readonly Widget menu;
 
 		[ObjectCreator.UseCtor]
 		public IngameMenuLogic(Widget widget, ModData modData, World world, Action onExit, WorldRenderer worldRenderer, IngameInfoPanel activePanel)
@@ -44,7 +44,14 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			Action onQuit = () =>
 			{
 				if (world.Type == WorldType.Regular)
-					Game.Sound.PlayNotification(world.Map.Rules, null, "Speech", "Leave", world.LocalPlayer == null ? null : world.LocalPlayer.Faction.InternalName);
+				{
+					var moi = world.Map.Rules.Actors["player"].TraitInfoOrDefault<MissionObjectivesInfo>();
+					if (moi != null)
+					{
+						var faction = world.LocalPlayer == null ? null : world.LocalPlayer.Faction.InternalName;
+						Game.Sound.PlayNotification(world.Map.Rules, null, "Speech", moi.LeaveNotification, faction);
+					}
+				}
 
 				leaving = true;
 
@@ -97,7 +104,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 					var iop = world.WorldActor.TraitsImplementing<IObjectivesPanel>().FirstOrDefault();
 					var exitDelay = iop != null ? iop.ExitDelay : 0;
 
-					if (world.LobbyInfo.NonBotClients.Count() == 1)
+					if (!world.LobbyInfo.GlobalSettings.Dedicated && world.LobbyInfo.NonBotClients.Count() == 1)
 					{
 						restartAction = () =>
 						{
