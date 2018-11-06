@@ -225,17 +225,18 @@ namespace OpenRA.Mods.AS.Projectiles
 				};
 
 				projectiles[i] = new WarheadTrailProjectileEffect(info, projectileArgs, lifespan, estimatedLifespan);
-				world.Add(projectiles[i]);
 			}
+
+			foreach (var p in projectiles)
+				world.AddFrameEndTask(w => w.Add(p));
 		}
 
 		// gets where main projectile should fly to
 		WPos GetTargetPos()
 		{
 			var targetpos = args.PassiveTarget;
-			var actorpos = args.SourceActor.CenterPosition;
 
-			return WPos.Lerp(actorpos, targetpos, args.Weapon.Range.Length, (targetpos - actorpos).Length);
+			return WPos.Lerp(sourcepos, targetpos, args.Weapon.Range.Length, (targetpos - sourcepos).Length);
 		}
 
 		public void Tick(World world)
