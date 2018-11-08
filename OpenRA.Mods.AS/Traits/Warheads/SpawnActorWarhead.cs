@@ -10,17 +10,18 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using OpenRA.GameRules;
 using OpenRA.Mods.AS.Activities;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Effects;
-using OpenRA.Mods.Common.Warheads;
+using OpenRA.Mods.Common.Traits;
 using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.AS.Warheads
 {
-	[Desc("Spawn actors upon explosion.")]
-	public class SpawnActorWarhead : WarheadAS
+	[Desc("Spawn actors upon explosion. Don't use this with buildings.")]
+	public class SpawnActorWarhead : WarheadAS, IRulesetLoaded<WeaponInfo>
 	{
 		[Desc("The cell range to try placing the actors within.")]
 		public readonly int Range = 10;
@@ -51,10 +52,22 @@ namespace OpenRA.Mods.AS.Warheads
 		[Desc("Defines the palette of an optional animation played at the spawning location.")]
 		public readonly string Palette = "effect";
 
-		[Desc("List of sounds that can be played at the sapwning location.")]
+		[Desc("List of sounds that can be played at the spawning location.")]
 		public readonly string[] Sounds = new string[0];
 
 		public readonly bool UsePlayerPalette = false;
+
+		public void RulesetLoaded(Ruleset rules, WeaponInfo info)
+		{
+			foreach (var a in Actors)
+			{
+				var actorInfo = rules.Actors[a];
+				var buildingInfo = actorInfo.TraitInfoOrDefault<BuildingInfo>();
+
+				if (buildingInfo != null)
+					throw new YamlException("SpawnActorWarhead cannot be used to spawn building actor '{0}'!".F(a));
+			}
+		}
 
 		public override void DoImpact(Target target, Actor firedBy, IEnumerable<int> damageModifiers)
 		{
