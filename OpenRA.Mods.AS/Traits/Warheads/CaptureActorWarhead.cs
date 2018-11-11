@@ -13,6 +13,7 @@ using System.Linq;
 using OpenRA.Mods.Common;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
+using OpenRA.Primitives;
 
 namespace OpenRA.Mods.AS.Warheads
 {
@@ -23,10 +24,14 @@ namespace OpenRA.Mods.AS.Warheads
 		public readonly WDist Range = new WDist(64);
 
 		[Desc("Types of actors that it can capture, as long as the type also exists in the Capturable Type: trait.")]
-		public readonly HashSet<string> CaptureTypes = new HashSet<string> { "building" };
+		public readonly BitSet<CaptureType> CaptureTypes = default(BitSet<CaptureType>);
 
-		[Desc("If set, the target will be captured regardless of threshold.")]
-		public readonly bool IgnoreCaptureThreshold = false;
+		[Desc("Targets with health above this percentage will be sabotaged instead of captured.",
+			"Set to 0 to disable sabotaging.")]
+		public readonly int SabotageThreshold = 0;
+
+		[Desc("Sabotage damage expressed as a percentage of maximum target health.")]
+		public readonly int SabotageHPRemoval = 50;
 
 		[Desc("Experience granted to the capturing actor.")]
 		public readonly int Experience = 0;
@@ -68,49 +73,49 @@ namespace OpenRA.Mods.AS.Warheads
 
 				var capturable = a.TraitsImplementing<Capturable>()
 					.FirstOrDefault(c => !c.IsTraitDisabled && c.Info.Types.Overlaps(CaptureTypes));
-				var building = a.TraitOrDefault<Building>();
-				var health = a.Trait<Health>();
 
-				if (a.IsDead || capturable == null || capturable.BeingCaptured)
-					continue;
-
-				if (building != null && !building.Lock())
+				if (a.IsDead || capturable == null)
 					continue;
 
 				firedBy.World.AddFrameEndTask(w =>
 				{
-					if (building != null && building.Locked)
-						building.Unlock();
 
-					if (a.IsDead || capturable.BeingCaptured)
+					if (a.IsDead)
 						return;
 
-					var lowEnoughHealth = health.HP <= capturable.Info.CaptureThreshold * health.MaxHP / 100;
-					if (IgnoreCaptureThreshold || lowEnoughHealth || a.Owner.NonCombatant)
+					if (SabotageThreshold > 0 && !a.Owner.NonCombatant)
 					{
-						var oldOwner = a.Owner;
+						var health = a.Trait<IHealth>();
 
-						a.ChangeOwner(firedBy.Owner);
-
-						foreach (var t in a.TraitsImplementing<INotifyCapture>())
-							t.OnCapture(a, firedBy, oldOwner, a.Owner);
-
-						if (building != null && building.Locked)
-							building.Unlock();
-
-						if (firedBy.Owner.Stances[oldOwner].HasStance(ExperienceStances))
+						// Cast to long to avoid overflow when multiplying by the health
+						if (100 * (long)health.HP > SabotageThreshold * (long)health.MaxHP)
 						{
-							var exp = firedBy.TraitOrDefault<GainsExperience>();
-							if (exp != null)
-								exp.GiveExperience(Experience);
-						}
+							var damage = (int)((long)health.MaxHP * SabotageHPRemoval / 100);
+							a.InflictDamage(firedBy, new Damage(damage));
 
-						if (firedBy.Owner.Stances[oldOwner].HasStance(PlayerExperienceStances))
-						{
-							var exp = firedBy.Owner.PlayerActor.TraitOrDefault<PlayerExperience>();
-							if (exp != null)
-								exp.GiveExperience(PlayerExperience);
+							return;
 						}
+					}
+
+					var oldOwner = a.Owner;
+
+					a.ChangeOwner(firedBy.Owner);
+
+					foreach (var t in a.TraitsImplementing<INotifyCapture>())
+						t.OnCapture(a, firedBy, oldOwner, a.Owner);
+
+					if (firedBy.Owner.Stances[oldOwner].HasStance(ExperienceStances))
+					{
+						var exp = firedBy.TraitOrDefault<GainsExperience>();
+						if (exp != null)
+							exp.GiveExperience(Experience);
+					}
+
+					if (firedBy.Owner.Stances[oldOwner].HasStance(PlayerExperienceStances))
+					{
+						var exp = firedBy.Owner.PlayerActor.TraitOrDefault<PlayerExperience>();
+						if (exp != null)
+							exp.GiveExperience(PlayerExperience);
 					}
 				});
 			}
