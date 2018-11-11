@@ -73,7 +73,7 @@ namespace OpenRA.Mods.Common.AI
 
 					if (sp.Info.Cost != 0 && playerResource.Cash + playerResource.Resources < sp.Info.Cost)
 					{
-						HackyAI.BotDebug("AI: {1} can't afford the activation of support power {0}. Delaying rescan.", sp.Info.OrderName, player.PlayerName);
+						AIUtils.BotDebug("AI: {1} can't afford the activation of support power {0}. Delaying rescan.", sp.Info.OrderName, player.PlayerName);
 						waitingPowers[sp] += powerDecision.GetNextScanTime(ai);
 
 						continue;

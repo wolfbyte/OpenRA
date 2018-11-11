@@ -12,8 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Mods.Common;
 using OpenRA.Mods.Common.Traits;
-using OpenRA.Traits;
 using OpenRA.Primitives;
+using OpenRA.Traits;
 
 namespace OpenRA.Mods.AS.Warheads
 {
@@ -79,7 +79,6 @@ namespace OpenRA.Mods.AS.Warheads
 
 				firedBy.World.AddFrameEndTask(w =>
 				{
-
 					if (a.IsDead)
 						return;
 
@@ -102,7 +101,7 @@ namespace OpenRA.Mods.AS.Warheads
 					a.ChangeOwner(firedBy.Owner);
 
 					foreach (var t in a.TraitsImplementing<INotifyCapture>())
-						t.OnCapture(a, firedBy, oldOwner, a.Owner);
+						t.OnCapture(a, firedBy, oldOwner, a.Owner, CaptureTypes);
 
 					if (firedBy.Owner.Stances[oldOwner].HasStance(ExperienceStances))
 					{

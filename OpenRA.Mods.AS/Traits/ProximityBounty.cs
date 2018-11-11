@@ -141,7 +141,7 @@ namespace OpenRA.Mods.AS.Traits
 				gpb.Collectors.Add(this);
 		}
 
-		void INotifyOtherProduction.UnitProducedByOther(Actor self, Actor producer, Actor produced, string productionType)
+		void INotifyOtherProduction.UnitProducedByOther(Actor self, Actor producer, Actor produced, string productionType, TypeDictionary init)
 		{
 			// If the produced Actor doesn't occupy space, it can't be in range
 			if (produced.OccupiesSpace == null)

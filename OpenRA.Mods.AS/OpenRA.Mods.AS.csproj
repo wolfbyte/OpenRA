@@ -80,7 +80,6 @@
     <Compile Include="Duplicates\Projectiles\BulletAS.cs" />
     <Compile Include="Duplicates\Traits\EjectOnDeathAS.cs" />
     <Compile Include="Duplicates\Traits\Render\WithIdleOverlayAS.cs" />
-    <Compile Include="Duplicates\Traits\Sound\AnnounceOnBuildAS.cs" />
     <Compile Include="Duplicates\Traits\Sound\AnnounceOnKillAS.cs" />
     <Compile Include="Effects\AirstrikePowerASEffect.cs" />
     <Compile Include="Effects\WarheadTrailProjectileEffect.cs" />

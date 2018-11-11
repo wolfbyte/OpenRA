@@ -144,7 +144,7 @@ namespace OpenRA.Mods.AS.Traits
 				collectables.Add(trait);
 		}
 
-		void INotifyOtherProduction.UnitProducedByOther(Actor self, Actor producer, Actor produced, string productionType)
+		void INotifyOtherProduction.UnitProducedByOther(Actor self, Actor producer, Actor produced, string productionType, TypeDictionary init)
 		{
 			if (produced.OccupiesSpace == null)
 				return;
