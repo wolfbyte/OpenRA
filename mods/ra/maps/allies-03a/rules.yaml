@@ -56,13 +56,6 @@ CAMERA.VeryLarge:
 	RevealsShroud:
 		Range: 40c0
 
-MONEYCRATE:
-	Tooltip:
-		Name: Crate
-	WithCrateBody:
-	RenderSprites:
-		Image: scrate
-
 E1.Autotarget:
 	Inherits: E1
 	Buildable:

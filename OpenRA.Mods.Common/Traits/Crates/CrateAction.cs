@@ -15,7 +15,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
 {
-	public class CrateActionInfo : ITraitInfo
+	public class CrateActionInfo : ConditionalTraitInfo
 	{
 		[Desc("Chance of getting this crate, assuming the collector is compatible.")]
 		public readonly int SelectionShares = 10;
@@ -27,7 +27,10 @@ namespace OpenRA.Mods.Common.Traits
 		[PaletteReference] public readonly string Palette = "effect";
 
 		[Desc("Audio clip to play when the crate is collected.")]
-		public readonly string Notification = null;
+		public readonly string Sound = null;
+
+		[Desc("Notification to play when the crate is collected.")]
+		[NotificationReference("Speech")] public readonly string Notification = null;
 
 		[Desc("The earliest time (in ticks) that this crate action can occur on.")]
 		public readonly int TimeDelay = 0;
@@ -38,29 +41,31 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Actor types that this crate action will not occur for.")]
 		[ActorReference] public string[] ExcludedActorTypes = { };
 
-		public virtual object Create(ActorInitializer init) { return new CrateAction(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new CrateAction(init.Self, this); }
 	}
 
-	public class CrateAction
+	public class CrateAction : ConditionalTrait<CrateActionInfo>
 	{
 		readonly Actor self;
-		readonly CrateActionInfo info;
 
 		public CrateAction(Actor self, CrateActionInfo info)
+			: base(info)
 		{
 			this.self = self;
-			this.info = info;
 		}
 
 		public int GetSelectionSharesOuter(Actor collector)
 		{
-			if (self.World.WorldTick < info.TimeDelay)
+			if (IsTraitDisabled)
 				return 0;
 
-			if (info.ExcludedActorTypes.Contains(collector.Info.Name))
+			if (self.World.WorldTick < Info.TimeDelay)
 				return 0;
 
-			if (info.Prerequisites.Any() && !collector.Owner.PlayerActor.Trait<TechTree>().HasPrerequisites(info.Prerequisites))
+			if (Info.ExcludedActorTypes.Contains(collector.Info.Name))
+				return 0;
+
+			if (Info.Prerequisites.Any() && !collector.Owner.PlayerActor.Trait<TechTree>().HasPrerequisites(Info.Prerequisites))
 				return 0;
 
 			return GetSelectionShares(collector);
@@ -68,15 +73,19 @@ namespace OpenRA.Mods.Common.Traits
 
 		public virtual int GetSelectionShares(Actor collector)
 		{
-			return info.SelectionShares;
+			return Info.SelectionShares;
 		}
 
 		public virtual void Activate(Actor collector)
 		{
-			Game.Sound.PlayToPlayer(SoundType.World, collector.Owner, info.Notification);
+			Game.Sound.Play(SoundType.World, Info.Sound, self.CenterPosition);
 
-			if (info.Effect != null)
-				collector.World.AddFrameEndTask(w => w.Add(new CrateEffect(collector, info.Effect, info.Palette)));
+			if (!string.IsNullOrEmpty(Info.Notification))
+				Game.Sound.PlayNotification(self.World.Map.Rules, collector.Owner, "Speech",
+					Info.Notification, collector.Owner.Faction.InternalName);
+
+			if (Info.Effect != null)
+				collector.World.AddFrameEndTask(w => w.Add(new CrateEffect(collector, Info.Effect, Info.Palette)));
 		}
 	}
 }

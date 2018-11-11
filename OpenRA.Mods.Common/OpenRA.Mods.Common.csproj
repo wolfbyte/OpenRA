@@ -126,8 +126,9 @@
     <Compile Include="AI\AIUtils.cs" />
     <Compile Include="AI\AttackOrFleeFuzzy.cs" />
     <Compile Include="AI\BaseBuilder.cs" />
+    <Compile Include="AI\BotOrderManager.cs" />
     <Compile Include="AI\HackyAI.cs" />
-    <Compile Include="AI\AIHarvesterManager.cs" />
+    <Compile Include="Traits\BotModules\HarvesterBotModule.cs" />
     <Compile Include="AI\AISupportPowerManager.cs" />
     <Compile Include="AI\Squad.cs" />
     <Compile Include="AI\StateMachine.cs" />
@@ -277,8 +278,7 @@
     <Compile Include="Traits\AcceptsDeliveredExperience.cs" />
     <Compile Include="Traits\Air\Aircraft.cs" />
     <Compile Include="Traits\Air\AttackBomber.cs" />
-    <Compile Include="Traits\Air\AttackHeli.cs" />
-    <Compile Include="Traits\Air\AttackPlane.cs" />
+    <Compile Include="Traits\Air\AttackAircraft.cs" />
     <Compile Include="Traits\Air\FlyAwayOnIdle.cs" />
     <Compile Include="Traits\Air\FallsToEarth.cs" />
     <Compile Include="Traits\Air\ReturnOnIdle.cs" />
@@ -318,8 +318,12 @@
     <Compile Include="Traits\CapturableProgressBar.cs" />
     <Compile Include="Traits\CaptureProgressBar.cs" />
     <Compile Include="Traits\CaptureProgressBlink.cs" />
+    <Compile Include="Traits\Multipliers\CreatesShroudMultiplier.cs" />
+    <Compile Include="Traits\Multipliers\RevealsShroudMultiplier.cs" />
     <Compile Include="Traits\RepairsUnits.cs" />
+    <Compile Include="Traits\Rearmable.cs" />
     <Compile Include="Traits\Burns.cs" />
+    <Compile Include="Traits\CarryableHarvester.cs" />
     <Compile Include="Traits\ChangesTerrain.cs" />
     <Compile Include="Traits\CommandBarBlacklist.cs" />
     <Compile Include="Traits\Conditions\GrantExternalConditionToCrusher.cs" />
@@ -512,7 +516,7 @@
     <Compile Include="Traits\SmokeTrailWhenDamaged.cs" />
     <Compile Include="Traits\Sound\ActorLostNotification.cs" />
     <Compile Include="Traits\Sound\AmbientSound.cs" />
-    <Compile Include="Traits\Sound\AnnounceOnBuild.cs" />
+    <Compile Include="Traits\Sound\VoiceAnnouncement.cs" />
     <Compile Include="Traits\Sound\AnnounceOnKill.cs" />
     <Compile Include="Traits\Sound\AnnounceOnSeen.cs" />
     <Compile Include="Traits\Sound\CaptureNotification.cs" />
@@ -559,6 +563,7 @@
     <Compile Include="Traits\World\DomainIndex.cs" />
     <Compile Include="Traits\World\Locomotor.cs" />
     <Compile Include="Traits\World\JumpjetLocomotor.cs" />
+    <Compile Include="Traits\World\PaletteFromEmbeddedSpritePalette.cs" />
     <Compile Include="Traits\World\SubterraneanLocomotor.cs" />
     <Compile Include="Traits\World\LoadWidgetAtGameStart.cs" />
     <Compile Include="Traits\World\MPStartLocations.cs" />
@@ -567,6 +572,7 @@
     <Compile Include="Traits\World\PaletteFromGimpOrJascFile.cs" />
     <Compile Include="Traits\World\PaletteFromPng.cs" />
     <Compile Include="Traits\World\PaletteFromRGBA.cs" />
+    <Compile Include="Traits\World\TerrainRenderer.cs" />
     <Compile Include="Traits\World\ValidateOrder.cs" />
     <Compile Include="Pathfinder\CellInfoLayerPool.cs" />
     <Compile Include="Pathfinder\Constants.cs" />
@@ -590,7 +596,14 @@
     <Compile Include="Traits\World\WeatherOverlay.cs" />
     <Compile Include="Traits\World\ActorSpawnManager.cs" />
     <Compile Include="Traits\ActorSpawner.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RemovedDemolishLocking.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RenameCrateActionNotification.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\CloakRequiresConditionToPause.cs" />
     <Compile Include="UpdateRules\Rules\20180923\MergeCaptureTraits.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RemovedNotifyBuildComplete.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\ChangeTakeOffSoundAndLandingSound.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\AddCarryableHarvester.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RequireProductionType.cs" />
     <Compile Include="UtilityCommands\CheckYaml.cs" />
     <Compile Include="UtilityCommands\CheckCodeStyle.cs" />
     <Compile Include="UtilityCommands\ConvertPngToShpCommand.cs" />
@@ -925,6 +938,13 @@
     <Compile Include="UpdateRules\Rules\20180923\DefineNotificationDefaults.cs" />
     <Compile Include="UpdateRules\Rules\20180923\RenameEditorTilesetFilter.cs" />
     <Compile Include="UpdateRules\Rules\20180923\MergeRearmAndRepairAnimation.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\LowPowerSlowdownToModifier.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RemoveHealthPercentageRing.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RemoveRepairBuildingsFromAircraft.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\AddRearmable.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\MergeAttackPlaneAndHeli.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\AddBotOrderManager.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\AddHarvesterBotModule.cs" />
     <Compile Include="Traits\Player\PlayerResources.cs" />
     <Compile Include="UtilityCommands\DumpSequenceSheetsCommand.cs" />
     <Compile Include="Traits\Render\WithBuildingRepairDecoration.cs" />

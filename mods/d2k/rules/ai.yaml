@@ -1,4 +1,5 @@
 Player:
+	BotOrderManager:
 	HackyAI@Omnius:
 		Name: Omnius
 		Type: omnius
@@ -373,3 +374,14 @@ Player:
 				OrderName: ProduceActorPower.Fremen
 				Consideration@1:
 					Against: Ally
+	GrantConditionOnBotOwner@omnius:
+		Condition: enable-omnius-ai
+		Bots: omnius
+	GrantConditionOnBotOwner@vidious:
+		Condition: enable-vidious-ai
+		Bots: vidious
+	GrantConditionOnBotOwner@gladius:
+		Condition: enable-gladius-ai
+		Bots: gladius
+	HarvesterBotModule:
+		RequiresCondition: enable-omnius-ai || enable-vidious-ai || enable-gladius-ai
