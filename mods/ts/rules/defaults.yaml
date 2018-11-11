@@ -350,7 +350,9 @@
 	Inherits@2: ^EmpDisable
 	GivesBuildableArea:
 		AreaTypes: building
+	CaptureManager:
 	Capturable:
+		Types: building
 	RepairableBuilding:
 		RepairStep: 700
 		PlayerExperience: 25
@@ -713,10 +715,10 @@
 		Action: Kill
 	DrawLineToTarget:
 	Mobile:
+		RequiresCondition: !empdisable && !being-captured
+		Locomotor: wheeled
 		TurnSpeed: 5
 		Voice: Move
-		RequiresCondition: !empdisable
-		Locomotor: wheeled
 	Selectable:
 		Bounds: 40,24
 	WithTextControlGroupDecoration:
@@ -737,9 +739,10 @@
 		Voice: Move
 	HiddenUnderFog:
 	ActorLostNotification:
+	CaptureManager:
+		BeingCapturedCondition: being-captured
 	Capturable:
 		Types: Vehicle
-		CaptureThreshold: 100
 		CancelActivity: True
 	Guard:
 		Voice: Move
@@ -1133,6 +1136,8 @@
 	-Capturable:
 	-GivesBuildableArea:
 	-MustBeDestroyed:
+	WithMakeAnimation:
+		Condition: build-incomplete
 	-WithSpriteBody:
 	WithGateSpriteBody:
 		OpenSequence: open
@@ -1148,10 +1153,10 @@
 	MapEditorData:
 		Categories: Wall
 	Gate:
+		PauseOnCondition: empdisable || build-incomplete
 		OpeningSound: gateup1.aud
 		ClosingSound: gatedwn1.aud
 		BlocksProjectilesHeight: 768
-		PauseOnCondition: empdisable
 
 ^Gate_A:
 	Inherits: ^Gate
