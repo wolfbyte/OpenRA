@@ -98,7 +98,6 @@
     <Compile Include="Traits\Berserkable.cs" />
     <Compile Include="Traits\CashCollectable.cs" />
     <Compile Include="Traits\CashCollector.cs" />
-    <Compile Include="Traits\Conditions\GrantConditionOnProduction.cs" />
     <Compile Include="Traits\DamagedByTintedCells.cs" />
     <Compile Include="Traits\DelayedWeaponAttachable.cs" />
     <Compile Include="Traits\ChronoResourceDelivery.cs" />
