@@ -325,6 +325,12 @@ namespace OpenRA.Mods.Common.Traits
 	}
 
 	[RequireExplicitImplementation]
+	public interface IProductionCostModifierInfo : ITraitInfo { Pair<int, int> GetProductionCostModifier(TechTree techTree, string queue); }
+
+	[RequireExplicitImplementation]
+	public interface IProductionTimeModifierInfo : ITraitInfo { Pair<int, int> GetProductionTimeModifier(TechTree techTree, string queue); }
+
+	[RequireExplicitImplementation]
 	public interface ICashTricklerModifier { int GetCashTricklerModifier(); }
 
 	[RequireExplicitImplementation]
