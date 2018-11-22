@@ -31,7 +31,7 @@ The plugin is maintained by
    > DelayedWeapon system
 
  * Mustafa Alperen Seki (MustaphaTR)
-   > GrantConditionOnProduction
+   > ProductionCost/TimeMultiplier
    > mindcontrol traits cleanup
 
  * Pavel Penev (penev92)
