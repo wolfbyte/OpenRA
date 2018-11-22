@@ -101,6 +101,10 @@ namespace OpenRA.Mods.Common.Traits
 				if (order.Target.Type != TargetType.Actor)
 					return;
 
+				// Aircraft handle Repair orders directly in the Aircraft trait
+				if (self.Info.HasTraitInfo<AircraftInfo>())
+					return;
+
 				if (!CanRepairAt(order.Target.Actor) || (!CanRepair() && !CanRearm()))
 					return;
 
@@ -108,7 +112,7 @@ namespace OpenRA.Mods.Common.Traits
 					self.CancelActivity();
 
 				self.SetTargetLine(order.Target, Color.Green);
-				self.QueueActivity(new WaitForTransport(self, ActivityUtils.SequenceActivities(new MoveAdjacentTo(self, order.Target),
+				self.QueueActivity(new WaitForTransport(self, ActivityUtils.SequenceActivities(movement.MoveToTarget(self, order.Target),
 					new CallFunc(() => AfterReachActivities(self, order, movement)))));
 
 				TryCallTransport(self, order.Target, new CallFunc(() => AfterReachActivities(self, order, movement)));

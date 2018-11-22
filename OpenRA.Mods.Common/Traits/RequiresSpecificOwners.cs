@@ -10,15 +10,17 @@
 #endregion
 
 using System.Collections.Generic;
+using OpenRA.Traits;
 
-namespace OpenRA.Mods.Common.UpdateRules.Rules
+namespace OpenRA.Mods.Common.Traits
 {
-	public class ScaleModHealthBy10 : ScaleModHealth
+	[Desc("Can be used to enforce specific owners (like 'Neutral' or 'Creeps') for this actor.")]
+	public class RequiresSpecificOwnersInfo : TraitInfo<RequiresSpecificOwners>
 	{
-		public override IEnumerable<string> BeforeUpdate(ModData modData)
-		{
-			scale = 10;
-			return base.BeforeUpdate(modData);
-		}
+		[Desc("Only allow players listed here as owners.")]
+		[FieldLoader.Require]
+		public readonly HashSet<string> ValidOwnerNames = new HashSet<string>();
 	}
+
+	public class RequiresSpecificOwners { }
 }

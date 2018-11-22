@@ -505,6 +505,7 @@
     <Compile Include="Traits\RepairsBridges.cs" />
     <Compile Include="Traits\Replaceable.cs" />
     <Compile Include="Traits\Replacement.cs" />
+    <Compile Include="Traits\RequiresSpecificOwners.cs" />
     <Compile Include="Traits\SeedsResource.cs" />
     <Compile Include="Traits\StoresResources.cs" />
     <Compile Include="Traits\Render\SelectionDecorations.cs" />
@@ -597,6 +598,7 @@
     <Compile Include="Traits\World\ActorSpawnManager.cs" />
     <Compile Include="Traits\ActorSpawner.cs" />
     <Compile Include="UpdateRules\Rules\20180923\RemovedDemolishLocking.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RemoveNegativeDamageFullHealthCheck.cs" />
     <Compile Include="UpdateRules\Rules\20180923\RenameCrateActionNotification.cs" />
     <Compile Include="UpdateRules\Rules\20180923\CloakRequiresConditionToPause.cs" />
     <Compile Include="UpdateRules\Rules\20180923\MergeCaptureTraits.cs" />
@@ -754,7 +756,6 @@
     <Compile Include="Widgets\VqaPlayerWidget.cs" />
     <Compile Include="Traits\Render\WithInfantryBody.cs" />
     <Compile Include="UtilityCommands\CheckSequenceSprites.cs" />
-    <Compile Include="UtilityCommands\FixClassicTilesets.cs" />
     <Compile Include="Graphics\TilesetSpecificSpriteSequence.cs" />
     <Compile Include="Traits\Pluggable.cs" />
     <Compile Include="Traits\Plug.cs" />
