@@ -33,10 +33,10 @@ namespace OpenRA.Mods.AS.Traits
 
 		Pair<int, int> IProductionCostModifierInfo.GetProductionCostModifier(TechTree techTree, string queue)
 		{
-			if ((Queue.Any() || Queue.Contains(queue)) && (Prerequisites.Any() || techTree.HasPrerequisites(Prerequisites)))
+			if ((!Queue.Any() || Queue.Contains(queue)) && (!Prerequisites.Any() || techTree.HasPrerequisites(Prerequisites)))
 				return new Pair<int, int>(Multiplier, ExtraCost);
 
-			return new Pair<int, int>(0, 0);
+			return new Pair<int, int>(100, 0);
 		}
 	}
 
