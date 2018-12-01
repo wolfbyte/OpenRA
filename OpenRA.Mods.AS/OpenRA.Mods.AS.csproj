@@ -77,6 +77,7 @@
     <Compile Include="Activities\EnterTeleportNetwork.cs" />
     <Compile Include="Activities\FallDown.cs" />
     <Compile Include="Activities\HeliFlyCircleTimed.cs" />
+    <Compile Include="Commands\TauntCommands.cs" />
     <Compile Include="Duplicates\Projectiles\BulletAS.cs" />
     <Compile Include="Duplicates\Traits\EjectOnDeathAS.cs" />
     <Compile Include="Duplicates\Traits\Render\WithIdleOverlayAS.cs" />
@@ -111,6 +112,7 @@
     <Compile Include="Traits\ExplodeWeapon.cs" />
     <Compile Include="Traits\InfiltrateForProxyActor.cs" />
     <Compile Include="Traits\DelayedWeaponTrigger.cs" />
+    <Compile Include="Traits\Player\Taunts.cs" />
     <Compile Include="Traits\Player\TeleportNetworkManager.cs" />
     <Compile Include="Traits\TeleportNetwork.cs" />
     <Compile Include="Traits\TeleportNetworkPrimaryExit.cs" />
