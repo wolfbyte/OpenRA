@@ -41,7 +41,7 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		readonly World world;
 		readonly Player player;
-		readonly PlayerResources playerResource;
+		PlayerResources playerResource;
 		FrozenActorLayer frozenLayer;
 		SupportPowerManager supportPowerManager;
 		Dictionary<SupportPowerInstance, int> waitingPowers = new Dictionary<SupportPowerInstance, int>();
@@ -52,7 +52,10 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			world = self.World;
 			player = self.Owner;
-			playerResource = player.PlayerActor.Trait<PlayerResources>();
+			self.World.AddFrameEndTask(w =>
+			{
+				playerResource = player.PlayerActor.Trait<PlayerResources>();
+			});
 		}
 
 		protected override void TraitEnabled(Actor self)
