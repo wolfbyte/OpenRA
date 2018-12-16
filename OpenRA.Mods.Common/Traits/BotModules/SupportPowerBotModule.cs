@@ -41,9 +41,9 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		readonly World world;
 		readonly Player player;
+		readonly PlayerResources playerResource;
 		FrozenActorLayer frozenLayer;
 		SupportPowerManager supportPowerManager;
-		readonly PlayerResources playerResource;
 		Dictionary<SupportPowerInstance, int> waitingPowers = new Dictionary<SupportPowerInstance, int>();
 		Dictionary<string, SupportPowerDecision> powerDecisions = new Dictionary<string, SupportPowerDecision>();
 
