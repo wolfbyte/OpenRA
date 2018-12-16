@@ -52,7 +52,7 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			world = self.World;
 			player = self.Owner;
-			playerResource = p.PlayerActor.Trait<PlayerResources>();
+			playerResource = player.PlayerActor.Trait<PlayerResources>();
 		}
 
 		protected override void TraitEnabled(Actor self)
@@ -91,7 +91,7 @@ namespace OpenRA.Mods.Common.Traits
 					if (sp.Info.Cost != 0 && playerResource.Cash + playerResource.Resources < sp.Info.Cost)
 					{
 						AIUtils.BotDebug("AI: {1} can't afford the activation of support power {0}. Delaying rescan.", sp.Info.OrderName, player.PlayerName);
-						waitingPowers[sp] += powerDecision.GetNextScanTime(ai);
+						waitingPowers[sp] += powerDecision.GetNextScanTime(world);
 
 						continue;
 					}
