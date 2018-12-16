@@ -48,6 +48,7 @@
 			400: rank-veteran
 			800: rank-veteran
 			1600: rank-veteran
+		LevelUpImage: crate-effects
 	GrantCondition@RANK-ELITE:
 		RequiresCondition: rank-veteran >= 4
 		Condition: rank-elite
@@ -439,7 +440,7 @@
 		IdleSequences: idle1,idle2
 		StandSequences: stand,stand2
 	DetectCloaked:
-		CloakTypes: Hijacker
+		CloakTypes: Thief
 
 ^CivInfantry:
 	Inherits: ^Infantry
@@ -916,6 +917,8 @@
 	MapEditorData:
 		ExcludeTilesets: INTERIOR
 		Categories: Tree
+	RequiresSpecificOwners:
+		ValidOwnerNames: Neutral
 
 ^TreeHusk:
 	Inherits@1: ^SpriteActor
@@ -936,6 +939,8 @@
 	ScriptTriggers:
 	MapEditorData:
 		Categories: Tree
+	RequiresSpecificOwners:
+		ValidOwnerNames: Neutral
 
 ^BasicHusk:
 	Inherits@1: ^SpriteActor
@@ -961,8 +966,11 @@
 	CaptureManager:
 	Capturable:
 		Types: husk
-		ValidStances: Enemy, Neutral, Ally
+		ValidStances: Enemy, Neutral
 	TransformOnCapture:
+		ForceHealthPercentage: 25
+	InfiltrateForTransform:
+		Types: Husk
 		ForceHealthPercentage: 25
 	WithColoredOverlay@IDISABLE:
 		Palette: disabled
@@ -1057,6 +1065,8 @@
 	MapEditorData:
 		RequireTilesets: DESERT
 		Categories: Decoration
+	RequiresSpecificOwners:
+		ValidOwnerNames: Neutral
 
 ^DesertCivBuilding:
 	Inherits: ^CivBuilding

@@ -157,6 +157,7 @@ namespace OpenRA.Server
 					Map = settings.Map,
 					ServerName = settings.Name,
 					EnableSingleplayer = settings.EnableSingleplayer || !dedicated,
+					EnableSyncReports = settings.EnableSyncReports,
 					GameUid = Guid.NewGuid().ToString(),
 					Dedicated = dedicated
 				}
@@ -350,7 +351,7 @@ namespace OpenRA.Server
 					return;
 				}
 
-				if (ModData.Manifest.Metadata.Version != handshake.Version && !LobbyInfo.GlobalSettings.AllowVersionMismatch)
+				if (ModData.Manifest.Metadata.Version != handshake.Version)
 				{
 					Log.Write("server", "Rejected connection from {0}; Not running the same version.",
 						newConn.Socket.RemoteEndPoint);

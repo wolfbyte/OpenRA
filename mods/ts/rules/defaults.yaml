@@ -21,6 +21,7 @@
 		Conditions:
 			500: rank
 			1000: rank
+		LevelUpImage: crate-effects
 	GrantCondition@RANK-VETERAN:
 		RequiresCondition: rank == 1
 		Condition: rank-veteran
@@ -983,6 +984,8 @@
 		Name: Tree
 	MapEditorData:
 		Categories: Tree
+	RequiresSpecificOwners:
+		ValidOwnerNames: Neutral
 
 ^Rock:
 	Inherits@1: ^SpriteActor
@@ -1001,6 +1004,8 @@
 		Name: Rock
 	MapEditorData:
 		Categories: Decoration
+	RequiresSpecificOwners:
+		ValidOwnerNames: Neutral
 
 ^Decoration:
 	Inherits@1: ^SpriteActor
@@ -1014,6 +1019,8 @@
 		Dimensions: 1, 1
 	MapEditorData:
 		Categories: Decoration
+	RequiresSpecificOwners:
+		ValidOwnerNames: Neutral
 
 ^Box:
 	Inherits: ^Decoration

@@ -126,10 +126,9 @@
     <Compile Include="AI\AIUtils.cs" />
     <Compile Include="AI\AttackOrFleeFuzzy.cs" />
     <Compile Include="AI\BaseBuilder.cs" />
-    <Compile Include="AI\BotOrderManager.cs" />
     <Compile Include="AI\HackyAI.cs" />
     <Compile Include="Traits\BotModules\HarvesterBotModule.cs" />
-    <Compile Include="AI\AISupportPowerManager.cs" />
+    <Compile Include="Traits\BotModules\SupportPowerBotModule.cs" />
     <Compile Include="AI\Squad.cs" />
     <Compile Include="AI\StateMachine.cs" />
     <Compile Include="AI\States\AirStates.cs" />
@@ -137,13 +136,12 @@
     <Compile Include="AI\States\NavyStates.cs" />
     <Compile Include="AI\States\ProtectionStates.cs" />
     <Compile Include="AI\States\StateBase.cs" />
-    <Compile Include="AI\SupportPowerDecision.cs" />
+    <Compile Include="Traits\BotModules\BotModuleLogic\SupportPowerDecision.cs" />
     <Compile Include="AudioLoaders\AudLoader.cs" />
     <Compile Include="AudioLoaders\VocLoader.cs" />
     <Compile Include="AudioLoaders\WavLoader.cs" />
     <Compile Include="Effects\Beacon.cs" />
     <Compile Include="Effects\ContrailFader.cs" />
-    <Compile Include="Effects\CrateEffect.cs" />
     <Compile Include="Effects\RevealShroudEffect.cs" />
     <Compile Include="Effects\FlashTarget.cs" />
     <Compile Include="Effects\FloatingText.cs" />
@@ -152,7 +150,6 @@
     <Compile Include="Effects\SpriteEffect.cs" />
     <Compile Include="FileFormats\Png.cs" />
     <Compile Include="Graphics\RailgunRenderable.cs" />
-    <Compile Include="Effects\LaunchEffect.cs" />
     <Compile Include="Lint\CheckNotifications.cs" />
     <Compile Include="Projectiles\AreaBeam.cs" />
     <Compile Include="Projectiles\Bullet.cs" />
@@ -318,6 +315,8 @@
     <Compile Include="Traits\CapturableProgressBar.cs" />
     <Compile Include="Traits\CaptureProgressBar.cs" />
     <Compile Include="Traits\CaptureProgressBlink.cs" />
+    <Compile Include="Traits\Conditions\GrantConditionOnPlayerResources.cs" />
+    <Compile Include="Traits\GrantExternalConditionToProduced.cs" />
     <Compile Include="Traits\Multipliers\CreatesShroudMultiplier.cs" />
     <Compile Include="Traits\Multipliers\RevealsShroudMultiplier.cs" />
     <Compile Include="Traits\RepairsUnits.cs" />
@@ -599,6 +598,7 @@
     <Compile Include="Traits\ActorSpawner.cs" />
     <Compile Include="UpdateRules\Rules\20180923\RemovedDemolishLocking.cs" />
     <Compile Include="UpdateRules\Rules\20180923\RemoveNegativeDamageFullHealthCheck.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RemoveResourceExplodeModifier.cs" />
     <Compile Include="UpdateRules\Rules\20180923\RenameCrateActionNotification.cs" />
     <Compile Include="UpdateRules\Rules\20180923\CloakRequiresConditionToPause.cs" />
     <Compile Include="UpdateRules\Rules\20180923\MergeCaptureTraits.cs" />
@@ -622,6 +622,8 @@
     <Compile Include="Warheads\ChangeOwnerWarhead.cs" />
     <Compile Include="UtilityCommands\PngSheetExportMetadataCommand.cs" />
     <Compile Include="UtilityCommands\PngSheetImportMetadataCommand.cs" />
+    <Compile Include="Widgets\Logic\Editor\ActorEditLogic.cs" />
+    <Compile Include="Widgets\ExponentialSliderWidget.cs" />
     <Compile Include="Widgets\Logic\MusicHotkeyLogic.cs" />
     <Compile Include="WorldExtensions.cs" />
     <Compile Include="UtilityCommands\GetMapHashCommand.cs" />
@@ -944,8 +946,9 @@
     <Compile Include="UpdateRules\Rules\20180923\RemoveRepairBuildingsFromAircraft.cs" />
     <Compile Include="UpdateRules\Rules\20180923\AddRearmable.cs" />
     <Compile Include="UpdateRules\Rules\20180923\MergeAttackPlaneAndHeli.cs" />
-    <Compile Include="UpdateRules\Rules\20180923\AddBotOrderManager.cs" />
-    <Compile Include="UpdateRules\Rules\20180923\AddHarvesterBotModule.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\ExtractHackyAIModules.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\DefineLevelUpImageDefault.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RemovedAutoCarryallCircleTurnSpeed.cs" />
     <Compile Include="Traits\Player\PlayerResources.cs" />
     <Compile Include="UtilityCommands\DumpSequenceSheetsCommand.cs" />
     <Compile Include="Traits\Render\WithBuildingRepairDecoration.cs" />

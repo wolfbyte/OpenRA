@@ -19,7 +19,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.AI
 {
-	public sealed class HackyAIInfo : IBotInfo, ITraitInfo, Requires<BotOrderManagerInfo>
+	public sealed class HackyAIInfo : IBotInfo, ITraitInfo
 	{
 		public class UnitCategories
 		{
@@ -70,6 +70,9 @@ namespace OpenRA.Mods.Common.AI
 
 		[Desc("Minimum delay (in ticks) between creating squads.")]
 		public readonly int MinimumAttackForceDelay = 0;
+
+		[Desc("Minimum portion of pending orders to issue each tick (e.g. 5 issues at least 1/5th of all pending orders). Excess orders remain queued for subsequent ticks.")]
+		public readonly int MinOrderQuotientPerTick = 5;
 
 		[Desc("Minimum excess power the AI should try to maintain.")]
 		public readonly int MinimumExcessPower = 0;
@@ -184,11 +187,6 @@ namespace OpenRA.Mods.Common.AI
 		[Desc("What buildings should the AI have a maximum limit to build.")]
 		public readonly Dictionary<string, int> BuildingLimits = null;
 
-		// TODO Update OpenRA.Utility/Command.cs#L300 to first handle lists and also read nested ones
-		[Desc("Tells the AI how to use its support powers.")]
-		[FieldLoader.LoadUsing("LoadDecisions")]
-		public readonly List<SupportPowerDecision> SupportPowerDecisions = new List<SupportPowerDecision>();
-
 		[Desc("Actor types that can capture other actors (via `Captures` or `ExternalCaptures`).",
 			"Leave this empty to disable capturing.")]
 		public HashSet<string> CapturingActorTypes = new HashSet<string>();
@@ -222,17 +220,6 @@ namespace OpenRA.Mods.Common.AI
 			return FieldLoader.Load<BuildingCategories>(categories.Value);
 		}
 
-		static object LoadDecisions(MiniYaml yaml)
-		{
-			var ret = new List<SupportPowerDecision>();
-			var decisions = yaml.Nodes.FirstOrDefault(n => n.Key == "SupportPowerDecisions");
-			if (decisions != null)
-				foreach (var d in decisions.Value.Nodes)
-					ret.Add(new SupportPowerDecision(d.Value));
-
-			return ret;
-		}
-
 		string IBotInfo.Type { get { return Type; } }
 
 		string IBotInfo.Name { get { return Name; } }
@@ -242,6 +229,7 @@ namespace OpenRA.Mods.Common.AI
 
 	public sealed class HackyAI : ITick, IBot, INotifyDamage
 	{
+		// DEPRECATED: Modules should use World.LocalRandom.
 		public MersenneTwister Random { get; private set; }
 		public readonly HackyAIInfo Info;
 
@@ -258,10 +246,12 @@ namespace OpenRA.Mods.Common.AI
 		public List<Squad> Squads = new List<Squad>();
 		public Player Player { get; private set; }
 
+		readonly Queue<Order> orders = new Queue<Order>();
+
 		readonly Func<Actor, bool> isEnemyUnit;
 		readonly Predicate<Actor> unitCannotBeOrdered;
 
-		BotOrderManager botOrderManager;
+		IBotTick[] tickModules;
 
 		CPos initialBaseCenter;
 		PowerManager playerPower;
@@ -269,8 +259,6 @@ namespace OpenRA.Mods.Common.AI
 		int ticks;
 
 		BitArray resourceTypeIndices;
-
-		AISupportPowerManager supportPowerManager;
 
 		List<BaseBuilder> builders = new List<BaseBuilder>();
 
@@ -317,9 +305,7 @@ namespace OpenRA.Mods.Common.AI
 			IsEnabled = true;
 			playerPower = p.PlayerActor.TraitOrDefault<PowerManager>();
 			playerResource = p.PlayerActor.Trait<PlayerResources>();
-			botOrderManager = p.PlayerActor.Trait<BotOrderManager>();
-
-			supportPowerManager = new AISupportPowerManager(this, p);
+			tickModules = p.PlayerActor.TraitsImplementing<IBotTick>().ToArray();
 
 			foreach (var building in Info.BuildingQueues)
 				builders.Add(new BaseBuilder(this, building, p, playerPower, playerResource));
@@ -344,10 +330,15 @@ namespace OpenRA.Mods.Common.AI
 				resourceTypeIndices.Set(tileset.GetTerrainIndex(t.TerrainType), true);
 		}
 
-		// DEPRECATED: Bot modules should queue orders directly.
+		void IBot.QueueOrder(Order order)
+		{
+			orders.Enqueue(order);
+		}
+
+		// DEPRECATED: Modules should use IBot.QueueOrder instead
 		public void QueueOrder(Order order)
 		{
-			botOrderManager.QueueOrder(order);
+			orders.Enqueue(order);
 		}
 
 		ActorInfo ChooseRandomUnitToBuild(ProductionQueue queue)
@@ -531,10 +522,21 @@ namespace OpenRA.Mods.Common.AI
 
 			AssignRolesToIdleUnits(self);
 			SetRallyPointsForNewProductionBuildings(self);
-			supportPowerManager.TryToUseSupportPower(self);
 
 			foreach (var b in builders)
 				b.Tick();
+
+			// TODO: Add an option to include this in CheckSyncAroundUnsyncedCode.
+			// Checking sync for this is too expensive to include it by default,
+			// so it should be implemented as separate sub-option checkbox.
+			using (new PerfSample("tick_bots"))
+				foreach (var t in tickModules)
+					if (t.IsTraitEnabled())
+						t.BotTick(this);
+
+			var ordersToIssueThisTick = Math.Min((orders.Count + Info.MinOrderQuotientPerTick - 1) / Info.MinOrderQuotientPerTick, orders.Count);
+			for (var i = 0; i < ordersToIssueThisTick; i++)
+				World.IssueOrder(orders.Dequeue());
 		}
 
 		internal Actor FindClosestEnemy(WPos pos)

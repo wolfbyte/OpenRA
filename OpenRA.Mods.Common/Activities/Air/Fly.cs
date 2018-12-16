@@ -37,14 +37,15 @@ namespace OpenRA.Mods.Common.Activities
 			this.minRange = minRange;
 		}
 
-		public static void FlyToward(Actor self, Aircraft aircraft, int desiredFacing, WDist desiredAltitude)
+		public static void FlyToward(Actor self, Aircraft aircraft, int desiredFacing, WDist desiredAltitude, int turnSpeedOverride = -1)
 		{
 			desiredAltitude = new WDist(aircraft.CenterPosition.Z) + desiredAltitude - self.World.Map.DistanceAboveTerrain(aircraft.CenterPosition);
 
 			var move = aircraft.FlyStep(aircraft.Facing);
 			var altitude = aircraft.CenterPosition.Z;
 
-			aircraft.Facing = Util.TickFacing(aircraft.Facing, desiredFacing, aircraft.TurnSpeed);
+			var turnSpeed = turnSpeedOverride > -1 ? turnSpeedOverride : aircraft.TurnSpeed;
+			aircraft.Facing = Util.TickFacing(aircraft.Facing, desiredFacing, turnSpeed);
 
 			if (altitude != desiredAltitude.Length)
 			{
@@ -101,28 +102,6 @@ namespace OpenRA.Mods.Common.Activities
 		public override IEnumerable<Target> GetTargets(Actor self)
 		{
 			yield return target;
-		}
-	}
-
-	public class FlyAndContinueWithCirclesWhenIdle : Fly
-	{
-		public FlyAndContinueWithCirclesWhenIdle(Actor self, Target t)
-			: base(self, t) { }
-
-		public FlyAndContinueWithCirclesWhenIdle(Actor self, Target t, WDist minRange, WDist maxRange)
-			: base(self, t, minRange, maxRange) { }
-
-		public override Activity Tick(Actor self)
-		{
-			var activity = base.Tick(self);
-
-			if (activity == null && !IsCanceled)
-			{
-				self.QueueActivity(new FlyCircle(self));
-				activity = NextActivity;
-			}
-
-			return activity;
 		}
 	}
 }
