@@ -431,6 +431,7 @@ namespace OpenRA.Mods.Common.Traits
 		int ExitDelay { get; }
 	}
 
+	[RequireExplicitImplementation]
 	public interface INotifyObjectivesUpdated
 	{
 		void OnPlayerWon(Player winner);
@@ -457,6 +458,15 @@ namespace OpenRA.Mods.Common.Traits
 
 	[RequireExplicitImplementation]
 	public interface IBotTick { void BotTick(IBot bot); }
+
+	public interface IBotRespondToAttack { void RespondToAttack(IBot bot, Actor self, AttackInfo e); }
+
+	[RequireExplicitImplementation]
+	public interface IBotPositionsUpdated
+	{
+		void UpdatedBaseCenter(CPos newLocation);
+		void UpdatedDefenseCenter(CPos newLocation);
+	}
 
 	[RequireExplicitImplementation]
 	public interface IEditorActorOptions : ITraitInfoInterface

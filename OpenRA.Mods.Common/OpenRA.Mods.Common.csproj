@@ -125,10 +125,12 @@
     <Compile Include="ActorExts.cs" />
     <Compile Include="AI\AIUtils.cs" />
     <Compile Include="AI\AttackOrFleeFuzzy.cs" />
-    <Compile Include="AI\BaseBuilder.cs" />
+    <Compile Include="Traits\BotModules\BotModuleLogic\BaseBuilderQueueManager.cs" />
     <Compile Include="AI\HackyAI.cs" />
     <Compile Include="Traits\BotModules\HarvesterBotModule.cs" />
     <Compile Include="Traits\BotModules\SupportPowerBotModule.cs" />
+    <Compile Include="Traits\BotModules\BaseBuilderBotModule.cs" />
+    <Compile Include="Traits\BotModules\BuildingRepairBotModule.cs" />
     <Compile Include="AI\Squad.cs" />
     <Compile Include="AI\StateMachine.cs" />
     <Compile Include="AI\States\AirStates.cs" />
@@ -596,6 +598,7 @@
     <Compile Include="Traits\World\WeatherOverlay.cs" />
     <Compile Include="Traits\World\ActorSpawnManager.cs" />
     <Compile Include="Traits\ActorSpawner.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RemoveAttackIgnoresVisibility.cs" />
     <Compile Include="UpdateRules\Rules\20180923\RemovedDemolishLocking.cs" />
     <Compile Include="UpdateRules\Rules\20180923\RemoveNegativeDamageFullHealthCheck.cs" />
     <Compile Include="UpdateRules\Rules\20180923\RemoveResourceExplodeModifier.cs" />

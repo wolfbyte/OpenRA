@@ -42,7 +42,6 @@ namespace OpenRA.Mods.Common.Traits
 		readonly World world;
 		readonly Player player;
 		PlayerResources playerResource;
-		FrozenActorLayer frozenLayer;
 		SupportPowerManager supportPowerManager;
 		Dictionary<SupportPowerInstance, int> waitingPowers = new Dictionary<SupportPowerInstance, int>();
 		Dictionary<string, SupportPowerDecision> powerDecisions = new Dictionary<string, SupportPowerDecision>();
@@ -60,7 +59,6 @@ namespace OpenRA.Mods.Common.Traits
 
 		protected override void TraitEnabled(Actor self)
 		{
-			frozenLayer = player.PlayerActor.TraitOrDefault<FrozenActorLayer>();
 			supportPowerManager = player.PlayerActor.Trait<SupportPowerManager>();
 			foreach (var decision in Info.Decisions)
 				powerDecisions.Add(decision.OrderName, decision);
@@ -153,7 +151,7 @@ namespace OpenRA.Mods.Common.Traits
 					var wbr = world.Map.CenterOfCell(br.ToCPos(map));
 					var targets = world.ActorMap.ActorsInBox(wtl, wbr);
 
-					var frozenTargets = frozenLayer != null ? frozenLayer.FrozenActorsInRegion(region) : Enumerable.Empty<FrozenActor>();
+					var frozenTargets = player.FrozenActorLayer != null ? player.FrozenActorLayer.FrozenActorsInRegion(region) : Enumerable.Empty<FrozenActor>();
 					var consideredAttractiveness = powerDecision.GetAttractiveness(targets, player) + powerDecision.GetAttractiveness(frozenTargets, player);
 					if (consideredAttractiveness <= bestAttractiveness || consideredAttractiveness < powerDecision.MinimumAttractiveness)
 						continue;
@@ -189,7 +187,7 @@ namespace OpenRA.Mods.Common.Traits
 					var y = checkPos.Y + j;
 					var pos = world.Map.CenterOfCell(new CPos(x, y));
 					var consideredAttractiveness = 0;
-					consideredAttractiveness += powerDecision.GetAttractiveness(pos, player, frozenLayer);
+					consideredAttractiveness += powerDecision.GetAttractiveness(pos, player);
 
 					if (consideredAttractiveness <= bestAttractiveness || consideredAttractiveness < powerDecision.MinimumAttractiveness)
 						continue;
