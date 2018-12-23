@@ -21,15 +21,6 @@ namespace OpenRA.Mods.AS.Traits
 	[Desc("Manages bot support power handling.")]
 	public class SupportPowerBotASModuleInfo : ConditionalTraitInfo, Requires<SupportPowerManagerInfo>
 	{
-		[Desc("Against whom should this power be used?", "Allowed keywords: Ally, Neutral, Enemy")]
-		public readonly Stance Against = Stance.Enemy;
-
-		[Desc("What types should the desired targets of this power be?")]
-		public readonly BitSet<TargetableType> Types = new BitSet<TargetableType>("Air", "Ground", "Water");
-
-		[Desc("Should the AI ignore visibility rules during activation?")]
-		public readonly bool IgnoreVisibility = false;
-
 		[Desc("Tells the AI how to use its support powers.")]
 		[FieldLoader.LoadUsing("LoadDecisions")]
 		public readonly List<SupportPowerDecisionAS> Decisions = new List<SupportPowerDecisionAS>();
@@ -138,14 +129,15 @@ namespace OpenRA.Mods.AS.Traits
 			}
 
 			var availableTargets = world.ActorsHavingTrait<IOccupySpace>().Where(x => x.IsInWorld && !x.IsDead &&
-				(Info.IgnoreVisibility || x.CanBeViewedByPlayer(player)) &&
-				Info.Against.HasStance(player.Stances[x.Owner]));
+				(powerDecision.IgnoreVisibility || x.CanBeViewedByPlayer(player)) &&
+				powerDecision.Against.HasStance(player.Stances[x.Owner]) &&
+				powerDecision.Types.Overlaps(x.GetEnabledTargetTypes()));
 
 			foreach (var a in availableTargets)
 			{
 				var pos = a.CenterPosition;
 				var consideredAttractiveness = 0;
-				consideredAttractiveness += powerDecision.GetAttractiveness(pos, player, Info.IgnoreVisibility);
+				consideredAttractiveness += powerDecision.GetAttractiveness(pos, player);
 
 				if (consideredAttractiveness <= bestAttractiveness || consideredAttractiveness < powerDecision.MinimumAttractiveness)
 					continue;

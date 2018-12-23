@@ -30,6 +30,15 @@ namespace OpenRA.Mods.AS.Traits
 		[Desc("The decisions associated with this power")]
 		public readonly List<Consideration> Considerations = new List<Consideration>();
 
+		[Desc("Against whom should this power be used?", "Allowed keywords: Ally, Neutral, Enemy")]
+		public readonly Stance Against = Stance.Enemy;
+
+		[Desc("What types should the desired targets of this power be?")]
+		public readonly BitSet<TargetableType> Types = new BitSet<TargetableType>("Air", "Ground", "Water");
+
+		[Desc("Should the AI ignore visibility rules during activation?")]
+		public readonly bool IgnoreVisibility = false;
+
 		[Desc("Minimum ticks to wait until next Decision scan attempt.")]
 		public readonly int MinimumScanTimeInterval = 250;
 
@@ -52,7 +61,7 @@ namespace OpenRA.Mods.AS.Traits
 		}
 
 		/// <summary>Evaluates the attractiveness of a position according to all considerations</summary>
-		public int GetAttractiveness(WPos pos, Player firedBy, bool ignoreVisibility)
+		public int GetAttractiveness(WPos pos, Player firedBy)
 		{
 			var answer = 0;
 			var world = firedBy.World;
@@ -67,7 +76,7 @@ namespace OpenRA.Mods.AS.Traits
 
 				var checkActors = world.FindActorsInCircle(pos, radiusToUse);
 				foreach (var scrutinized in checkActors)
-					answer += consideration.GetAttractiveness(scrutinized, firedBy.Stances[scrutinized.Owner], firedBy, ignoreVisibility);
+					answer += consideration.GetAttractiveness(scrutinized, firedBy.Stances[scrutinized.Owner], firedBy, IgnoreVisibility);
 
 				var delta = new WVec(radiusToUse, radiusToUse, WDist.Zero);
 				var tl = world.Map.CellContaining(pos - delta);
