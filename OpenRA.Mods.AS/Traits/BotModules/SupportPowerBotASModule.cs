@@ -102,7 +102,7 @@ namespace OpenRA.Mods.AS.Traits
 					var attackLocation = FindAttackLocationToSupportPower(sp);
 					if (attackLocation == null)
 					{
-						AIUtils.BotDebug("AI: {1} can't find suitable coarse attack location for support power {0}. Delaying rescan.", sp.Info.OrderName, player.PlayerName);
+						AIUtils.BotDebug("AI: {1} can't find suitable attack location for support power {0}. Delaying rescan.", sp.Info.OrderName, player.PlayerName);
 						waitingPowers[sp] += powerDecision.GetNextScanTime(world);
 
 						continue;
