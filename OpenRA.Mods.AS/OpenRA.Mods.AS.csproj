@@ -97,6 +97,8 @@
     <Compile Include="TraitsInterfaces.cs" />
     <Compile Include="Traits\AIDeployHelper.cs" />
     <Compile Include="Traits\Berserkable.cs" />
+    <Compile Include="Traits\BotModules\BotModuleLogic\SupportPowerDecisionAS.cs" />
+    <Compile Include="Traits\BotModules\SupportPowerBotASModule.cs" />
     <Compile Include="Traits\CashCollectable.cs" />
     <Compile Include="Traits\CashCollector.cs" />
     <Compile Include="Traits\DamagedByTintedCells.cs" />
