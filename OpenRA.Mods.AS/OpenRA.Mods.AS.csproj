@@ -85,11 +85,13 @@
     <Compile Include="Effects\AirstrikePowerASEffect.cs" />
     <Compile Include="Effects\WarheadTrailProjectileEffect.cs" />
     <Compile Include="Graphics\ArcRenderable.cs" />
+    <Compile Include="Graphics\KKNDLaserRenderable.cs" />
     <Compile Include="Graphics\RadBeamRenderable.cs" />
     <Compile Include="Graphics\TintedCell.cs" />
     <Compile Include="Lint\CheckSpawnActorWarheads.cs" />
     <Compile Include="Projectiles\ArcLaserZap.cs" />
     <Compile Include="Projectiles\AthenaProjectile.cs" />
+    <Compile Include="Projectiles\KKNDLaser.cs" />
     <Compile Include="Projectiles\WarheadTrailProjectile.cs" />
     <Compile Include="Projectiles\InstantExplode.cs" />
     <Compile Include="Projectiles\RadBeam.cs" />

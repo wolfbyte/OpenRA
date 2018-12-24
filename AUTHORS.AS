@@ -7,6 +7,9 @@ The plugin is maintained by
  * Gyula Zimmermann (Graion Dilach)
    > everything unless listed
 
+ * Andre Mohren (IceReaper)
+   > KKND laser implementation
+
  * Boolbada/forcecore
    > RadBeam implementation
    > ProvidesAIPrerequisite
