@@ -469,7 +469,7 @@
     <Compile Include="Traits\Render\WithAimAnimation.cs" />
     <Compile Include="Traits\Render\WithAttackOverlay.cs" />
     <Compile Include="Traits\Render\WithMoveAnimation.cs" />
-    <Compile Include="Traits\Render\WithSiloAnimation.cs" />
+    <Compile Include="Traits\Render\WithResourceLevelSpriteBody.cs" />
     <Compile Include="Traits\Render\WithBuildingPlacedAnimation.cs" />
     <Compile Include="Traits\Render\WithMakeAnimation.cs" />
     <Compile Include="Traits\Render\WithCrateBody.cs" />
@@ -489,7 +489,7 @@
     <Compile Include="Traits\Render\WithRangeCircle.cs" />
     <Compile Include="Traits\Render\WithResupplyAnimation.cs" />
     <Compile Include="Traits\Render\WithRepairOverlay.cs" />
-    <Compile Include="Traits\Render\WithResources.cs" />
+    <Compile Include="Traits\Render\WithResourceLevelOverlay.cs" />
     <Compile Include="Traits\Render\WithShadow.cs" />
     <Compile Include="Traits\Render\WithSpriteBody.cs" />
     <Compile Include="Traits\Render\WithSpriteTurret.cs" />
@@ -861,7 +861,7 @@
     <Compile Include="Traits\World\ElevatedBridgeLayer.cs" />
     <Compile Include="Traits\World\ElevatedBridgePlaceholder.cs" />
     <Compile Include="Traits\Attack\AttackCharges.cs" />
-    <Compile Include="Traits\Render\WithChargeAnimation.cs" />
+    <Compile Include="Traits\Render\WithChargeSpriteBody.cs" />
     <Compile Include="Traits\Render\WithChargeOverlay.cs" />
     <Compile Include="WebServices.cs" />
     <Compile Include="Traits\Conditions\GrantConditionOnLineBuildDirection.cs" />
@@ -953,6 +953,8 @@
     <Compile Include="UpdateRules\Rules\20180923\ExtractHackyAIModules.cs" />
     <Compile Include="UpdateRules\Rules\20180923\DefineLevelUpImageDefault.cs" />
     <Compile Include="UpdateRules\Rules\20180923\RemovedAutoCarryallCircleTurnSpeed.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\ReplacedWithChargeAnimation.cs" />
+    <Compile Include="UpdateRules\Rules\20180923\RefactorResourceLevelAnimating.cs" />
     <Compile Include="Traits\Player\PlayerResources.cs" />
     <Compile Include="UtilityCommands\DumpSequenceSheetsCommand.cs" />
     <Compile Include="Traits\Render\WithBuildingRepairDecoration.cs" />

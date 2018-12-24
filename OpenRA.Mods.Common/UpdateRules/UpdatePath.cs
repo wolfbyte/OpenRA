@@ -111,6 +111,8 @@ namespace OpenRA.Mods.Common.UpdateRules
 				new DefineLevelUpImageDefault(),
 				new RemovedAutoCarryallCircleTurnSpeed(),
 				new RemoveAttackIgnoresVisibility(),
+				new ReplacedWithChargeAnimation(),
+				new RefactorResourceLevelAnimating(),
 			})
 		};
 
