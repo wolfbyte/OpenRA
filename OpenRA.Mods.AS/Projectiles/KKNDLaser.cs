@@ -14,6 +14,7 @@ using OpenRA.GameRules;
 using OpenRA.Graphics;
 using OpenRA.Mods.AS.Graphics;
 using OpenRA.Mods.Common.Graphics;
+using OpenRA.Support;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.AS.Projectiles
@@ -43,7 +44,7 @@ namespace OpenRA.Mods.AS.Projectiles
 		public readonly int DistortionAnimation = 0;
 
 		[Desc("Maximum length per segment.")]
-		public readonly int SegmentLength = 0;
+		public readonly WDist SegmentLength = WDist.Zero;
 
 		[Desc("Equivalent to sequence ZOffset. Controls Z sorting.")]
 		public readonly int ZOffset = 0;
@@ -55,9 +56,13 @@ namespace OpenRA.Mods.AS.Projectiles
 	{
 		private readonly KKNDLaserInfo info;
 		private readonly Color[] colors;
-		private readonly int2[] offsets;
+		private readonly WPos[] offsets;
 
-		private int ticks;
+		readonly WVec leftVector;
+		readonly WVec upVector;
+		readonly MersenneTwister random;
+
+		int ticks;
 
 		public KKNDLaser(ProjectileArgs args, KKNDLaserInfo info)
 		{
@@ -75,27 +80,46 @@ namespace OpenRA.Mods.AS.Projectiles
 			}
 
 			var direction = args.PassiveTarget - args.Source;
-			if (this.info.SegmentLength == 0)
+
+			if (info.Distortion != 0 || info.DistortionAnimation != 0)
 			{
-				offsets = new[] { new int2(args.Source.X, args.Source.Y), new int2(args.PassiveTarget.X, args.PassiveTarget.Y) };
+				leftVector = new WVec(direction.Y, -direction.X, 0);
+				leftVector = 1024 * leftVector / leftVector.Length;
+
+				upVector = new WVec(
+					-direction.X * direction.Z,
+					-direction.Z * direction.Y,
+					direction.X * direction.X + direction.Y * direction.Y);
+				upVector = 1024 * upVector / upVector.Length;
+
+				random = args.SourceActor.World.SharedRandom;
+			}
+
+			if (this.info.SegmentLength == WDist.Zero)
+			{
+				offsets = new[] { args.Source, args.PassiveTarget };
 			}
 			else
 			{
-				var numSegments = (direction.Length - 1) / info.SegmentLength + 1;
-				offsets = new int2[numSegments + 1];
-				offsets[0] = new int2(args.Source.X, args.Source.Y);
-				offsets[offsets.Length - 1] = new int2(args.PassiveTarget.X, args.PassiveTarget.Y);
+				var numSegments = (direction.Length - 1) / info.SegmentLength.Length + 1;
+				offsets = new WPos[numSegments + 1];
+				offsets[0] = args.Source;
+				offsets[offsets.Length - 1] = args.PassiveTarget;
 
 				for (var i = 1; i < numSegments; i++)
 				{
 					var segmentStart = direction / numSegments * i;
-					offsets[i] = new int2(args.Source.X + segmentStart.X, args.Source.Y + segmentStart.Y);
+					offsets[i] = args.Source + segmentStart;
 
 					if (info.Distortion != 0)
 					{
-						offsets[i] = new int2(
-							offsets[i].X + Game.CosmeticRandom.Next(-info.Distortion / 2, info.Distortion / 2),
-							offsets[i].Y + Game.CosmeticRandom.Next(-info.Distortion / 2, info.Distortion / 2));
+						var angle = WAngle.FromDegrees(random.Next(360));
+						var distortion = random.Next(info.Distortion);
+
+						var offset = distortion * angle.Cos() * leftVector / (1024 * 1024)
+							+ distortion * angle.Sin() * upVector / (1024 * 1024);
+
+						offsets[i] += offset;
 					}
 				}
 			}
@@ -111,9 +135,13 @@ namespace OpenRA.Mods.AS.Projectiles
 			{
 				for (var i = 1; i < offsets.Length - 1; i++)
 				{
-					offsets[i] = new int2(
-						offsets[i].X + Game.CosmeticRandom.Next(-info.DistortionAnimation / 2, info.DistortionAnimation / 2),
-						offsets[i].Y + Game.CosmeticRandom.Next(-info.DistortionAnimation / 2, info.DistortionAnimation / 2));
+					var angle = WAngle.FromDegrees(random.Next(360));
+					var distortion = random.Next(info.DistortionAnimation);
+
+					var offset = distortion * angle.Cos() * leftVector / (1024 * 1024)
+						+ distortion * angle.Sin() * upVector / (1024 * 1024);
+
+					offsets[i] += offset;
 				}
 			}
 		}
