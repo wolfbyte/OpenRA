@@ -116,7 +116,7 @@ namespace OpenRA.Mods.AS.Warheads
 								palette += unit.Owner.InternalName;
 
 							if (Image != null)
-								new SpriteEffect(pos, w, Image, Sequence, palette);
+								w.Add(new SpriteEffect(pos, w, Image, Sequence, palette));
 
 							var sound = Sounds.RandomOrDefault(Game.CosmeticRandom);
 							if (sound != null)

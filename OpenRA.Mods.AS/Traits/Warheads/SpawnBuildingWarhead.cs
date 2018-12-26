@@ -107,7 +107,7 @@ namespace OpenRA.Mods.AS.Warheads
 									palette += building.Owner.InternalName;
 
 								if (Image != null)
-									new SpriteEffect(building.CenterPosition, w, Image, Sequence, palette);
+									w.Add(new SpriteEffect(building.CenterPosition, w, Image, Sequence, palette));
 
 								var sound = Sounds.RandomOrDefault(Game.CosmeticRandom);
 								if (sound != null)
