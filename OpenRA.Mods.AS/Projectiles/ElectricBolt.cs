@@ -33,7 +33,7 @@ namespace OpenRA.Mods.AS.Projectiles
 		public readonly int Duration = 5;
 
 		[Desc("Colors of the zaps. The amount of zaps are the amount of colors listed here and PlayerColorZaps.")]
-		public readonly Color[] ColorZaps = {
+		public readonly Color[] Colors = {
 			Color.FromArgb(80, 80, 255),
 			Color.FromArgb(80, 80, 255),
 			Color.FromArgb(255, 255, 255)
@@ -86,7 +86,7 @@ namespace OpenRA.Mods.AS.Projectiles
 			this.args = args;
 			this.info = info;
 			var playerColors = args.SourceActor.Owner.Color.RGB;
-			var colors = info.ColorZaps;
+			var colors = info.Colors;
 			for (int i = 0; i < info.PlayerColorZaps; i++)
 				colors.Append(playerColors);
 
