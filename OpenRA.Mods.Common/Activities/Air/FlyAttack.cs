@@ -52,6 +52,9 @@ namespace OpenRA.Mods.Common.Activities
 			if (rearmable != null && attackAircraft.Armaments.All(x => x.IsTraitPaused || !x.Weapon.IsValidAgainst(target, self.World, self)))
 				return ActivityUtils.SequenceActivities(new ReturnToBase(self, aircraft.Info.AbortOnResupply), this);
 
+			if (attackAircraft.IsTraitDisabled)
+				return NextActivity;
+
 			attackAircraft.DoAttack(self, target);
 
 			if (ChildActivity == null)
