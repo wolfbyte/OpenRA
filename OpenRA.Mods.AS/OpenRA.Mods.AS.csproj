@@ -117,10 +117,12 @@
     <Compile Include="Traits\Doctrine.cs" />
     <Compile Include="Traits\EligibleForRandomActorCrate.cs" />
     <Compile Include="Traits\ExplodeWeapon.cs" />
+    <Compile Include="Traits\GivesIntelligence.cs" />
     <Compile Include="Traits\InfiltrateForProxyActor.cs" />
     <Compile Include="Traits\DelayedWeaponTrigger.cs" />
     <Compile Include="Traits\Player\Taunts.cs" />
     <Compile Include="Traits\Player\TeleportNetworkManager.cs" />
+    <Compile Include="Traits\RevealsShroudToIntelligenceOwner.cs" />
     <Compile Include="Traits\TeleportNetwork.cs" />
     <Compile Include="Traits\TeleportNetworkPrimaryExit.cs" />
     <Compile Include="Traits\MindControllable.cs" />

@@ -28,14 +28,15 @@ namespace OpenRA.Mods.Common.Traits
 	public class RevealsShroud : AffectsShroud
 	{
 		readonly RevealsShroudInfo info;
-		readonly Shroud.SourceType type;
 		IRevealsShroudModifier[] rangeModifiers;
+
+		public readonly Shroud.SourceType Type;
 
 		public RevealsShroud(Actor self, RevealsShroudInfo info)
 			: base(self, info)
 		{
 			this.info = info;
-			type = info.RevealGeneratedShroud ? Shroud.SourceType.Visibility
+			Type = info.RevealGeneratedShroud ? Shroud.SourceType.Visibility
 				: Shroud.SourceType.PassiveVisibility;
 		}
 
@@ -46,21 +47,21 @@ namespace OpenRA.Mods.Common.Traits
 			rangeModifiers = self.TraitsImplementing<IRevealsShroudModifier>().ToArray();
 		}
 
-		protected override void AddCellsToPlayerShroud(Actor self, Player p, PPos[] uv)
+		public override void AddCellsToPlayerShroud(Actor self, Player p, PPos[] uv)
 		{
 			if (!info.ValidStances.HasStance(p.Stances[self.Owner]))
 				return;
 
-			p.Shroud.AddSource(this, type, uv);
+			p.Shroud.AddSource(this, Type, uv);
 		}
 
-		protected override void RemoveCellsFromPlayerShroud(Actor self, Player p) { p.Shroud.RemoveSource(this); }
+		public override void RemoveCellsFromPlayerShroud(Actor self, Player p) { p.Shroud.RemoveSource(this); }
 
 		public override WDist Range
 		{
 			get
 			{
-				if (CachedTraitDisabled)
+				if (cachedTraitDisabled)
 					return WDist.Zero;
 
 				var revealsShroudModifier = rangeModifiers.Select(x => x.GetRevealsShroudModifier());
