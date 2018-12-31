@@ -77,6 +77,7 @@
     <Compile Include="Activities\EnterTeleportNetwork.cs" />
     <Compile Include="Activities\FallDown.cs" />
     <Compile Include="Activities\HeliFlyCircleTimed.cs" />
+    <Compile Include="Activities\LeapAS.cs" />
     <Compile Include="Commands\TauntCommands.cs" />
     <Compile Include="Duplicates\Projectiles\BulletAS.cs" />
     <Compile Include="Duplicates\Traits\EjectOnDeathAS.cs" />
@@ -101,6 +102,7 @@
     <Compile Include="Projectiles\SpriteRailgun.cs" />
     <Compile Include="TraitsInterfaces.cs" />
     <Compile Include="Traits\AIDeployHelper.cs" />
+    <Compile Include="Traits\AttackLeapAS.cs" />
     <Compile Include="Traits\Berserkable.cs" />
     <Compile Include="Traits\BotModules\BotModuleLogic\SupportPowerDecisionAS.cs" />
     <Compile Include="Traits\BotModules\SupportPowerBotASModule.cs" />
