@@ -12,6 +12,7 @@ using System;
 using System.Linq;
 using OpenRA.Activities;
 using OpenRA.GameRules;
+using OpenRA.Mods.AS.Traits;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Traits.Render;
 using OpenRA.Primitives;
@@ -22,37 +23,36 @@ namespace OpenRA.Mods.AS.Activities
 	class LeapAS : Activity
 	{
 		readonly Mobile mobile;
-		readonly WeaponInfo weapon;
+		readonly Armament armament;
 		readonly int length;
+		readonly AttackLeapAS trait;
+		readonly WAngle angle;
+		readonly Target target;
 
 		WPos from;
 		WPos to;
 		int ticks;
-		WAngle angle;
-		BitSet<DamageType> damageTypes;
 
-		public LeapAS(Actor self, Actor target, Armament a, WDist speed, WAngle angle, BitSet<DamageType> damageTypes)
+		public LeapAS(Actor self, Actor target, Armament a, AttackLeapAS trait)
 		{
 			var targetMobile = target.TraitOrDefault<Mobile>();
 			if (targetMobile == null)
 				throw new InvalidOperationException("Leap requires a target actor with the Mobile trait");
 
-			this.weapon = a.Weapon;
-			this.angle = angle;
-			this.damageTypes = damageTypes;
+			armament = a;
+			this.angle = trait.LeapInfo.Angle;
+			this.trait = trait;
+			this.target = Target.FromActor(target);
 			mobile = self.Trait<Mobile>();
 			mobile.SetLocation(mobile.FromCell, mobile.FromSubCell, targetMobile.FromCell, targetMobile.FromSubCell);
 			mobile.IsMoving = true;
 
 			from = self.CenterPosition;
 			to = self.World.Map.CenterOfSubCell(targetMobile.FromCell, targetMobile.FromSubCell);
-			length = Math.Max((to - from).Length / speed.Length, 1);
+			length = Math.Max((to - from).Length / trait.LeapInfo.Speed.Length, 1);
 
-			// HACK: why isn't this using the interface?
-			self.Trait<WithInfantryBody>().Attacking(self, Target.FromActor(target), a);
-
-			if (weapon.Report != null && weapon.Report.Any())
-				Game.Sound.Play(SoundType.World, weapon.Report.Random(self.World.SharedRandom), self.CenterPosition);
+			if (armament.Weapon.Report != null && armament.Weapon.Report.Any())
+				Game.Sound.Play(SoundType.World, armament.Weapon.Report.Random(self.World.SharedRandom), self.CenterPosition);
 		}
 
 		public override Activity Tick(Actor self)
@@ -67,9 +67,13 @@ namespace OpenRA.Mods.AS.Activities
 				mobile.FinishedMoving(self);
 				mobile.IsMoving = false;
 
+				trait.NotifyAttacking(self, target, armament);
+
 				self.World.ActorMap.GetActorsAt(mobile.ToCell, mobile.ToSubCell)
-					.Except(new[] { self }).Where(t => weapon.IsValidAgainst(t, self))
-					.Do(t => t.Kill(self, damageTypes));
+					.Except(new[] { self }).Where(t => armament.Weapon.IsValidAgainst(t, self))
+					.Do(t => t.Kill(self, trait.LeapInfo.DamageTypes));
+
+				trait.FinishAttacking(self);
 
 				return NextActivity;
 			}

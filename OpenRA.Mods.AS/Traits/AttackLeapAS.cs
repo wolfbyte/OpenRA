@@ -28,17 +28,30 @@ namespace OpenRA.Mods.AS.Traits
 		[Desc("Types of damage that this trait causes. Leave empty for no damage types.")]
 		public readonly BitSet<DamageType> DamageTypes = default(BitSet<DamageType>);
 
+		[Desc("The condition to apply to the target while leaping. Must be included in the target actor's ExternalConditions list.")]
+		public readonly string LeapTargetCondition = null;
+
 		public override object Create(ActorInitializer init) { return new AttackLeapAS(init.Self, this); }
 	}
 
-	class AttackLeapAS : AttackFrontal
+	class AttackLeapAS : AttackFrontal, INotifyCreated
 	{
-		readonly AttackLeapASInfo info;
+		readonly Barrel barrel;
+		public readonly AttackLeapASInfo LeapInfo;
+
+		INotifyAttack[] notifyAttacks;
+		Pair<Actor, int> targetCondition;
 
 		public AttackLeapAS(Actor self, AttackLeapASInfo info)
 			: base(self, info)
 		{
-			this.info = info;
+			this.LeapInfo = info;
+			barrel = new Barrel { Offset = WVec.Zero, Yaw = WAngle.Zero };
+		}
+
+		void INotifyCreated.Created(Actor self)
+		{
+			notifyAttacks = self.TraitsImplementing<INotifyAttack>().ToArray();
 		}
 
 		public override void DoAttack(Actor self, Target target, IEnumerable<Armament> armaments = null)
@@ -54,7 +67,36 @@ namespace OpenRA.Mods.AS.Traits
 				return;
 
 			self.CancelActivity();
-			self.QueueActivity(new LeapAS(self, target.Actor, a, info.Speed, info.Angle, info.DamageTypes));
+
+			foreach (var na in notifyAttacks)
+				na.PreparingAttack(self, target, a, barrel);
+
+			if (LeapInfo.LeapTargetCondition != null)
+			{
+				var external = target.Actor.TraitsImplementing<ExternalCondition>()
+				.FirstOrDefault(t => t.Info.Condition == LeapInfo.LeapTargetCondition && t.CanGrantCondition(target.Actor, self));
+
+				if (external != null)
+					targetCondition = new Pair<Actor, int>(target.Actor, external.GrantCondition(target.Actor, self));
+			}
+
+			self.QueueActivity(new LeapAS(self, target.Actor, a, this));
+		}
+
+		public void NotifyAttacking(Actor self, Target target, Armament a)
+		{
+			foreach (var na in notifyAttacks)
+				na.Attacking(self, target, a, barrel);
+		}
+
+		public void FinishAttacking(Actor self)
+		{
+			if (targetCondition.First != null && !targetCondition.First.IsDead)
+			{
+				foreach (var external in targetCondition.First.TraitsImplementing<ExternalCondition>())
+					if (external.TryRevokeCondition(targetCondition.First, self, targetCondition.Second))
+						break;
+			}
 		}
 	}
 }
