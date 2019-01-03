@@ -49,9 +49,11 @@ namespace OpenRA.Mods.AS.Traits
 			barrel = new Barrel { Offset = WVec.Zero, Yaw = WAngle.Zero };
 		}
 
-		void INotifyCreated.Created(Actor self)
+		protected override void Created(Actor self)
 		{
 			notifyAttacks = self.TraitsImplementing<INotifyAttack>().ToArray();
+
+			base.Created(self);
 		}
 
 		public override void DoAttack(Actor self, Target target, IEnumerable<Armament> armaments = null)
