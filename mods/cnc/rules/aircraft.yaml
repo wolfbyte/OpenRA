@@ -196,8 +196,7 @@ C17:
 	Contrail@4:
 		Offset: -261,650,0
 		TrailLength: 15
-	Buildable:
-		Description: Drops vehicle reinforcements on Airstrips
+	-MapEditorData:
 
 A10:
 	Inherits: ^Plane
@@ -227,8 +226,7 @@ A10:
 	Contrail@2:
 		Offset: -640,-171,0
 		TrailLength: 15
-	Buildable:
-		Description: Used to deliver air strikes.
+	-MapEditorData:
 
 TRAN.Husk:
 	Inherits: ^HelicopterHusk
