@@ -61,7 +61,7 @@ namespace OpenRA.Mods.AS.Warheads
 		{
 			foreach (var a in Actors)
 			{
-				var actorInfo = rules.Actors[a];
+				var actorInfo = rules.Actors[a.ToLowerInvariant()];
 				var buildingInfo = actorInfo.TraitInfoOrDefault<BuildingInfo>();
 
 				if (buildingInfo != null)
@@ -87,10 +87,52 @@ namespace OpenRA.Mods.AS.Warheads
 			{
 				var placed = false;
 				var td = new TypeDictionary();
+				var ai = map.Rules.Actors[a.ToLowerInvariant()];
+
 				if (Owner == null)
 					td.Add(new OwnerInit(firedBy.Owner));
 				else
 					td.Add(new OwnerInit(firedBy.World.Players.First(p => p.InternalName == Owner)));
+
+				// HACK HACK HACK
+				// Immobile does not offer a check directly if the actor can exist in a position.
+				// It also crashes the game if it's actor's created without a LocationInit.
+				// See AS/Engine#84.
+				if (ai.HasTraitInfo<ImmobileInfo>())
+				{
+					var immobileInfo = ai.TraitInfo<ImmobileInfo>();
+
+					while (cell.MoveNext())
+					{
+						if (!immobileInfo.OccupiesSpace || !firedBy.World.ActorMap.GetActorsAt(cell.Current).Any())
+						{
+							td.Add(new LocationInit(cell.Current));
+							var immobileunit = firedBy.World.CreateActor(false, a.ToLowerInvariant(), td);
+
+							firedBy.World.AddFrameEndTask(w =>
+							{
+								w.Add(immobileunit);
+
+								var palette = Palette;
+								if (UsePlayerPalette)
+									palette += immobileunit.Owner.InternalName;
+
+								var immobilespawnpos = firedBy.World.Map.CenterOfCell(cell.Current);
+
+								if (Image != null)
+									w.Add(new SpriteEffect(immobilespawnpos, w, Image, Sequence, palette));
+
+								var sound = Sounds.RandomOrDefault(Game.CosmeticRandom);
+								if (sound != null)
+									Game.Sound.Play(SoundType.World, sound, immobilespawnpos);
+							});
+
+							break;
+						}
+					}
+
+					return;
+				}
 
 				var unit = firedBy.World.CreateActor(false, a.ToLowerInvariant(), td);
 
