@@ -150,6 +150,7 @@
     <Compile Include="Traits\Warheads\FireRadiusWarhead.cs" />
     <Compile Include="Traits\Warheads\FireReverseRadiusWarhead.cs" />
     <Compile Include="Traits\Warheads\FireShrapnelWarhead.cs" />
+    <Compile Include="Traits\Warheads\FlashEffectWarhead.cs" />
     <Compile Include="Traits\Warheads\GlobalExplodeWeaponWarhead.cs" />
     <Compile Include="Traits\Warheads\RevealShroudWarhead.cs" />
     <Compile Include="Traits\Warheads\ScreenShakerWarhead.cs" />
