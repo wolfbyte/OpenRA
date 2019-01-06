@@ -47,10 +47,11 @@ The plugin is maintained by
  * jrb0001
    > AmmoPool support for ExplodeWeapon
 
- * Wojciech Walaszek (CDVoidwalker)
+ * Wojciech Walaszek (Voidwalker)
    > TeleportNetwork maintaince
    > WarheadTrailProjectile
    > TintedCells maintaince
+   > TurnOnIdle
 
  Authors of documents used in this plugin:
   * Apollo

@@ -129,6 +129,7 @@
     <Compile Include="Traits\DelayedWeaponTrigger.cs" />
     <Compile Include="Traits\Player\Taunts.cs" />
     <Compile Include="Traits\Player\TeleportNetworkManager.cs" />
+    <Compile Include="Traits\SpawnSurvivors.cs" />
     <Compile Include="Traits\TeleportNetwork.cs" />
     <Compile Include="Traits\TeleportNetworkPrimaryExit.cs" />
     <Compile Include="Traits\MindControllable.cs" />
@@ -147,6 +148,7 @@
     <Compile Include="Traits\SupportPowers\DetonateWeaponPower.cs" />
     <Compile Include="Traits\SupportPowers\FireArmamentPower.cs" />
     <Compile Include="Traits\TeleportNetworkTransportable.cs" />
+    <Compile Include="Traits\TurnOnIdle.cs" />
     <Compile Include="Traits\Warheads\AttachDelayedWeaponWarhead.cs" />
     <Compile Include="Traits\Warheads\CaptureActorWarhead.cs" />
     <Compile Include="Traits\Warheads\CreateTintedCellsWarhead.cs" />
