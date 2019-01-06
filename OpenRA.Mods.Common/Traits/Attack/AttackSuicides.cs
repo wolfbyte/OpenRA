@@ -62,6 +62,11 @@ namespace OpenRA.Mods.Common.Traits
 			return new Order(order.OrderID, self, target, queued);
 		}
 
+		public Order IssueDeployOrder(Actor self)
+		{
+			return new Order("Detonate", self, false);
+		}
+
 		Order IIssueDeployOrder.IssueDeployOrder(Actor self, bool queued)
 		{
 			return new Order("Detonate", self, queued);

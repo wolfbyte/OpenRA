@@ -133,6 +133,11 @@ namespace OpenRA.Mods.AS.Traits
 			return null;
 		}
 
+		public Order IssueDeployOrder(Actor self)
+		{
+			return new Order("GrantTimedConditionOnDeploy", self, false);
+		}
+
 		void IResolveOrder.ResolveOrder(Actor self, Order order)
 		{
 			if (order.OrderString != "GrantTimedConditionOnDeploy" || deployState != TimedDeployState.Ready)

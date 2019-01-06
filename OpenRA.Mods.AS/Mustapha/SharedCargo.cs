@@ -119,6 +119,11 @@ namespace OpenRA.Mods.Common.Traits
 			return null;
 		}
 
+		public Order IssueDeployOrder(Actor self, bool queued)
+		{
+			return new Order("UnloadShared", self, queued);
+		}
+
 		Order IIssueDeployOrder.IssueDeployOrder(Actor self)
 		{
 			return new Order("UnloadShared", self, false);

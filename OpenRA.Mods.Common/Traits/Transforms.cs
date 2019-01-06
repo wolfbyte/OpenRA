@@ -100,6 +100,11 @@ namespace OpenRA.Mods.Common.Traits
 			return null;
 		}
 
+		public Order IssueDeployOrder(Actor self)
+		{
+			return new Order("DeployTransform", self, false);
+		}
+
 		Order IIssueDeployOrder.IssueDeployOrder(Actor self, bool queued)
 		{
 			return new Order("DeployTransform", self, queued);

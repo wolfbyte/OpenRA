@@ -710,6 +710,11 @@ namespace OpenRA.Mods.Common.Traits
 			return null;
 		}
 
+		public Order IssueDeployOrder(Actor self)
+		{
+			return new Order("ReturnToBase", self, false);
+		}
+
 		Order IIssueDeployOrder.IssueDeployOrder(Actor self, bool queued)
 		{
 			if (rearmableInfo == null || !rearmableInfo.RearmActors.Any())

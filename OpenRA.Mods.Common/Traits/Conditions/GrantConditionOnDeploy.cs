@@ -133,6 +133,11 @@ namespace OpenRA.Mods.Common.Traits
 			return null;
 		}
 
+		public Order IssueDeployOrder(Actor self)
+		{
+			return new Order("GrantConditionOnDeploy", self, false);
+		}
+
 		Order IIssueDeployOrder.IssueDeployOrder(Actor self, bool queued)
 		{
 			return new Order("GrantConditionOnDeploy", self, queued);
