@@ -7,6 +7,9 @@ The plugin is maintained by
  * Gyula Zimmermann (Graion Dilach)
    > everything unless listed
 
+ * Andre Mohren (IceReaper)
+   > KKND laser implementation
+
  * Boolbada/forcecore
    > RadBeam implementation
    > ProvidesAIPrerequisite
@@ -31,8 +34,9 @@ The plugin is maintained by
    > DelayedWeapon system
 
  * Mustafa Alperen Seki (MustaphaTR)
-   > GrantConditionOnProduction
+   > ProductionCost/TimeMultiplier
    > mindcontrol traits cleanup
+   > /taunt command
 
  * Pavel Penev (penev92)
    > PaletteFromJasc32File - base JASC palette parser
