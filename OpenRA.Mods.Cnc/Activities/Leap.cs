@@ -22,36 +22,41 @@ namespace OpenRA.Mods.Cnc.Activities
 	public class Leap : Activity
 	{
 		readonly Mobile mobile;
-		readonly WPos destination, origin;
-		readonly CPos destinationCell;
-		readonly SubCell destinationSubCell = SubCell.Any;
-		readonly int length;
+		readonly Mobile targetMobile;
+		readonly int speed;
 		readonly AttackLeap attack;
 		readonly EdibleByLeap edible;
 		readonly Target target;
 
+		CPos destinationCell;
+		SubCell destinationSubCell = SubCell.Any;
+		WPos destination, origin;
+		int length;
 		bool canceled = false;
 		bool jumpComplete = false;
 		int ticks = 0;
+		WPos targetPosition;
 
 		public Leap(Actor self, Target target, Mobile mobile, Mobile targetMobile, int speed, AttackLeap attack, EdibleByLeap edible)
 		{
 			this.mobile = mobile;
+			this.targetMobile = targetMobile;
 			this.attack = attack;
 			this.target = target;
 			this.edible = edible;
-
-			destinationCell = target.Actor.Location;
-			if (targetMobile != null)
-				destinationSubCell = targetMobile.ToSubCell;
-
-			origin = self.World.Map.CenterOfSubCell(self.Location, mobile.FromSubCell);
-			destination = self.World.Map.CenterOfSubCell(destinationCell, destinationSubCell);
-			length = Math.Max((origin - destination).Length / speed, 1);
+			this.speed = speed;
 		}
 
 		protected override void OnFirstRun(Actor self)
 		{
+			destinationCell = target.Actor.Location;
+			if (targetMobile != null)
+				destinationSubCell = targetMobile.ToSubCell;
+
+			origin = self.CenterPosition;
+			destination = self.World.Map.CenterOfSubCell(destinationCell, destinationSubCell);
+			length = Math.Max((origin - destination).Length / speed, 1);
+
 			// First check if we are still allowed to leap
 			// We need an extra boolean as using Cancel() in OnFirstRun doesn't work
 			canceled = !edible.GetLeapAtBy(self) || target.Type != TargetType.Actor;
@@ -61,6 +66,7 @@ namespace OpenRA.Mods.Cnc.Activities
 			if (canceled)
 				return;
 
+			targetPosition = target.CenterPosition;
 			attack.GrantLeapCondition(self);
 		}
 
@@ -79,7 +85,10 @@ namespace OpenRA.Mods.Cnc.Activities
 				return this;
 			}
 
-			var position = length > 1 ? WPos.Lerp(origin, target.CenterPosition, ticks, length - 1) : target.CenterPosition;
+			if (target.Type != TargetType.Invalid)
+				targetPosition = target.CenterPosition;
+
+			var position = length > 1 ? WPos.Lerp(origin, targetPosition, ticks, length - 1) : targetPosition;
 			mobile.SetVisualPosition(self, position);
 
 			// We are at the destination
