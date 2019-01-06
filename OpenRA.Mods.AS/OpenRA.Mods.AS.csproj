@@ -123,6 +123,7 @@
     <Compile Include="Traits\DelayedWeaponTrigger.cs" />
     <Compile Include="Traits\Player\Taunts.cs" />
     <Compile Include="Traits\Player\TeleportNetworkManager.cs" />
+    <Compile Include="Traits\SpawnSurvivors.cs" />
     <Compile Include="Traits\TeleportNetwork.cs" />
     <Compile Include="Traits\TeleportNetworkPrimaryExit.cs" />
     <Compile Include="Traits\MindControllable.cs" />
