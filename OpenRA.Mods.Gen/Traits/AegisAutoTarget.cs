@@ -27,7 +27,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Yupgi_alert.Traits
 {
 	[Desc("The actor will fire shots equally to many targets nearby, unless told to focus fire.")]
-	public class AegisAutoTargetInfo : AutoTargetInfo, Requires<AttackFrontalInfo>, UsesInit<StanceInit>
+	public class AegisAutoTargetInfo : AutoTargetInfo, Requires<AttackFrontalInfo>
 	{
 		public override object Create(ActorInitializer init) { return new AegisAutoTarget(init, this); }
 	}

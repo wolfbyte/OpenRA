@@ -39,7 +39,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public override object Create(ActorInitializer init) { return new LaysMinefield(this); }
 	}
 
-	public class LaysMinefield : PausableConditionalTrait<LaysMinefieldInfo>, INotifyBuildComplete, INotifyKilled, INotifyOwnerChanged, INotifyActorDisposing, ITick, ISync
+	public class LaysMinefield : PausableConditionalTrait<LaysMinefieldInfo>, INotifyKilled, INotifyOwnerChanged, INotifyActorDisposing, ITick, ISync
 	{
 		[Sync] int ticks;
 		List<Actor> mines = new List<Actor>();
@@ -64,10 +64,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public void SpawnMines(Actor self)
 		{
-			var building = self.TraitOrDefault<Building>();
-			if (building != null && building.Locked)
-				return;
-
 			foreach (var offset in Info.Locations)
 			{ 
 				var cell = self.Location + offset;
@@ -98,12 +94,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				mine.Dispose();
 
 			mines.Clear();
-		}
-
-		void INotifyBuildComplete.BuildingComplete(Actor self)
-		{
-			if (!IsTraitDisabled && !IsTraitPaused)
-				SpawnMines(self);
 		}
 
 		void INotifyOwnerChanged.OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)

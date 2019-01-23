@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Traits;
+using OpenRA.Primitives;
 
 namespace OpenRA.Mods.Common.Traits
 {
@@ -26,7 +27,7 @@ namespace OpenRA.Mods.Common.Traits
 		public ExternalConditionThatRevokedOnCapture(Actor self, ExternalConditionThatRevokedOnCaptureInfo info)
 			: base(self, info) { }
 
-		public void OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner)
+		void INotifyCapture.OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner, BitSet<CaptureType> captureTypes)
 		{
 			TryRevokeCondition(self);
 		}

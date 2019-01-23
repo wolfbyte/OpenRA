@@ -41,7 +41,7 @@ namespace OpenRA.Mods.Common.Activities
 		{
 			return self.World.ActorsHavingTrait<DockManager>().Where(a =>
 				a.Owner == self.Owner &&
-				aircraft.Info.RearmBuildings.Contains(a.Info.Name) &&
+				rearmable.Info.RearmActors.Contains(a.Info.Name) &&
 				!a.IsDead &&
 				!a.Disposed);
 		}
@@ -96,9 +96,6 @@ namespace OpenRA.Mods.Common.Activities
 					new HeliLand(self, true),
 					NextActivity);
 			}
-
-			if (aircraft.Info.TurnToDock)
-				landingProcedures.Add(new Turn(self, initialFacing));
 
 			// Do we need to land and reload/repair?
 			if (!ShouldLandAtBuilding(self, dest))

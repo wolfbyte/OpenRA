@@ -30,6 +30,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("The minimum and maximum distances the shrapnel may travel.")]
 		public readonly WDist[] Range = { WDist.FromCells(2), WDist.FromCells(5) };
 
+		[Desc("Throw the projectile to where actor is facing.")]
+		public readonly bool CondierFacing = false;
+
 		public WeaponInfo[] WeaponInfos { get; private set; }
 
 		public override object Create(ActorInitializer actor) { return new ThrowsShrapnel(this); }
@@ -65,15 +68,16 @@ namespace OpenRA.Mods.Common.Traits
 
 				for (var i = 0; pieces > i; i++)
 				{
-					var rotation = WRot.FromFacing(self.World.SharedRandom.Next(1024));
+					var myFacing = self.TraitOrDefault<IFacing>();
+					var rotation = WRot.FromFacing(myFacing != null && Info.CondierFacing ? myFacing.Facing + 64 : self.World.SharedRandom.Next(1024));
 					var args = new ProjectileArgs
 					{
 						Weapon = wep,
-						Facing = self.World.SharedRandom.Next(-1, 255),
+						Facing = myFacing != null && Info.CondierFacing ? myFacing.Facing : self.World.SharedRandom.Next(-1, 255),
 						CurrentMuzzleFacing = () => 0,
 
 						DamageModifiers = self.TraitsImplementing<IFirepowerModifier>()
-							.Select(a => a.GetFirepowerModifier(info.WeaponName)).ToArray(),
+							.Select(a => a.GetFirepowerModifier(Info.WeaponName)).ToArray(),
 
 						InaccuracyModifiers = self.TraitsImplementing<IInaccuracyModifier>()
 							.Select(a => a.GetInaccuracyModifier()).ToArray(),

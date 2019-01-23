@@ -29,9 +29,6 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("The actor at the center, usually the mobile construction vehicle.")]
 		public readonly string BaseActor = null;
 
-		[Desc("Offset from the spawn point, BaseActor will spawn at.")]
-		public readonly CVec BaseActorOffset = CVec.Zero;
-
 		[Desc("A group of units ready to defend or scout.")]
 		public readonly string[] SupportActors = { };
 

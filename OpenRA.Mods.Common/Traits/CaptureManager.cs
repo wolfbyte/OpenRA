@@ -227,11 +227,11 @@ namespace OpenRA.Mods.Common.Traits
 			if (captures == null)
 				return false;
 
-			if (Info.ShowChatMessage && self.World.LocalPlayer == self.Owner)
-				Game.AddChatLine(Color.White, "Battlefield Control", Info.ChatMessage);
+			if (info.ShowChatMessage && self.World.LocalPlayer == self.Owner)
+				Game.AddChatLine(Color.White, "Battlefield Control", info.ChatMessage);
 
-			if (Info.Notification != null)
-				Game.Sound.PlayNotification(self.World.Map.Rules, self.Owner, "Speech", Info.Notification, self.Owner.Faction.InternalName);
+			if (info.BeingCapturedNotification != null)
+				Game.Sound.PlayNotification(self.World.Map.Rules, self.Owner, "Speech", info.BeingCapturedNotification, self.Owner.Faction.InternalName);
 
 			if (progressWatchers.Any() || targetManager.progressWatchers.Any())
 			{

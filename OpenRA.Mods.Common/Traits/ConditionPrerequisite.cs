@@ -53,9 +53,9 @@ namespace OpenRA.Mods.Common.Traits
 				foreach (var queue in queues.Where(t => t.Enabled))
 				{
 					queue.CacheProducibles(playerActor);
-					queue.producible[self.World.Map.Rules.Actors[Info.Actor]].Visible = true;
+					queue.Producible[self.World.Map.Rules.Actors[Info.Actor]].Visible = true;
 					if (!IsTraitPaused)
-						queue.producible[self.World.Map.Rules.Actors[Info.Actor]].Buildable = true;
+						queue.Producible[self.World.Map.Rules.Actors[Info.Actor]].Buildable = true;
 				}
 			}
 
@@ -64,7 +64,7 @@ namespace OpenRA.Mods.Common.Traits
 				foreach (var queue in queues.Where(t => t.Enabled))
 				{
 					queue.CacheProducibles(playerActor);
-					queue.producible[self.World.Map.Rules.Actors[Info.Actor]].Visible = false;
+					queue.Producible[self.World.Map.Rules.Actors[Info.Actor]].Visible = false;
 				}
 			}
 		}

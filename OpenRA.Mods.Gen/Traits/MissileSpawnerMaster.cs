@@ -1,8 +1,5 @@
 #region Copyright & License Information
 /*
- * Modded by Boolbada of OP Mod.
- * Modded from cargo.cs but a lot changed.
- *
  * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
@@ -13,7 +10,6 @@
 #endregion
 
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Yupgi_alert.Activities;
@@ -32,11 +28,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		[Desc("The condition to grant to self right after launching a spawned unit. (Used by V3 to make immobile.)")]
 		public readonly string LaunchingCondition = null;
 
-		[Desc("After this many ticks, we remove the condition.")]
-		public readonly int LaunchingTicks = 15;
-
 		[Desc("Pip color for the spawn count.")]
-		public readonly PipType PipType = PipType.Yellow;
+		public readonly PipType PipType = PipType.Green;
 
 		[GrantedConditionReference]
 		[Desc("The condition to grant to self while spawned units are loaded.",
@@ -57,9 +50,11 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 	{
 		public new MissileSpawnerMasterInfo Info { get; private set; }
 
-		ExternalCondition[] externalConditions;
+        ConditionManager conditionManager;
+        readonly Dictionary<string, Stack<int>> spawnContainTokens = new Dictionary<string, Stack<int>>();
+        Stack<int> loadedTokens = new Stack<int>();
 
-		int respawnTicks = 0;
+        int respawnTicks = 0;
 
 		public MissileSpawnerMaster(ActorInitializer init, MissileSpawnerMasterInfo info) : base(init, info)
 		{
@@ -69,15 +64,21 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		protected override void Created(Actor self)
 		{
 			base.Created(self);
+			conditionManager = self.Trait<ConditionManager>();
 
-			externalConditions = self.TraitsImplementing<ExternalCondition>().ToArray();
-		}
+            if (conditionManager != null)
+            {
+                foreach (var entry in SlaveEntries)
+                {
+                    string spawnContainCondition;
+                    if (Info.SpawnContainConditions.TryGetValue(entry.Actor.Info.Name, out spawnContainCondition))
+                        spawnContainTokens.GetOrAdd(entry.Actor.Info.Name).Push(conditionManager.GrantCondition(self, spawnContainCondition));
 
-		public override void OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)
-		{
-			// Do nothing, because missiles can't be captured or mind controlled.
-			return;
-		}
+                    if (!string.IsNullOrEmpty(Info.LoadedCondition))
+                        loadedTokens.Push(conditionManager.GrantCondition(self, Info.LoadedCondition));
+                }
+            }
+        }
 
 		void INotifyAttack.PreparingAttack(Actor self, Target target, Armament a, Barrel barrel) { }
 
@@ -102,15 +103,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 			// Launching condition is timed, so not saving the token.
 			if (Info.LaunchingCondition != null)
-			{
-				var external = externalConditions
-					.FirstOrDefault(t => t.Info.Condition == Info.LaunchingCondition && t.CanGrantCondition(self, this));
-
-				if (external == null)
-					throw new InvalidDataException("Condition `{0}` has not been listed on an enabled ExternalCondition trait".F(Info.LaunchingCondition));
-
-				external.GrantCondition(self, Info.LaunchingCondition, Info.LaunchingTicks);
-			}
+				conditionManager.GrantCondition(self, Info.LaunchingCondition);
 
 			// Program the trajectory.
 			var sbm = se.Actor.Trait<ShootableBallisticMissile>();
@@ -118,8 +111,15 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 			SpawnIntoWorld(self, se.Actor, self.CenterPosition);
 
-			// Queue attack order, too.
-			self.World.AddFrameEndTask(w =>
+            Stack<int> spawnContainToken;
+            if (spawnContainTokens.TryGetValue(a.Info.Name, out spawnContainToken) && spawnContainToken.Any())
+                conditionManager.RevokeCondition(self, spawnContainToken.Pop());
+
+            if (loadedTokens.Any())
+                conditionManager.RevokeCondition(self, loadedTokens.Pop());
+
+            // Queue attack order, too.
+            self.World.AddFrameEndTask(w =>
 			{
 				se.Actor.QueueActivity(new ShootableBallisticMissileFly(se.Actor, sbm.Target, sbm));
 
@@ -160,7 +160,22 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			}
 		}
 
-		void ITick.Tick(Actor self)
+        public override void Replenish(Actor self, BaseSpawnerSlaveEntry entry)
+        {
+            base.Replenish(self, entry);
+
+            string spawnContainCondition;
+            if (conditionManager != null)
+            {
+                if (Info.SpawnContainConditions.TryGetValue(entry.Actor.Info.Name, out spawnContainCondition))
+                    spawnContainTokens.GetOrAdd(entry.Actor.Info.Name).Push(conditionManager.GrantCondition(self, spawnContainCondition));
+
+                if (!string.IsNullOrEmpty(Info.LoadedCondition))
+                    loadedTokens.Push(conditionManager.GrantCondition(self, Info.LoadedCondition));
+            }
+        }
+
+        public void Tick(Actor self)
 		{
 			if (respawnTicks > 0)
 			{

@@ -66,7 +66,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		Kick // Check if there's ore field is close enough.
 	}
 
-	public class SpawnerHarvesterMaster : BaseSpawnerMaster, INotifyBuildComplete, INotifyIdle,
+	public class SpawnerHarvesterMaster : BaseSpawnerMaster, INotifyIdle,
 		ITick, IIssueOrder, IResolveOrder, IOrderVoice, INotifyDeployComplete
 	{
 		readonly SpawnerHarvesterMasterInfo info;
@@ -96,13 +96,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			resLayer = self.World.WorldActor.Trait<ResourceLayer>();
 
 			kickTicks = info.KickDelay;
-		}
-
-		void INotifyBuildComplete.BuildingComplete(Actor self)
-		{
-			// Search for resources upon creation.
-			if (info.SearchOnCreation)
-				self.QueueActivity(new SpawnerHarvesterHarvest(self));
 		}
 
 		// Modify Harvester trait's states to do the mining.

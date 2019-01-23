@@ -1,8 +1,5 @@
-#region Copyright & License Information
+﻿#region Copyright & License Information
 /*
- * Modded by Boolbada of OP Mod.
- * Modded from cargo.cs but a lot changed.
- *
  * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
@@ -14,28 +11,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
-
-/*
-Needs base engine modifications...
-
-For slave miners:
-But the docking procedure may need to change to fit your needs.
-In OP Mod, docking changed for Harvester.cs and related files to that
-these slaves can "dock" to any adjacent cells near the master.
-
-For airborne carriers:
-Those spawned aircrafts do work without any base engine modifcation.
-However, land.cs modified so that they will "land" mid air.
-Track readonly WDist landHeight; for related changes.
-
-EnterSpawner needs modifications too, as it inherits Enter.cs
-and uses its internal variables.
-Fortunately, I made a PR so that you don't have to worry about this in the future.
-*/
 
 namespace OpenRA.Mods.Yupgi_alert.Traits
 {
@@ -56,7 +34,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public readonly int LaunchingTicks = 15;
 
 		[Desc("Pip color for the spawn count.")]
-		public readonly PipType PipType = PipType.Yellow;
+		public readonly PipType PipType = PipType.Green;
 
 		[Desc("Insta-repair spawners when they return?")]
 		public readonly bool InstaRepair = true;
@@ -85,14 +63,11 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			public new CarrierSlave SpawnerSlave;
 		}
 
-		readonly Dictionary<string, Stack<int>> spawnContainTokens = new Dictionary<string, Stack<int>>();
-
 		public new CarrierMasterInfo Info { get; private set; }
 
 		CarrierSlaveEntry[] slaveEntries;
-		ExternalCondition[] externalConditions;
 		ConditionManager conditionManager;
-
+		readonly Dictionary<string, Stack<int>> spawnContainTokens = new Dictionary<string, Stack<int>>();
 		Stack<int> loadedTokens = new Stack<int>();
 
 		int respawnTicks = 0;
@@ -105,9 +80,20 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		protected override void Created(Actor self)
 		{
 			base.Created(self);
+			conditionManager = self.Trait<ConditionManager>();
 
-			conditionManager = self.TraitOrDefault<ConditionManager>();
-			externalConditions = self.TraitsImplementing<ExternalCondition>().ToArray();
+			if (conditionManager != null)
+			{
+				foreach (var entry in SlaveEntries)
+				{
+					string spawnContainCondition;
+					if (Info.SpawnContainConditions.TryGetValue(entry.Actor.Info.Name, out spawnContainCondition))
+						spawnContainTokens.GetOrAdd(entry.Actor.Info.Name).Push(conditionManager.GrantCondition(self, spawnContainCondition));
+
+					if (!string.IsNullOrEmpty(Info.LoadedCondition))
+						loadedTokens.Push(conditionManager.GrantCondition(self, Info.LoadedCondition));
+				}
+			}
 		}
 
 		public override BaseSpawnerSlaveEntry[] CreateSlaveEntries(BaseSpawnerMasterInfo info)
@@ -122,12 +108,12 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public override void InitializeSlaveEntry(Actor slave, BaseSpawnerSlaveEntry entry)
 		{
-			var se = entry as CarrierSlaveEntry;
-			base.InitializeSlaveEntry(slave, se);
+			var carrierSlaveEntry = entry as CarrierSlaveEntry;
+			base.InitializeSlaveEntry(slave, carrierSlaveEntry);
 
-			se.RearmTicks = 0;
-			se.IsLaunched = false;
-			se.SpawnerSlave = slave.Trait<CarrierSlave>();
+			carrierSlaveEntry.RearmTicks = 0;
+			carrierSlaveEntry.IsLaunched = false;
+			carrierSlaveEntry.SpawnerSlave = slave.Trait<CarrierSlave>();
 		}
 
 		void INotifyAttack.PreparingAttack(Actor self, Target target, Armament a, Barrel barrel) { }
@@ -147,43 +133,37 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				if (slave.IsLaunched && slave.IsValid)
 					slave.SpawnerSlave.Attack(slave.Actor, target);
 
-			var se = GetLaunchable();
-			if (se == null)
+			var carrierSlaveEntry = GetLaunchable();
+			if (carrierSlaveEntry == null)
 				return;
 
-			se.IsLaunched = true; // mark as launched
+			carrierSlaveEntry.IsLaunched = true; // mark as launched
 
 			// Launching condition is timed, so not saving the token.
 			if (Info.LaunchingCondition != null)
-			{
-				var external = externalConditions
-					.FirstOrDefault(t => t.Info.Condition == Info.LaunchingCondition && t.CanGrantCondition(self, this));
+				conditionManager.GrantCondition(self, Info.LaunchingCondition); // TODO removed Info.LaunchingTicks
 
-				if (external == null)
-					throw new InvalidDataException("Condition `{0}` has not been listed on an enabled ExternalCondition trait".F(Info.LaunchingCondition));
+			SpawnIntoWorld(self, carrierSlaveEntry.Actor, self.CenterPosition);
 
-				external.GrantCondition(self, Info.LaunchingCondition, Info.LaunchingTicks);
-			}
+			Stack<int> spawnContainToken;
+			if (spawnContainTokens.TryGetValue(a.Info.Name, out spawnContainToken) && spawnContainToken.Any())
+				conditionManager.RevokeCondition(self, spawnContainToken.Pop());
 
-			SpawnIntoWorld(self, se.Actor, self.CenterPosition);
+			if (loadedTokens.Any())
+				conditionManager.RevokeCondition(self, loadedTokens.Pop());
 
 			// Queue attack order, too.
 			self.World.AddFrameEndTask(w =>
 			{
 				// The actor might had been trying to do something before entering the carrier.
 				// Cancel whatever it was trying to do.
-				se.SpawnerSlave.Stop(se.Actor);
+				carrierSlaveEntry.SpawnerSlave.Stop(carrierSlaveEntry.Actor);
 
-				se.SpawnerSlave.Attack(se.Actor, target);
+				carrierSlaveEntry.SpawnerSlave.Attack(carrierSlaveEntry.Actor, target);
 			});
 		}
 
-		void INotifyBecomingIdle.OnBecomingIdle(Actor self)
-		{
-			OnBecomingIdle(self);
-		}
-
-		protected virtual void OnBecomingIdle(Actor self)
+		public virtual void OnBecomingIdle(Actor self)
 		{
 			Recall(self);
 		}
@@ -191,9 +171,9 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		void Recall(Actor self)
 		{
 			// Tell launched slaves to come back and enter me.
-			foreach (var se in slaveEntries)
-				if (se.IsLaunched && se.IsValid)
-					se.SpawnerSlave.EnterSpawner(se.Actor);
+			foreach (var carrierSlaveEntry in slaveEntries)
+				if (carrierSlaveEntry.IsLaunched && carrierSlaveEntry.IsValid)
+					carrierSlaveEntry.SpawnerSlave.EnterSpawner(carrierSlaveEntry.Actor);
 		}
 
 		public override void OnSlaveKilled(Actor self, Actor slave)
@@ -205,9 +185,9 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		CarrierSlaveEntry GetLaunchable()
 		{
-			foreach (var se in slaveEntries)
-				if (se.RearmTicks <= 0 && !se.IsLaunched && se.IsValid)
-					return se;
+			foreach (var carrierSlaveEntry in slaveEntries)
+				if (carrierSlaveEntry.RearmTicks <= 0 && !carrierSlaveEntry.IsLaunched && carrierSlaveEntry.IsValid)
+					return carrierSlaveEntry;
 
 			return null;
 		}
@@ -218,8 +198,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				yield break;
 
 			int inside = 0;
-			foreach (var se in slaveEntries)
-				if (se.IsValid && !se.IsLaunched)
+			foreach (var carrierSlaveEntry in slaveEntries)
+				if (carrierSlaveEntry.IsValid && !carrierSlaveEntry.IsLaunched)
 					inside++;
 
 			for (var i = 0; i < Info.Actors.Length; i++)
@@ -234,10 +214,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public void PickupSlave(Actor self, Actor a)
 		{
 			CarrierSlaveEntry slaveEntry = null;
-			foreach (var se in slaveEntries)
-				if (se.Actor == a)
+			foreach (var carrierSlaveEntry in slaveEntries)
+				if (carrierSlaveEntry.Actor == a)
 				{
-					slaveEntry = se;
+					slaveEntry = carrierSlaveEntry;
 					break;
 				}
 
@@ -257,7 +237,22 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				loadedTokens.Push(conditionManager.GrantCondition(self, Info.LoadedCondition));
 		}
 
-		void ITick.Tick(Actor self)
+		public override void Replenish(Actor self, BaseSpawnerSlaveEntry entry)
+		{
+			base.Replenish(self, entry);
+
+			string spawnContainCondition;
+			if (conditionManager != null)
+			{
+				if (Info.SpawnContainConditions.TryGetValue(entry.Actor.Info.Name, out spawnContainCondition))
+					spawnContainTokens.GetOrAdd(entry.Actor.Info.Name).Push(conditionManager.GrantCondition(self, spawnContainCondition));
+
+				if (!string.IsNullOrEmpty(Info.LoadedCondition))
+					loadedTokens.Push(conditionManager.GrantCondition(self, Info.LoadedCondition));
+			}
+		}
+
+		public void Tick(Actor self)
 		{
 			if (respawnTicks > 0)
 			{
@@ -275,10 +270,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			}
 
 			// Rearm
-			foreach (var se in slaveEntries)
+			foreach (var carrierSlaveEntry in slaveEntries)
 			{
-				if (se.RearmTicks > 0)
-					se.RearmTicks--;
+				if (carrierSlaveEntry.RearmTicks > 0)
+					carrierSlaveEntry.RearmTicks--;
 			}
 		}
 	}

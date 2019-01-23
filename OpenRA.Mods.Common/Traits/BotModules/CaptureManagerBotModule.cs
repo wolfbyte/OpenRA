@@ -109,7 +109,7 @@ namespace OpenRA.Mods.Common.Traits
 		IEnumerable<Actor> GetActorsThatCanBeOrderedByPlayer(Player owner)
 		{
 			foreach (var actor in world.Actors)
-				if (actor.Owner == owner && !actor.IsDead && actor.IsInWorld)
+				if (actor.Owner == owner && !actor.IsDead && actor.IsInWorld && Info.CapturableActorTypes.Contains(actor.Info.Name))
 					yield return actor;
 		}
 
@@ -154,9 +154,6 @@ namespace OpenRA.Mods.Common.Traits
 				})
 				.OrderByDescending(target => target.Actor.GetSellValue())
 				.Take(maximumCaptureTargetOptions);
-
-			if (Info.CapturableActorTypes.Any())
-				capturableTargetOptions = capturableTargetOptions.Where(target => Info.CapturableActorTypes.Contains(target.Actor.Info.Name.ToLowerInvariant()));
 
 			if (!capturableTargetOptions.Any())
 				return;

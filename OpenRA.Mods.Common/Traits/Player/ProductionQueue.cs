@@ -367,8 +367,10 @@ namespace OpenRA.Mods.Common.Traits
 			}
 		}
 
-		public bool CanQueue(ActorInfo actor)
+		public bool CanQueue(ActorInfo actor, out string notificationAudio)
 		{
+			notificationAudio = Info.BlockedAudio;
+
 			var bi = actor.TraitInfoOrDefault<BuildableInfo>();
 			if (bi == null)
 				return false;
@@ -548,6 +550,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			var cancelledAudio = bi.CancelledAudio != null ? bi.CancelledAudio : Info.CancelledAudio;
 			Game.Sound.PlayNotification(rules, self.Owner, "Speech", cancelledAudio, self.Owner.Faction.InternalName);
+			for (var i = 0; i < numberToCancel; i++)
 				if (!CancelProductionInner(itemName))
 					break;
 		}
@@ -567,7 +570,7 @@ namespace OpenRA.Mods.Common.Traits
 				else
 				{
 					// Refund what has been paid
-					if (cost != 0 && Info.InstantCashDrain)
+					if (Info.InstantCashDrain)
 						playerResources.GiveCash(item.TotalCost);
 					else
 						playerResources.GiveCash(item.TotalCost - item.RemainingCost);

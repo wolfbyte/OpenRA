@@ -59,11 +59,11 @@ namespace OpenRA.Mods.Common.Traits.Render
 			anim.PlayThen(info.Sequence, () => visible = false);
 		}
 
-		public Activity INotifyHarvesterAction.MovingToResources(Actor self, CPos targetCell, Activity next) { return null; }
-		public Activity INotifyHarvesterAction.MovingToRefinery(Actor self, Actor targetRefinery, Activity next) { return null; }
-		public void INotifyHarvesterAction.MovementCancelled(Actor self) { }
-		public void INotifyHarvesterAction.Docked() { }
-		public void INotifyHarvesterAction.Undocked() { }
+		Activity INotifyHarvesterAction.MovingToResources(Actor self, CPos targetCell, Activity next) { return null; }
+		Activity INotifyHarvesterAction.MovingToRefinery(Actor self, Actor targetRefinery, Activity next) { return null; }
+		void INotifyHarvesterAction.MovementCancelled(Actor self) { }
+		void INotifyHarvesterAction.Docked() { }
+		void INotifyHarvesterAction.Undocked() { }
 
 		public static int ZOffsetFromCenter(Actor self, WPos pos, int offset)
 		{

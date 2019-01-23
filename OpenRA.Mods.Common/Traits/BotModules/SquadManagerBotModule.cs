@@ -34,6 +34,14 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Enemy building types around which to scan for targets for naval squads.")]
 		public readonly HashSet<string> NavalProductionTypes = new HashSet<string>();
 
+		[Desc("Tells the AI what building types are considered as anti-air defense." +
+			"Used by air squads to escape from them.")]
+		public readonly HashSet<string> StaticAATypes = new HashSet<string>();
+
+		[Desc("Tells the AI what unit types are considered as siege units" +
+			"Those units are not used by defensive squads.")]
+		public readonly HashSet<string> SiegeUnitTypes = new HashSet<string>();
+
 		[Desc("Minimum number of units AI must have before attacking.")]
 		public readonly int SquadSize = 8;
 
@@ -273,7 +281,8 @@ namespace OpenRA.Mods.Common.Traits
 			// TODO: This should use common names & ExcludeFromSquads instead of hardcoding TraitInfo checks
 			var ownUnits = activeUnits
 				.Where(unit => unit.IsIdle && unit.Info.HasTraitInfo<AttackBaseInfo>()
-					&& !unit.Info.HasTraitInfo<AircraftInfo>() && !unit.Info.HasTraitInfo<HarvesterInfo>()).ToList();
+					&& !unit.Info.HasTraitInfo<AircraftInfo>() && !unit.Info.HasTraitInfo<HarvesterInfo>()
+					&& !unit.Info.HasTraitInfo<SelectableInfo>()).ToList();
 
 			if (!allEnemyBaseBuilder.Any() || ownUnits.Count < Info.SquadSize)
 				return;
@@ -312,7 +321,8 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				var ownUnits = World.FindActorsInCircle(World.Map.CenterOfCell(GetRandomBaseCenter()), WDist.FromCells(Info.ProtectUnitScanRadius))
 					.Where(unit => unit.Owner == Player && !unit.Info.HasTraitInfo<BuildingInfo>() && !unit.Info.HasTraitInfo<HarvesterInfo>()
-						&& unit.Info.HasTraitInfo<AttackBaseInfo>());
+						&& unit.Info.HasTraitInfo<AttackBaseInfo>() && unit.Info.HasTraitInfo<SelectableInfo>()
+						&& !Info.ExcludeFromSquadsTypes.Contains(unit.Info.Name));
 
 				foreach (var a in ownUnits)
 					protectSq.Units.Add(a);
