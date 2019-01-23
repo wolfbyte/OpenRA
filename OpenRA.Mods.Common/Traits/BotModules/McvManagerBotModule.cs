@@ -206,7 +206,7 @@ namespace OpenRA.Mods.Common.Traits
 					if (!world.CanPlaceBuilding(cell + offset, actorInfo, bi, null))
 						continue;
 
-					if (distanceToBaseIsImportant && !bi.IsCloseEnoughToBase(world, player, actorInfo, cell))
+					if (distanceToBaseIsImportant && !bi.IsCloseEnoughToBase(world, player, actorInfo, null, cell))
 						continue;
 
 					return cell;

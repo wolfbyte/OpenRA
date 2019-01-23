@@ -206,7 +206,7 @@ namespace OpenRA.Mods.Cnc.Traits
 			return false;
 		}
 
-		bool IMove.TurnWhileDisabled(Actor self)
+		public bool TurnWhileDisabled(Actor self)
 		{
 			return false;
 		}

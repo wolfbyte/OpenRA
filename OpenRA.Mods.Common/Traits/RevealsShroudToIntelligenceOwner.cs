@@ -37,7 +37,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public override void AddCellsToPlayerShroud(Actor self, Player p, PPos[] uv)
 		{
-			p.Shroud.AddSource(this, type, uv);
+			p.Shroud.AddSource(this, Type, uv);
 		}
 
 		void ITick.Tick(Actor self)

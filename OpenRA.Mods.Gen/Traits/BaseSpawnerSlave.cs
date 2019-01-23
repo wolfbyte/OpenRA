@@ -1,8 +1,5 @@
 ﻿#region Copyright & License Information
 /*
- * Modded by Boolbada of OP Mod.
- * Modded from Cargo.cs but a lot changed.
- *
  * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
@@ -15,11 +12,6 @@
 using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
-
-/*
-Works without base engine modification.
-Will work even better if the PR is merged
-*/
 
 namespace OpenRA.Mods.Yupgi_alert.Traits
 {
@@ -55,12 +47,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			this.info = info;
 		}
 
-		void INotifyCreated.Created(Actor self)
-		{
-			Created(self);
-		}
-
-		protected virtual void Created(Actor self)
+		public virtual void Created(Actor self)
 		{
 			attackBases = self.TraitsImplementing<AttackBase>().ToArray();
 			conditionManager = self.Trait<ConditionManager>();
@@ -102,15 +89,15 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 			self.CancelActivity();
 
-			// And tell attack bases to stop attacking.
-			foreach (var ab in attackBases)
+			// And tell attack bases to stop attacking. // TODO
+/*			foreach (var ab in attackBases)
 				if (!ab.IsTraitDisabled)
-					ab.OnStopOrder(self);
+					ab.OnStopOrder(self); */
 		}
 
 		// Make this actor attack a target.
 		Target lastTarget;
-		public void Attack(Actor self, Target target)
+		public virtual void Attack(Actor self, Target target)
 		{
 			// Don't have to change target or alter current activity.
 			if (!TargetSwitched(lastTarget, target))
@@ -143,11 +130,11 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			}
 		}
 
-        // DUMMY FUNCTION to suppress masterDeadToken assigned but unused warning (== error for Travis).
-        void OnNewMaster(Actor self, Actor master)
-        {
-            conditionManager.RevokeCondition(self, masterDeadToken);
-        }
+		// DUMMY FUNCTION to suppress masterDeadToken assigned but unused warning (== error for Travis).
+		void OnNewMaster(Actor self, Actor master)
+		{
+			conditionManager.RevokeCondition(self, masterDeadToken);
+		}
 
 		public virtual void OnMasterKilled(Actor self, Actor attacker, SpawnerSlaveDisposal disposal)
 		{
@@ -157,17 +144,17 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 			switch (disposal)
 			{
-				case SpawnerSlaveDisposal.KillSlaves:
-					self.Kill(attacker);
-					break;
-				case SpawnerSlaveDisposal.GiveSlavesToAttacker:
-					self.CancelActivity();
-					self.ChangeOwner(attacker.Owner);
-					break;
-				case SpawnerSlaveDisposal.DoNothing:
-					// fall through
-				default:
-					break;
+			case SpawnerSlaveDisposal.KillSlaves:
+				self.Kill(attacker);
+				break;
+			case SpawnerSlaveDisposal.GiveSlavesToAttacker:
+				self.CancelActivity();
+				self.ChangeOwner(attacker.Owner);
+				break;
+			case SpawnerSlaveDisposal.DoNothing:
+				// fall through
+			default:
+				break;
 			}
 		}
 
@@ -176,17 +163,17 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		{
 			switch (disposal)
 			{
-				case SpawnerSlaveDisposal.KillSlaves:
-					self.Kill(self);
-					break;
-				case SpawnerSlaveDisposal.GiveSlavesToAttacker:
-					self.CancelActivity();
-					self.ChangeOwner(newOwner);
-					break;
-				case SpawnerSlaveDisposal.DoNothing:
-					// fall through
-				default:
-					break;
+			case SpawnerSlaveDisposal.KillSlaves:
+				self.Kill(self);
+				break;
+			case SpawnerSlaveDisposal.GiveSlavesToAttacker:
+				self.CancelActivity();
+				self.ChangeOwner(newOwner);
+				break;
+			case SpawnerSlaveDisposal.DoNothing:
+				// fall through
+			default:
+				break;
 			}
 		}
 

@@ -53,10 +53,6 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Can the actor be ordered to move in to shroud?")]
 		public readonly bool MoveIntoShroud = true;
 
-		public virtual object Create(ActorInitializer init) { return new Aircraft(init, this); }
-		public int GetInitialFacing() { return InitialFacing; }
-		public WDist GetCruiseAltitude() { return CruiseAltitude; }
-
 		[VoiceReference] public readonly string Voice = "Action";
 
 		[GrantedConditionReference]
@@ -366,8 +362,11 @@ namespace OpenRA.Mods.Common.Traits
 			if (self.World.Map.DistanceAboveTerrain(CenterPosition).Length != 0)
 				return null; // not on the ground.
 
+			if (rearmableInfo == null && repairableInfo == null)
+				return null;
+
 			return self.World.ActorMap.GetActorsAt(self.Location)
-				.FirstOrDefault(a => Info.RearmBuildings.Contains(a.Info.Name) || Info.RepairBuildings.Contains(a.Info.Name));
+				.FirstOrDefault(a => rearmableInfo.RearmActors.Contains(a.Info.Name) || repairableInfo.RepairBuildings.Contains(a.Info.Name));
 		}
 
 		protected void ReserveSpawnBuilding()

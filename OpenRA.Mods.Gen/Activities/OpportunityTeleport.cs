@@ -21,16 +21,16 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 {
 	public class OpportunityTeleport : Activity
 	{
-		readonly PortableChronoInfo pchronoInfo;
-		readonly PortableChrono pchrono;
+		public readonly PortableChronoInfo PChronoInfo;
+		public readonly PortableChrono PChrono;
 		readonly CPos targetCell;
 
 		// moveToDest: activities that will make this actor move to the destination.
 		// i.e., Move.
 		public OpportunityTeleport(Actor self, PortableChronoInfo pchronoInfo, CPos targetCell, Activity moveToDest)
 		{
-			this.pchronoInfo = pchronoInfo;
-			pchrono = self.Trait<PortableChrono>();
+			this.PChronoInfo = pchronoInfo;
+			PChrono = self.Trait<PortableChrono>();
 			this.targetCell = targetCell;
 			QueueChild(moveToDest);
 		}
@@ -44,10 +44,10 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 			if (ChildActivity == null)
 				return NextInQueue;
 
-			if (pchrono.CanTeleport && (self.Location - targetCell).LengthSquared > 4)
+			if (PChrono.CanTeleport && (self.Location - targetCell).LengthSquared > 4)
 			{
 				ChildActivity = new Teleport(self, targetCell, null,
-					pchronoInfo.KillCargo, pchronoInfo.FlashScreen, pchronoInfo.ChronoshiftSound);
+					PChronoInfo.KillCargo, PChronoInfo.FlashScreen, PChronoInfo.ChronoshiftSound);
 
 				ChildActivity = ActivityUtils.RunActivity(self, ChildActivity);
 				return this;

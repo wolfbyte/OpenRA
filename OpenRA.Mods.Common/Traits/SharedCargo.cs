@@ -120,9 +120,9 @@ namespace OpenRA.Mods.Common.Traits
 			return null;
 		}
 
-		Order IIssueDeployOrder.IssueDeployOrder(Actor self)
+		Order IIssueDeployOrder.IssueDeployOrder(Actor self, bool queued)
 		{
-			return new Order("UnloadShared", self, false);
+			return new Order("UnloadShared", self, queued);
 		}
 
 		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return true; }

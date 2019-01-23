@@ -53,11 +53,6 @@ namespace OpenRA.Mods.Common.Yupgi_alert
 				DefaultAnimation.PlayRepeating(NormalizeSequence(init.Self, sequence));
 		}
 
-		protected override void OnBuildComplete(Actor self)
-		{
-			DefaultAnimation.PlayRepeating(NormalizeSequence(self, sequence));
-		}
-
 		public override void PlayCustomAnimation(Actor self, string name, Action after = null)
 		{
 			var anim = DefaultAnimation.HasSequence(name + "-" + terrain) ? name + "-" + terrain : name;

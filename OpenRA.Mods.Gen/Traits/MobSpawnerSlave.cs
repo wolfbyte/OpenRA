@@ -50,7 +50,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			this.self = init.Self;
 		}
 
-		protected override void Created(Actor self)
+		public override void Created(Actor self)
 		{
 			base.Created(self);
 

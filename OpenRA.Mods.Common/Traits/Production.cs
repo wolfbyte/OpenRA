@@ -131,12 +131,13 @@ namespace OpenRA.Mods.Common.Traits
 
 			if (exit != null || self.OccupiesSpace == null)
 			{
+				var exitInfo = exit == null ? null : exit.Info;
 				var buildable = producee.TraitInfoOrDefault<BuildableInfo>();
 				if (buildable != null)
 					for (var n = 0; n < buildable.BuildAmount; n++)
-						DoProduction(self, producee, exit.Info, productionType, inits);
+						DoProduction(self, producee, exitInfo, productionType, inits);
 				else
-					DoProduction(self, producee, exit.Info, productionType, inits);
+					DoProduction(self, producee, exitInfo, productionType, inits);
 
 				return true;
 			}

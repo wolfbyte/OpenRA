@@ -33,7 +33,7 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 				return true;
 
 			// Is it seige unit?
-			if (owner.Bot.Info.UnitsCommonNames.Seige.Contains(target.Info.Name))
+			if (owner.SquadManager.Info.SiegeUnitTypes.Contains(target.Info.Name))
 				return true;
 
 			return false;

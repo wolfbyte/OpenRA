@@ -37,7 +37,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		readonly BodyOrientation body;
 		readonly Armament[] armaments;
 		readonly AttackBase attackBase;
-		readonly Building building;
 
 		public FireWeaponAtSelf(Actor self, FireWeaponAtSelfInfo info)
 			: base(info)
@@ -51,8 +50,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			// Not sure about attackbase selection. I assert there is only one active at once,
 			// but then if we decide this at creation time... ugh.
 			attackBase = self.TraitsImplementing<AttackBase>().Where(a => a.IsTraitEnabled()).First();
-
-			building = self.TraitOrDefault<Building>();
 		}
 
 		void ITick.Tick(Actor self)
@@ -64,9 +61,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				return;
 
 			if (attackBase.IsTraitDisabled)
-				return;
-
-			if (building != null && !building.BuildComplete)
 				return;
 
 			var localoffset = body != null

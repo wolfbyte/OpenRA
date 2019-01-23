@@ -1,8 +1,5 @@
-#region Copyright & License Information
+﻿#region Copyright & License Information
 /*
- * Written by Boolbada of OP Mod.
- * Follows GPLv3 License as the OpenRA engine:
- *
  * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
@@ -14,12 +11,11 @@
 
 using System;
 using System.Linq;
-using OpenRA.Mods.Common;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Primitives;
 using OpenRA.Traits;
 
-namespace OpenRA.Mods.Yupgi_alert.Traits
+namespace OpenRA.Mods.RA2.Traits
 {
 	// What to do when master is killed or mind controlled
 	public enum SpawnerSlaveDisposal
@@ -59,9 +55,6 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		[Desc("Only spawn initial load of slaves?")]
 		public readonly bool NoRegeneration = false;
 
-		[Desc("Set slave subcell to this if it allows.")]
-		public readonly byte SubCell = 0;
-
 		[Desc("Spawn all slaves at once when regenerating slaves, instead of one by one?")]
 		public readonly bool SpawnAllAtOnce = false;
 
@@ -89,7 +82,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public override object Create(ActorInitializer init) { return new BaseSpawnerMaster(init, this); }
 	}
 
-	public class BaseSpawnerMaster : ConditionalTrait<BaseSpawnerMasterInfo>, INotifyCreated, INotifyKilled, INotifyOwnerChanged, INotifyActorDisposing
+	public class BaseSpawnerMaster : ConditionalTrait<BaseSpawnerMasterInfo>, INotifyCreated, INotifyKilled, INotifyOwnerChanged
 	{
 		readonly Actor self;
 		protected readonly BaseSpawnerSlaveEntry[] SlaveEntries;
@@ -132,9 +125,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 			// Spawn initial load.
 			int burst = Info.InitialActorCount == -1 ? Info.Actors.Length : Info.InitialActorCount;
-			if (!IsTraitDisabled)
-				for (int i = 0; i < burst; i++)
-					Replenish(self, SlaveEntries);
+			for (int i = 0; i < burst; i++)
+				Replenish(self, SlaveEntries);
 		}
 
 		/// <summary>
@@ -171,12 +163,9 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (entry.IsValid)
 				throw new InvalidOperationException("Replenish must not be run on a valid entry!");
 
-			var td = new TypeDictionary { new OwnerInit(self.Owner) };
-			if (Info.SubCell > 0)
-				td.Add(new SubCellInit(Info.SubCell));
-
 			// Some members are missing. Create a new one.
-			var slave = self.World.CreateActor(false, entry.ActorName, td);
+			var slave = self.World.CreateActor(false, entry.ActorName,
+				new TypeDictionary { new OwnerInit(self.Owner) });
 
 			// Initialize slave entry
 			InitializeSlaveEntry(slave, entry);
@@ -206,31 +195,31 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public virtual void Killed(Actor self, AttackInfo e)
 		{
 			// Notify slaves.
-			foreach (var se in SlaveEntries)
-				if (se.IsValid)
-					se.SpawnerSlave.OnMasterKilled(se.Actor, e.Attacker, Info.SlaveDisposalOnKill);
+			foreach (var slaveEntry in SlaveEntries)
+				if (slaveEntry.IsValid)
+					slaveEntry.SpawnerSlave.OnMasterKilled(slaveEntry.Actor, e.Attacker, Info.SlaveDisposalOnKill);
 		}
 
 		public virtual void OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)
 		{
 			// Owner thing is so difficult and confusing, I'm expecting bugs.
 			self.World.AddFrameEndTask(w =>
-			{
-				foreach (var se in SlaveEntries)
-					if (se.IsValid)
-						se.SpawnerSlave.OnMasterOwnerChanged(self, oldOwner, newOwner, Info.SlaveDisposalOnOwnerChange);
-			});
+				{
+					foreach (var slaveEntry in SlaveEntries)
+						if (slaveEntry.IsValid)
+							slaveEntry.SpawnerSlave.OnMasterOwnerChanged(slaveEntry.Actor, oldOwner, newOwner, Info.SlaveDisposalOnOwnerChange);
+				});
 		}
 
-		void INotifyActorDisposing.Disposing(Actor self)
+		public virtual void Disposing(Actor self)
 		{
 			// Just dispose them regardless of slave disposal options.
-			foreach (var se in SlaveEntries)
-				if (se.IsValid)
-					se.Actor.Dispose();
+			foreach (var slaveEntry in SlaveEntries)
+				if (slaveEntry.IsValid)
+					slaveEntry.Actor.Dispose();
 		}
 
-		public void SpawnIntoWorld(Actor self, Actor slave, WPos centerPosition)
+		public virtual void SpawnIntoWorld(Actor self, Actor slave, WPos centerPosition)
 		{
 			var exit = ChooseExit(self);
 			SetSpawnedFacing(slave, self, exit);
@@ -246,11 +235,11 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				var location = self.World.Map.CellContaining(centerPosition + spawnOffset);
 
 				var mv = slave.Trait<IMove>();
-				slave.QueueActivity(mv.MoveIntoWorld(slave, location, Info.SubCell > 0 ? (SubCell)Info.SubCell : SubCell.Any));
+				slave.QueueActivity(mv.MoveIntoWorld(slave, location));
 
 				// Move to rally point if any.
 				if (rallyPoint != null)
-					rallyPoint.QueueRallyOrder(self, slave);
+					slave.QueueActivity(mv.MoveTo(rallyPoint.Location, 2));
 				else
 				{
 					// Move to a valid position, if no rally point.
@@ -290,12 +279,12 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public void StopSlaves()
 		{
-			foreach (var se in SlaveEntries)
+			foreach (var slaveEntry in SlaveEntries)
 			{
-				if (!se.IsValid)
+				if (!slaveEntry.IsValid)
 					continue;
 
-				se.SpawnerSlave.Stop(se.Actor);
+				slaveEntry.SpawnerSlave.Stop(slaveEntry.Actor);
 			}
 		}
 

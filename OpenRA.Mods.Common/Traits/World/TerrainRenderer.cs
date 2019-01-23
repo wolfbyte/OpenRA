@@ -11,6 +11,7 @@
 
 using System.Collections.Generic;
 using System.Drawing;
+using OpenRA.FileFormats;
 using OpenRA.Graphics;
 using OpenRA.Traits;
 
@@ -24,8 +25,8 @@ namespace OpenRA.Mods.Common.Traits
 	public sealed class TerrainRenderer : IRenderTerrain, IWorldLoaded, INotifyActorDisposing
 	{
 		readonly Map map;
-		readonly Sprite skyImage;
-		readonly float2 skySz;
+		Sprite skyImage;
+		float2 skySz;
 
 		readonly Dictionary<string, TerrainSpriteLayer> spriteLayers = new Dictionary<string, TerrainSpriteLayer>();
 		Theater theater;
@@ -45,9 +46,9 @@ namespace OpenRA.Mods.Common.Traits
 				skySz = new float2(Game.Renderer.Resolution.Width, Game.Renderer.Resolution.Width);
 				using (var dataStream = map.Package.GetStream(map.SkyboxImage))
 				{
-					var bmp = new Bitmap(dataStream);
-					var sheetBuilder = new SheetBuilder(SheetType.BGRA, bmp.Size.Width);
-					skyImage = sheetBuilder.Add(bmp);
+					var png = new Png(dataStream);
+					var sheetBuilder = new SheetBuilder(SheetType.BGRA, png.Width);
+					skyImage = sheetBuilder.Add(png);
 				}
 			}
 

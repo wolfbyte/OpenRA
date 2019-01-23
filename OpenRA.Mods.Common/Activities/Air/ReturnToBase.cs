@@ -40,9 +40,9 @@ namespace OpenRA.Mods.Common.Activities
 
 		public static IEnumerable<Actor> GetAirfields(Actor self)
 		{
-			var rearmBuildings = self.Info.TraitInfo<AircraftInfo>().RearmBuildings;
+			var rearmActors = self.Info.TraitInfo<RearmableInfo>().RearmActors;
 			return self.World.ActorsHavingTrait<DockManager>()
-				.Where(a => a.Owner == self.Owner && rearmBuildings.Contains(a.Info.Name));
+				.Where(a => a.Owner == self.Owner && rearmActors.Contains(a.Info.Name));
 		}
 
 		int CalculateTurnRadius(int speed)
@@ -53,7 +53,7 @@ namespace OpenRA.Mods.Common.Activities
 		void CalculateLandingPath(Actor self, Dock dock, out WPos w1, out WPos w2, out WPos w3)
 		{
 			var landPos = dock.CenterPosition;
-			var altitude = aircraftInfo.CruiseAltitude.Length;
+			var altitude = aircraft.Info.CruiseAltitude.Length;
 
 			// Distance required for descent.
 			var landDistance = altitude * 1024 / aircraft.Info.MaximumPitch.Tan();
@@ -63,7 +63,7 @@ namespace OpenRA.Mods.Common.Activities
 
 			// Add 10% to the turning radius to ensure we have enough room
 			var speed = aircraft.MovementSpeed * 32 / 35;
-			var turnRadius = CalculateTurnRadius(aircraftInfo, speed);
+			var turnRadius = CalculateTurnRadius(speed);
 
 			// Find the center of the turning circles for clockwise and counterclockwise turns
 			var angle = WAngle.FromFacing(aircraft.Facing);
@@ -168,7 +168,7 @@ namespace OpenRA.Mods.Common.Activities
 
 			List<Activity> landingProcedures = new List<Activity>();
 
-			var turnRadius = CalculateTurnRadius(aircraft.Info, aircraft.Info.Speed);
+			var turnRadius = CalculateTurnRadius(aircraft.Info.Speed);
 
 			landingProcedures.Add(new Fly(self, Target.FromPos(w1), WDist.Zero, new WDist(turnRadius * 3)));
 			landingProcedures.Add(new Fly(self, Target.FromPos(w2)));

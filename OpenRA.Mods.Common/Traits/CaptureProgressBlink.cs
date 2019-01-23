@@ -73,7 +73,7 @@ namespace OpenRA.Mods.Common.Traits
 						self.World.Add(new FlashTarget(captor, captorOwner));
 
 				if (info.Sound != null)
-					Game.Sound.Play(SoundType.World, info.Sound, target.CenterPosition);
+					Game.Sound.Play(SoundType.World, info.Sound, self.CenterPosition);
 			}
 
 			if (++tick >= info.Interval)

@@ -45,12 +45,12 @@ namespace OpenRA.Mods.Common.Traits
 			Info = info;
 			health = self.Trait<IHealth>();
 			movement = self.Trait<IMove>();
+			dockClient = self.Trait<DockClient>();
 		}
 
 		void INotifyCreated.Created(Actor self)
 		{
 			rearmable = self.TraitOrDefault<Rearmable>();
-			dockClient = self.Trait<DockClient>();
 		}
 
 		public IEnumerable<IOrderTargeter> Orders
@@ -125,7 +125,7 @@ namespace OpenRA.Mods.Common.Traits
 		public Activity AfterReachActivities(Actor self, Actor host, Dock dock)
 		{
 			if (CanRearmAt(host) && CanRearm())
-				return new Rearm(self, targetActor, new WDist(512))
+				return new Rearm(self, host, new WDist(512));
 
 			// Add a CloseEnough range of 512 to ensure we're at the host actor
 			return new Repair(self, host, new WDist(512));

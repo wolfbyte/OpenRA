@@ -82,7 +82,7 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 			{
 				sampledCandidates = new List<Actor>();
 				for (int i = 0; i < 20; i++)
-					sampledCandidates.Add(cands.Random(owner.Bot.Random));
+					sampledCandidates.Add(cands.Random(owner.Random));
 			}
 
 			// Sort them by distance.
@@ -215,7 +215,7 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 			var anyUnit = owner.Units.First();
 			return owner.World.ActorsHavingTrait<Building>().Where(b => // from buildings,
 				b.AppearsHostileTo(anyUnit) && // enemy building and
-				owner.Bot.Info.BuildingCommonNames.StaticAntiAir.Contains(b.Info.Name)); // registered in Static AA.
+				owner.SquadManager.Info.StaticAATypes.Contains(b.Info.Name)); // registered in Static AA.
 		}
 	}
 
@@ -342,7 +342,7 @@ namespace OpenRA.Mods.Common.Traits.BotModules.Squads
 			var within20 = owner.World.Map.FindTilesInAnnulus(dest, 2, 20);
 			if (within20.Any())
 				for (int i = 0; i < 32; i++)
-					cands.Add(within20.Random(owner.Bot.Random));
+					cands.Add(within20.Random(owner.Random));
 
 			int best_score = -1;
 			CPos best = CPos.Zero;

@@ -109,7 +109,7 @@ namespace OpenRA.Mods.Cnc.Activities
 		Activity IDockActivity.DockActivities(Actor host, Actor client, Dock dock)
 		{
 			return ActivityUtils.SequenceActivities(
-				new Rearm(client),
+				new Rearm(client, host, new WDist(512)),
 				new Repair(client, host, new WDist(512)));
 		}
 

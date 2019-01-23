@@ -106,8 +106,8 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			if (Info.QueueTimeLimits != null &&
 				Info.QueueTimeLimits.ContainsKey(category) &&
-				Info.QueueTimeLimits[category] > World.WorldTick)
-				return null;
+				Info.QueueTimeLimits[category] > world.WorldTick)
+				return;
 
 			// Pick a free queue
 			var queue = AIUtils.FindQueues(player, category).FirstOrDefault(q => !q.AllQueued().Any());
@@ -157,7 +157,7 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				if (Info.QueueTimeLimits != null &&
 					Info.QueueTimeLimits.ContainsKey(queue.Info.Type) &&
-					Info.QueueTimeLimits[queue.Info.Type] > World.WorldTick)
+					Info.QueueTimeLimits[queue.Info.Type] > world.WorldTick)
 					return;
 
 				bot.QueueOrder(Order.StartProduction(queue.Actor, name, 1));

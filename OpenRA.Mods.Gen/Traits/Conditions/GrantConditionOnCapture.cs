@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Yupgi_alert.Traits
@@ -26,7 +27,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		public readonly string Condition = null;
 
 		[Desc("Grant condition only if the capturer's CaptureTypes overlap with these types. Leave empty to allow all types.")]
-		public readonly HashSet<string> CaptureTypes = new HashSet<string>();
+		public readonly BitSet<CaptureType> CaptureTypes = default(BitSet<CaptureType>);
 
 		public object Create(ActorInitializer init) { return new GrantConditionOnCapture(init.Self, this); }
 	}
@@ -59,26 +60,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			token = manager.GrantCondition(self, cond);
 		}
 
-		public void OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner)
+		void INotifyCapture.OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner, BitSet<CaptureType> captureTypes)
 		{
-			if (token == ConditionManager.InvalidConditionToken && IsValidCaptor(captor))
+			if (!info.CaptureTypes.IsEmpty && !info.CaptureTypes.Overlaps(captureTypes))
 				GrantCondition(self, info.Condition);
-		}
-
-		bool IsValidCaptor(Actor captor)
-		{
-			if (!info.CaptureTypes.Any())
-				return true;
-
-			var capturesInfo = captor.Info.TraitInfoOrDefault<CapturesInfo>();
-			if (capturesInfo != null && info.CaptureTypes.Overlaps(capturesInfo.CaptureTypes))
-				return true;
-
-			var externalCapturesInfo = captor.Info.TraitInfoOrDefault<ExternalCapturesInfo>();
-			if (externalCapturesInfo != null && info.CaptureTypes.Overlaps(externalCapturesInfo.CaptureTypes))
-				return true;
-
-			return false;
 		}
 	}
 }

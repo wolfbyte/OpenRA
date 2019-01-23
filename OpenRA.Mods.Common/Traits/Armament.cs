@@ -257,7 +257,7 @@ namespace OpenRA.Mods.Common.Traits
 			currentBarrel++;
 
 			foreach (var na in notifyAttacks)
-				na.PreparingAttack(self, target, this, barrel)
+				na.PreparingAttack(self, target, this, barrel);
 
 			Func<WPos> muzzlePosition = () => self.CenterPosition + MuzzleOffset(self, barrel);
 			var legacyFacing = MuzzleOrientation(self, barrel).Yaw.Angle / 4;

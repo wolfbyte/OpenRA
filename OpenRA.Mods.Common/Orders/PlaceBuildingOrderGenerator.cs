@@ -110,7 +110,7 @@ namespace OpenRA.Mods.Common.Orders
 			{
 				var orderType = "PlaceBuilding";
 				var topLeft = viewport.ViewToWorld(Viewport.LastMousePos + topLeftScreenOffset);
-				var cannotBuildAudio = buildableInfo.CannotBuildAudio != null ? buildableInfo.CannotBuildAudio : queue.Info.CannotPlaceNotification;
+				var cannotBuildAudio = buildableInfo.CannotBuildAudio != null ? buildableInfo.CannotBuildAudio : queue.Info.CannotBuildAudio;
 
 				var plugInfo = actorInfo.TraitInfoOrDefault<PlugInfo>();
 				if (plugInfo != null)
@@ -125,7 +125,7 @@ namespace OpenRA.Mods.Common.Orders
 				else
 				{
 					if (!world.CanPlaceBuilding(topLeft, actorInfo, buildingInfo, null)
-						|| !buildingInfo.IsCloseEnoughToBase(world, owner, actorInfo, topLeft))
+						|| !buildingInfo.IsCloseEnoughToBase(world, owner, actorInfo, queue.Actor, topLeft))
 					{
 						foreach (var order in ClearBlockersOrders(world, topLeft))
 							yield return order;
@@ -201,9 +201,9 @@ namespace OpenRA.Mods.Common.Orders
 
 				if (!Game.GetModifierKeys().HasModifier(Modifiers.Shift))
 					foreach (var t in BuildingUtils.GetLineBuildCells(world, topLeft, actorInfo, buildingInfo))
-						cells.Add(t.First, MakeCellType(buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, t.First), true));
+						cells.Add(t.First, MakeCellType(buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, queue.Actor, t.First), true));
 
-				cells[topLeft] = MakeCellType(buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, topLeft));
+				cells[topLeft] = MakeCellType(buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, queue.Actor, topLeft));
 			}
 			else
 			{
@@ -235,7 +235,7 @@ namespace OpenRA.Mods.Common.Orders
 					yield return r;
 
 				var res = world.WorldActor.TraitOrDefault<ResourceLayer>();
-				var isCloseEnough = buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, topLeft);
+				var isCloseEnough = buildingInfo.IsCloseEnoughToBase(world, world.LocalPlayer, actorInfo, queue.Actor, topLeft);
 				foreach (var t in buildingInfo.Tiles(topLeft))
 					cells.Add(t, MakeCellType(isCloseEnough && world.IsCellBuildable(t, actorInfo, buildingInfo) && (res == null || res.GetResource(t) == null)));
 			}

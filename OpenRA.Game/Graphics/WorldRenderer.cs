@@ -34,7 +34,7 @@ namespace OpenRA.Graphics
 		readonly HashSet<Actor> onScreenActors = new HashSet<Actor>();
 		readonly HardwarePalette palette = new HardwarePalette();
 		readonly Dictionary<string, PaletteReference> palettes = new Dictionary<string, PaletteReference>();
-		readonly TerrainRenderer terrainRenderer;
+		readonly IRenderTerrain terrainRenderer;
 		readonly Lazy<DebugVisualizations> debugVis;
 		readonly Func<string, PaletteReference> createPaletteReference;
 		readonly bool enableDepthBuffer;

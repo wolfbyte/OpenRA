@@ -9,6 +9,7 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using OpenRA.Activities;
@@ -19,14 +20,11 @@ using OpenRA.Mods.Yupgi_alert.Orders;
 using OpenRA.Primitives;
 using OpenRA.Traits;
 
-/* Works without base engine modification */
-
 namespace OpenRA.Mods.Yupgi_alert.Traits
 {
 	[Desc("This unit, when ordered to move, will fly in ballistic path then will detonate itself upon reaching target.")]
-	public class ShootableBallisticMissileInfo : ITraitInfo, IMoveInfo, IPositionableInfo, IFacingInfo,
-		UsesInit<LocationInit>, UsesInit<FacingInit>
-	{
+	public class ShootableBallisticMissileInfo : ITraitInfo, IMoveInfo, IPositionableInfo, IFacingInfo
+    {
 		[Desc("Projectile speed in WDist / tick, two values indicate variable velocity.")]
 		public readonly int Speed = 17;
 
@@ -58,10 +56,10 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		// set by spawned logic, not this.
 		public int GetInitialFacing() { return 0; }
-	}
+    }
 
-	public class ShootableBallisticMissile : ISync, IFacing, IPositionable, IMove,
-		INotifyCreated, INotifyAddedToWorld, INotifyRemovedFromWorld, IActorPreviewInitModifier
+	public class ShootableBallisticMissile : ITick, ISync, IFacing, IMove, IPositionable,
+		INotifyCreated, INotifyAddedToWorld, INotifyRemovedFromWorld, INotifyActorDisposing, IOccupySpace
 	{
 		static readonly Pair<CPos, SubCell>[] NoCells = { };
 
@@ -97,18 +95,13 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 		// This kind of missile will not turn anyway. Hard-coding here.
 		public int TurnSpeed { get { return 10; } }
 
-		void INotifyCreated.Created(Actor self)
-		{
-			Created(self);
-		}
-
-		protected void Created(Actor self)
+		public void Created(Actor self)
 		{
 			conditionManager = self.TraitOrDefault<ConditionManager>();
 			speedModifiers = self.TraitsImplementing<ISpeedModifier>().ToArray().Select(sm => sm.GetSpeedModifier());
 		}
 
-		void INotifyAddedToWorld.AddedToWorld(Actor self)
+		public void AddedToWorld(Actor self)
 		{
 			self.World.AddToMaps(self, this);
 
@@ -117,12 +110,14 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				OnAirborneAltitudeReached();
 		}
 
+		public virtual void Tick(Actor self) { }
+
 		public int MovementSpeed
 		{
 			get { return Util.ApplyPercentageModifiers(Info.Speed, speedModifiers); }
 		}
 
-		public Pair<CPos, SubCell>[] OccupiedCells() { return NoCells; }
+		public IEnumerable<Pair<CPos, SubCell>> OccupiedCells() { return NoCells; }
 
 		public WVec FlyStep(int facing)
 		{
@@ -135,21 +130,16 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			return speed * dir / 1024;
 		}
 
-		#region Implement IPositionable
+        #region Implement IPositionable
 
-		public bool CanExistInCell(CPos cell) { return true; }
-		public bool IsLeavingCell(CPos location, SubCell subCell = SubCell.Any) { return false; } // TODO: Handle landing
+        public bool CanExistInCell(CPos cell) { return true; }
+        public bool IsLeavingCell(CPos location, SubCell subCell = SubCell.Any) { return false; } // TODO: Handle landing
 		public bool CanEnterCell(CPos cell, Actor ignoreActor = null, bool checkTransientActors = true) { return true; }
 		public SubCell GetValidSubCell(SubCell preferred) { return SubCell.Invalid; }
 		public SubCell GetAvailableSubCell(CPos a, SubCell preferredSubCell = SubCell.Any, Actor ignoreActor = null, bool checkTransientActors = true)
 		{
 			// Does not use any subcell
 			return SubCell.Invalid;
-		}
-
-		bool IMove.TurnWhileDisabled(Actor self)
-		{
-			return false;
 		}
 
 		public void SetVisualPosition(Actor self, WPos pos) { SetPosition(self, pos); }
@@ -203,8 +193,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public Activity MoveFollow(Actor self, Target target, WDist minRange, WDist maxRange)
 		{
-			// You can't follow lol
-			return new ShootableBallisticMissileFly(self, target);
+			return null;
 		}
 
 		public Activity MoveIntoWorld(Actor self, CPos cell, SubCell subCell = SubCell.Any)
@@ -219,22 +208,21 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		public Activity MoveIntoTarget(Actor self, Target target)
 		{
-			// Seriously, you don't want to run this lol
-			return new ShootableBallisticMissileFly(self, target);
+			return null;
 		}
 
 		public Activity VisualMove(Actor self, WPos fromPos, WPos toPos)
 		{
-			// Not too sure about visual moves haha,
-			// Probably you shouldn't run this.
-
-			// Leaving old code here just in case.
-			// return ActivityUtils.SequenceActivities(new CallFunc(() => SetVisualPosition(self, fromPos)),
-			//	new HeliFly(self, Target.FromPos(toPos)));
 			return new ShootableBallisticMissileFly(self, Target.FromPos(toPos));
 		}
 
-		public CPos NearestMoveableCell(CPos cell) { return cell; }
+        public int EstimatedMoveDuration(Actor self, WPos fromPos, WPos toPos)
+        {
+            var speed = MovementSpeed;
+            return speed > 0 ? (toPos - fromPos).Length / speed : 0;
+        }
+
+        public CPos NearestMoveableCell(CPos cell) { return cell; }
 
 		// Technically, ballstic movement always moves non-vertical moves = always false.
 		public bool IsMovingVertically { get { return false; } set { } }
@@ -259,6 +247,12 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			return false;
 		}
 
+		public bool TurnWhileDisabled(Actor self)
+		{
+			// Why would you disable the missile anyway?
+			return true;
+		}
+
 		#endregion
 
 		#region Implement order interfaces
@@ -277,7 +271,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 				return new Order(order.OrderID, self, target, queued);
 
 			if (order.OrderID == "Move")
-				return new Order(order.OrderID, self, Target.FromCell(self.World, self.World.Map.CellContaining(target.CenterPosition)), queued);
+				return new Order(order.OrderID, self, target, queued);
 
 			return null;
 		}
@@ -294,7 +288,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		#endregion
 
-		void INotifyRemovedFromWorld.RemovedFromWorld(Actor self)
+		public void RemovedFromWorld(Actor self)
 		{
 			self.World.RemoveFromMaps(self, this);
 			OnAirborneAltitudeLeft();
@@ -324,10 +318,13 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		#endregion
 
-		void IActorPreviewInitModifier.ModifyActorPreviewInit(Actor self, TypeDictionary inits)
+		public void Disposing(Actor self)
 		{
-			if (!inits.Contains<DynamicFacingInit>() && !inits.Contains<FacingInit>())
-				inits.Add(new DynamicFacingInit(() => Facing));
+		}
+
+		Pair<CPos, SubCell> [] IOccupySpace.OccupiedCells ()
+		{
+			return NoCells;
 		}
 	}
 }

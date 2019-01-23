@@ -473,6 +473,7 @@ namespace OpenRA.Mods.Common.Traits
 			}
 			else if (order.OrderString == "Stop" || order.OrderString == "Move")
 			{
+				var notify = self.TraitsImplementing<INotifyHarvesterAction>();
 				foreach (var n in notify)
 					n.MovementCancelled(self);
 
