@@ -152,6 +152,7 @@
     <Compile Include="Traits\Supply\SupplyDock.cs" />
     <Compile Include="Traits\Supply\SupplyCenter.cs" />
     <Compile Include="Traits\Warheads\CreateRadioactivityWarhead.cs" />
+    <Compile Include="Traits\Warheads\SpawnBuildingWarhead.cs" />
     <Compile Include="Traits\Warheads\WarheadAS.cs" />
     <Compile Include="Traits\Warheads\AttachDelayedWeaponWarhead.cs" />
     <Compile Include="Traits\Warheads\CaptureActorWarhead.cs" />
