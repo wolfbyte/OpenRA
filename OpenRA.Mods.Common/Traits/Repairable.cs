@@ -36,7 +36,6 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		public readonly RepairableInfo Info;
 		readonly IHealth health;
-		readonly IMove movement;
 		Rearmable rearmable;
 		readonly DockClient dockClient;
 
@@ -44,7 +43,6 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			Info = info;
 			health = self.Trait<IHealth>();
-			movement = self.Trait<IMove>();
 			dockClient = self.Trait<DockClient>();
 		}
 
