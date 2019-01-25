@@ -26,8 +26,9 @@ namespace OpenRA.Mods.Common.Yupgi_alert
 		public override object Create(ActorInitializer init) { return new WithTerrainDependantSpriteBody(init, this); }
 	}
 
-	public class WithTerrainDependantSpriteBody : WithSpriteBody
+	public class WithTerrainDependantSpriteBody : WithSpriteBody, INotifyCreated
 	{
+		WithTerrainDependantSpriteBodyInfo info;
 		string terrain;
 		string sequence;
 		string startSequence;
@@ -38,19 +39,25 @@ namespace OpenRA.Mods.Common.Yupgi_alert
 		protected WithTerrainDependantSpriteBody(ActorInitializer init, WithTerrainDependantSpriteBodyInfo info, Func<int> baseFacing)
 			: base(init, info)
 		{
-			terrain = init.World.Map.GetTerrainInfo(init.Self.Location).Type;
+			this.info = info;
+		}
 
+		protected override void Created(Actor self)
+		{
+			base.Created(self);
+
+			terrain = self.World.Map.GetTerrainInfo(self.Location).Type;
 			sequence = DefaultAnimation.HasSequence(info.Sequence + "-" + terrain) ? info.Sequence + "-" + terrain : info.Sequence;
 
 			if (info.StartSequence != null)
 			{
 				startSequence = DefaultAnimation.HasSequence(info.StartSequence + "-" + terrain) ? info.StartSequence + "-" + terrain : info.StartSequence;
 
-				PlayCustomAnimation(init.Self, startSequence,
-					() => PlayCustomAnimationRepeating(init.Self, sequence));
+				PlayCustomAnimation(self, startSequence,
+					() => PlayCustomAnimationRepeating(self, sequence));
 			}
 			else
-				DefaultAnimation.PlayRepeating(NormalizeSequence(init.Self, sequence));
+				DefaultAnimation.PlayRepeating(NormalizeSequence(self, sequence));
 		}
 
 		public override void PlayCustomAnimation(Actor self, string name, Action after = null)
