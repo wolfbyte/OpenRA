@@ -62,7 +62,7 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 
 		void INotifyCapture.OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner, BitSet<CaptureType> captureTypes)
 		{
-			if (!info.CaptureTypes.IsEmpty && !info.CaptureTypes.Overlaps(captureTypes))
+			if (info.CaptureTypes.IsEmpty || info.CaptureTypes.Overlaps(captureTypes))
 				GrantCondition(self, info.Condition);
 		}
 	}
