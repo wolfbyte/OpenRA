@@ -31,7 +31,10 @@ namespace OpenRA
 		Subtractive,
 		Multiply,
 		Multiplicative,
-		DoubleMultiplicative
+		DoubleMultiplicative,
+		LowAdditive,
+		Screen,
+		Translucent
 	}
 
 	public interface IPlatformWindow : IDisposable
