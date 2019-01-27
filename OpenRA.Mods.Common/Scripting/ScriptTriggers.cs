@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2019 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -43,6 +43,7 @@ namespace OpenRA.Mods.Common.Scripting
 		public event Action<Actor> OnKilledInternal = _ => { };
 		public event Action<Actor> OnCapturedInternal = _ => { };
 		public event Action<Actor> OnRemovedInternal = _ => { };
+		public event Action<Actor> OnAddedInternal = _ => { };
 		public event Action<Actor, Actor> OnProducedInternal = (a, b) => { };
 		public event Action<Actor, Actor> OnOtherProducedInternal = (a, b) => { };
 
@@ -340,6 +341,9 @@ namespace OpenRA.Mods.Common.Scripting
 					return;
 				}
 			}
+
+			// Run any internally bound callbacks
+			OnAddedInternal(self);
 		}
 
 		void INotifyRemovedFromWorld.RemovedFromWorld(Actor self)

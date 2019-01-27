@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2019 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -62,7 +62,7 @@ namespace OpenRA.Mods.Common
 		/// <summary>
 		/// DEPRECATED: Write code that can handle FrozenActors correctly instead.
 		/// </summary>
-		public static Target ResolveFrozenActorOrder(this Actor self, Order order, Color targetLine)
+		public static Target ResolveFrozenActorOrder(this Actor self, Order order, Color targetLineColor)
 		{
 			// Not targeting a frozen actor
 			if (order.Target.Type != TargetType.FrozenActor)
@@ -70,7 +70,7 @@ namespace OpenRA.Mods.Common
 
 			var frozen = order.Target.FrozenActor;
 
-			self.SetTargetLine(order.Target, targetLine, true);
+			self.SetTargetLine(order.Target, targetLineColor, true);
 
 			// Target is still alive - resolve the real order
 			if (frozen.Actor != null && frozen.Actor.IsInWorld)
@@ -89,7 +89,8 @@ namespace OpenRA.Mods.Common
 					.Append(WDist.FromCells(2))
 					.Max();
 
-				self.QueueActivity(move.MoveWithinRange(Target.FromPos(frozen.CenterPosition), range));
+				self.QueueActivity(move.MoveWithinRange(Target.FromPos(frozen.CenterPosition), range,
+					targetLineColor: targetLineColor));
 			}
 
 			return Target.Invalid;

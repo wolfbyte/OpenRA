@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2019 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -88,6 +88,16 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 			var copypasteButton = widget.GetOrNull<ButtonWidget>("COPYPASTE_BUTTON");
 			if (copypasteButton != null)
 			{
+				// HACK: Replace Ctrl with Cmd on macOS
+				// TODO: Add platform-specific override support to HotkeyManager
+				// and then port the editor hotkeys to this system.
+				var copyPasteKey = copypasteButton.Key.GetValue();
+				if (Platform.CurrentPlatform == PlatformType.OSX && copyPasteKey.Modifiers.HasModifier(Modifiers.Ctrl))
+				{
+					var modified = new Hotkey(copyPasteKey.Key, copyPasteKey.Modifiers & ~Modifiers.Ctrl | Modifiers.Meta);
+					copypasteButton.Key = FieldLoader.GetValue<HotkeyReference>("Key", modified.ToString());
+				}
+
 				copypasteButton.OnClick = () => editorViewport.SetBrush(new EditorCopyPasteBrush(editorViewport, worldRenderer, () => copyFilters));
 				copypasteButton.IsHighlighted = () => editorViewport.CurrentBrush is EditorCopyPasteBrush;
 			}
