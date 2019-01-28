@@ -57,7 +57,8 @@ namespace OpenRA.Mods.Yupgi_alert.Traits
 			if (string.IsNullOrEmpty(cond))
 				return;
 
-			token = manager.GrantCondition(self, cond);
+			if (token == ConditionManager.InvalidConditionToken)
+				token = manager.GrantCondition(self, cond);
 		}
 
 		void INotifyCapture.OnCapture(Actor self, Actor captor, Player oldOwner, Player newOwner, BitSet<CaptureType> captureTypes)
