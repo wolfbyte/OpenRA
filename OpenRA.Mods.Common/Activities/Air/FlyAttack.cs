@@ -43,7 +43,10 @@ namespace OpenRA.Mods.Common.Activities
 
 			// If all valid weapons have depleted their ammo and Rearmable trait exists, return to RearmActor
 			if (rearmable != null && attackAircraft.Armaments.All(x => x.IsTraitPaused || !x.Weapon.IsValidAgainst(target, self.World, self)))
-				return ActivityUtils.SequenceActivities(new ReturnToBase(self, aircraft.Info.AbortOnResupply));
+			{
+				self.QueueActivity(new ReturnToBase(self, aircraft.Info.AbortOnResupply));
+				return NextActivity;
+			}
 
 			attackAircraft.DoAttack(self, target);
 
