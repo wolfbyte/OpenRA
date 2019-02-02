@@ -301,6 +301,22 @@ namespace OpenRA.Mods.Common.Traits
 				}
 			}
 
+			// Select a strategy
+			var strategy = GetProducibleBuilding(baseBuilder.Info.StrategyTypes, buildableThings);
+			if (strategy != null &&
+				!world.Actors.Where(a => baseBuilder.Info.StrategyTypes.Contains(a.Info.Name) && a.Owner == player).Any() &&
+				HasSufficientPowerForActor(strategy))
+			{
+				AIUtils.BotDebug("AI: {0} decided to build {1}: Priority override (strategy)", queue.Actor.Owner, strategy.Name);
+				return strategy;
+			}
+
+			if (power != null && strategy != null && !HasSufficientPowerForActor(strategy))
+			{
+				AIUtils.BotDebug("{0} decided to build {1}: Priority override (would be low power)", queue.Actor.Owner, power.Name);
+				return power;
+			}
+
 			// Build everything else
 			foreach (var frac in baseBuilder.Info.BuildingFractions.Shuffle(world.LocalRandom))
 			{

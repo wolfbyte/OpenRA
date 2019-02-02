@@ -51,6 +51,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Tells the AI what building types are considered as fragile buildings (tech center, radar, sws etc.).")]
 		public readonly HashSet<string> FragileTypes = new HashSet<string>();
 
+		[Desc("Tells the AI what building types are considered as a strategy.")]
+		public readonly HashSet<string> StrategyTypes = new HashSet<string>();
+
 		[Desc("Production queues AI uses for buildings.")]
 		public readonly HashSet<string> BuildingQueues = new HashSet<string> { "Building" };
 
