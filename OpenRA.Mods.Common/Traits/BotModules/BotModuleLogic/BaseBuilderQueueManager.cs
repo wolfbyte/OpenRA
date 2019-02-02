@@ -304,15 +304,16 @@ namespace OpenRA.Mods.Common.Traits
 			// Build everything else
 			foreach (var frac in baseBuilder.Info.BuildingFractions.Shuffle(world.LocalRandom))
 			{
-				if (baseBuilder.Info.QueueTimeLimits != null &&
-					baseBuilder.Info.QueueTimeLimits.ContainsKey(queue.Info.Type) &&
-					baseBuilder.Info.QueueTimeLimits[queue.Info.Type] > world.WorldTick)
-					break;
+				var name = frac.Key;
+
+				// Does this building have initial delay, if so have we passed it?
+				if (baseBuilder.Info.BuildingDelays != null &&
+					baseBuilder.Info.BuildingDelays.ContainsKey(name) &&
+					baseBuilder.Info.BuildingDelays[name] > world.WorldTick)
+					continue;
 
 				if (baseBuilder.Info.ConstructionMinimumCash > playerResources.Cash)
 					break;
-
-				var name = frac.Key;
 
 				// Core logic should be implemented as a seperate module, commenting this out for now.
 				// Can we build this structure?

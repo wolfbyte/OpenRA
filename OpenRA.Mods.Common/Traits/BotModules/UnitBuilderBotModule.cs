@@ -33,8 +33,8 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("What units should the AI have a maximum limit to train.")]
 		public readonly Dictionary<string, int> UnitLimits = null;
 
-		[Desc("Tells AI to don't build from this queue until that much time in ticks has passed from game's start.")]
-		public readonly Dictionary<string, int> QueueTimeLimits = null;
+		[Desc("When should the AI start train specific units.")]
+		public readonly Dictionary<string, int> UnitDelays = null;
 
 		public override object Create(ActorInitializer init) { return new UnitBuilderBotModule(init.Self, this); }
 	}
@@ -104,11 +104,6 @@ namespace OpenRA.Mods.Common.Traits
 
 		void BuildUnit(IBot bot, string category, bool buildRandom)
 		{
-			if (Info.QueueTimeLimits != null &&
-				Info.QueueTimeLimits.ContainsKey(category) &&
-				Info.QueueTimeLimits[category] > world.WorldTick)
-				return;
-
 			// Pick a free queue
 			var queue = AIUtils.FindQueues(player, category).FirstOrDefault(q => !q.AllQueued().Any());
 			if (queue == null)
@@ -126,6 +121,11 @@ namespace OpenRA.Mods.Common.Traits
 			if (Info.UnitsToBuild != null && !Info.UnitsToBuild.ContainsKey(name))
 				return;
 
+			if (Info.UnitDelays != null &&
+				Info.UnitDelays.ContainsKey(name) &&
+				Info.UnitDelays[name] > world.WorldTick)
+				return;
+
 			if (Info.UnitLimits != null &&
 				Info.UnitLimits.ContainsKey(name) &&
 				world.Actors.Count(a => a.Owner == player && a.Info.Name == name) >= Info.UnitLimits[name])
@@ -137,6 +137,11 @@ namespace OpenRA.Mods.Common.Traits
 		// In cases where we want to build a specific unit but don't know the queue name (because there's more than one possibility)
 		void BuildUnit(IBot bot, string name)
 		{
+			if (Info.UnitDelays != null &&
+				Info.UnitDelays.ContainsKey(name) &&
+				Info.UnitDelays[name] > world.WorldTick)
+				return;
+
 			var actorInfo = world.Map.Rules.Actors[name];
 			if (actorInfo == null)
 				return;
@@ -155,11 +160,6 @@ namespace OpenRA.Mods.Common.Traits
 
 			if (queue != null)
 			{
-				if (Info.QueueTimeLimits != null &&
-					Info.QueueTimeLimits.ContainsKey(queue.Info.Type) &&
-					Info.QueueTimeLimits[queue.Info.Type] > world.WorldTick)
-					return;
-
 				bot.QueueOrder(Order.StartProduction(queue.Actor, name, 1));
 				AIUtils.BotDebug("AI: {0} decided to build {1} (external request)", queue.Actor.Owner, name);
 			}
