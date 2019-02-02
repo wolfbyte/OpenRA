@@ -328,8 +328,8 @@ namespace OpenRA.Mods.Common.Traits
 					baseBuilder.Info.BuildingDelays[name] > world.WorldTick)
 					continue;
 
-				if (baseBuilder.Info.ConstructionMinimumCash > playerResources.Cash)
-					break;
+				if (playerResources != null && playerResources.Cash <= baseBuilder.Info.ConstructionMinimumCash && !baseBuilder.Info.CashGeneratorTypes.Contains(name))
+					continue;
 
 				// Core logic should be implemented as a seperate module, commenting this out for now.
 				// Can we build this structure?

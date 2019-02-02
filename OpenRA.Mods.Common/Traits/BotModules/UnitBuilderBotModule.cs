@@ -24,6 +24,12 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Only produce units as long as there are less than this amount of units idling inside the base.")]
 		public readonly int IdleBaseUnitsMaximum = 12;
 
+		[Desc("Don't produce anything other than cash generators if we don't have enough cash.")]
+		public readonly int ProductionMinimumCash = 0;
+
+		[Desc("What units can the AI build with less cash than ProductionMinimumCash.")]
+		public readonly HashSet<string> CashGeneratorTypes = new HashSet<string>();
+
 		[Desc("Production queues AI uses for producing units.")]
 		public readonly HashSet<string> UnitQueues = new HashSet<string> { "Vehicle", "Infantry", "Plane", "Ship", "Aircraft" };
 
@@ -32,6 +38,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("What units should the AI have a maximum limit to train.")]
 		public readonly Dictionary<string, int> UnitLimits = null;
+
+		[Desc("Tells AI to don't train from this queue more than specified time at the same time.")]
+		public readonly Dictionary<string, int> QueueLimits = null;
 
 		[Desc("When should the AI start train specific units.")]
 		public readonly Dictionary<string, int> UnitDelays = null;
@@ -47,6 +56,7 @@ namespace OpenRA.Mods.Common.Traits
 		readonly Player player;
 
 		readonly List<string> queuedBuildRequests = new List<string>();
+		readonly PlayerResources playerResources;
 
 		IBotRequestPauseUnitProduction[] requestPause;
 
@@ -59,6 +69,8 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			world = self.World;
 			player = self.Owner;
+
+			playerResources = self.TraitOrDefault<PlayerResources>();
 		}
 
 		protected override void TraitEnabled(Actor self)
@@ -102,10 +114,29 @@ namespace OpenRA.Mods.Common.Traits
 			return queuedBuildRequests.Count(r => r == requestedActor);
 		}
 
+		public ProductionQueue FindQueue(Player player, string category)
+		{
+			var queues = AIUtils.FindQueues(player, category);
+
+			var usedQueues = queues.Where(q => q.AllQueued().Any());
+			if (Info.QueueLimits != null &&
+				Info.QueueLimits.ContainsKey(category) &&
+				usedQueues.Count() >= Info.QueueLimits[category])
+				return null;
+
+			var freeQueues = queues.Where(q => !q.AllQueued().Any());
+			if (!freeQueues.Any())
+				return null;
+
+			var queue = freeQueues.Shuffle(world.SharedRandom).FirstOrDefault();
+
+			return queue;
+		}
+
 		void BuildUnit(IBot bot, string category, bool buildRandom)
 		{
 			// Pick a free queue
-			var queue = AIUtils.FindQueues(player, category).FirstOrDefault(q => !q.AllQueued().Any());
+			var queue = FindQueue(player, category);
 			if (queue == null)
 				return;
 
@@ -119,6 +150,9 @@ namespace OpenRA.Mods.Common.Traits
 			var name = unit.Name;
 
 			if (Info.UnitsToBuild != null && !Info.UnitsToBuild.ContainsKey(name))
+				return;
+
+			if (playerResources != null && playerResources.Cash <= Info.ProductionMinimumCash && !Info.CashGeneratorTypes.Contains(name))
 				return;
 
 			if (Info.UnitDelays != null &&
@@ -153,7 +187,7 @@ namespace OpenRA.Mods.Common.Traits
 			ProductionQueue queue = null;
 			foreach (var pq in buildableInfo.Queue)
 			{
-				queue = AIUtils.FindQueues(player, pq).FirstOrDefault(q => !q.AllQueued().Any());
+				queue = FindQueue(player, pq);
 				if (queue != null)
 					break;
 			}
