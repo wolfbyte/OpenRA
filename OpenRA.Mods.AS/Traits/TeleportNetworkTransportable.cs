@@ -91,8 +91,7 @@ namespace OpenRA.Mods.AS.Traits
 			if (order.OrderString != "TeleportNetworkTransport" || !IsValidOrder(self, order))
 				return;
 
-			var target = self.ResolveFrozenActorOrder(order, Color.Yellow);
-			if (target.Type != TargetType.Actor)
+			if (order.Target.Type != TargetType.Actor)
 				return;
 
 			var targettrait = order.Target.Actor.TraitOrDefault<TeleportNetwork>();
@@ -103,8 +102,8 @@ namespace OpenRA.Mods.AS.Traits
 			if (!order.Queued)
 				self.CancelActivity();
 
-			self.SetTargetLine(target, Color.Yellow);
-			self.QueueActivity(new EnterTeleportNetwork(self, target.Actor, EnterBehaviour.Exit, targettrait.Info.Type));
+			self.SetTargetLine(order.Target, Color.Yellow);
+			self.QueueActivity(new EnterTeleportNetwork(self, order.Target, targettrait.Info.Type));
 		}
 
 		class TeleportNetworkTransportOrderTargeter : UnitOrderTargeter

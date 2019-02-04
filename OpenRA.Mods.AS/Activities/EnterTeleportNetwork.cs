@@ -22,25 +22,25 @@ namespace OpenRA.Mods.AS.Activities
 	{
 		string type;
 
-		public EnterTeleportNetwork(Actor self, Actor target, EnterBehaviour enterBehaviour, string type)
-			: base(self, target, enterBehaviour)
+		public EnterTeleportNetwork(Actor self, Target target, string type)
+			: base(self, target, Color.Green)
 		{
 			this.type = type;
 		}
 
-		protected override bool CanReserve(Actor self)
+		protected override bool TryStartEnter(Actor self, Actor targetActor)
 		{
-			return Target.Actor.IsValidTeleportNetworkUser(self);
+			return targetActor.IsValidTeleportNetworkUser(self);
 		}
 
-		protected override void OnInside(Actor self)
+		protected override void OnEnterComplete(Actor self, Actor targetActor)
 		{
 			// entered the teleport network canal but the entrance is dead immediately.
-			if (Target.Actor.IsDead || self.IsDead)
+			if (targetActor.IsDead || self.IsDead)
 				return;
 
 			// Find the primary teleport network exit.
-			var pri = Target.Actor.Owner.PlayerActor.TraitsImplementing<TeleportNetworkManager>().First(x => x.Type == type).PrimaryActor;
+			var pri = targetActor.Owner.PlayerActor.TraitsImplementing<TeleportNetworkManager>().First(x => x.Type == type).PrimaryActor;
 
 			var exitinfo = pri.Info.TraitInfo<ExitInfo>();
 			var rp = pri.TraitOrDefault<RallyPoint>();
@@ -75,10 +75,6 @@ namespace OpenRA.Mods.AS.Activities
 
 			// Teleport myself to primary actor.
 			self.Trait<IPositionable>().SetPosition(self, exit);
-
-			// self still have enter-exit on its mind. ('cos enternydus implements enter behav.)
-			// Cancel that.
-			this.Done(self);
 
 			// Cancel all activities (like PortableChrono does)
 			self.CancelActivity();
