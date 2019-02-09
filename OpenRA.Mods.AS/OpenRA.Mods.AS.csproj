@@ -169,6 +169,7 @@
     <Compile Include="Scripting\Global\ActorTagGlobal.cs" />
     <Compile Include="Traits\World\TintedCellsLayer.cs" />
     <Compile Include="Traits\World\WeaponStorm.cs" />
+    <Compile Include="UtilityCommands\ExtractLegacyRulesValues.cs" />
     <Compile Include="UtilityCommands\ImportASMapCommand.cs" />
     <Compile Include="Traits\Warheads\PromotionWarhead.cs" />
     <Compile Include="Traits\Render\WithVoxelHelicopterBody.cs" />
