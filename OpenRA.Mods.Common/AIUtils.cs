@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2019 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -19,23 +19,6 @@ namespace OpenRA.Mods.Common
 	public enum BuildingType { Building, Defense, Refinery }
 
 	public enum WaterCheck { NotChecked, EnoughWater, NotEnoughWater }
-
-	public class CaptureTarget<TInfoType> where TInfoType : class, ITraitInfoInterface
-	{
-		internal readonly Actor Actor;
-		internal readonly TInfoType Info;
-
-		/// <summary>The order string given to the capturer so they can capture this actor.</summary>
-		/// <example>ExternalCaptureActor</example>
-		internal readonly string OrderString;
-
-		internal CaptureTarget(Actor actor, string orderString)
-		{
-			Actor = actor;
-			Info = actor.Info.TraitInfoOrDefault<TInfoType>();
-			OrderString = orderString;
-		}
-	}
 
 	public static class AIUtils
 	{

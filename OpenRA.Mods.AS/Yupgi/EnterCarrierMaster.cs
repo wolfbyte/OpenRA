@@ -40,38 +40,29 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 		readonly Actor master; // remember the spawner.
 		readonly CarrierMaster spawnerMaster;
 
-		public EnterCarrierMaster(Actor self, Actor master, CarrierMaster spawnerMaster, EnterBehaviour enterBehaviour, WDist closeEnoughDist)
-			: base(self, master, enterBehaviour) ////closeenoughdist
+		public EnterCarrierMaster(Actor self, Target master, CarrierMaster spawnerMaster)
+			: base(self, master) ////closeenoughdist
 		{
-			this.master = master;
+			this.master = master.Actor;
 			this.spawnerMaster = spawnerMaster;
 		}
 
-		protected override bool CanReserve(Actor self)
+		protected override bool TryStartEnter(Actor self, Actor targetActor)
 		{
-			return true; // Slaves are always welcome.
+			return true;
 		}
 
-		protected override ReserveStatus Reserve(Actor self)
-		{
-			// TryReserveElseTryAlternateReserve calls Reserve and
-			// the default inplementation of Reserve() returns TooFar when
-			// the aircraft carrier is hovering over a building.
-			// Since spawners don't need reservation (and have no reservation trait),
-			// just return Ready so that spawner can enter no matter where the spawner is.
-			return ReserveStatus.Ready;
-		}
-
-		protected override void OnInside(Actor self)
+		protected override void OnEnterComplete(Actor self, Actor targetActor)
 		{
 			// Master got killed :(
 			if (master.IsDead)
 				return;
 
-			Done(self); // Stop slaves from exiting.
+			// Done(self); // Stop slaves from exiting.
 
 			// Load this thingy.
 			// Issue attack move to the rally point.
+
 			self.World.AddFrameEndTask(w =>
 			{
 				if (self.IsDead || master.IsDead)
@@ -91,8 +82,11 @@ namespace OpenRA.Mods.Yupgi_alert.Activities
 				var ammoPools = self.TraitsImplementing<AmmoPool>().ToArray(); //TODO hacky fix for lack of AmmoPool.AutoReloads
 				if (ammoPools != null)
 					foreach (var pool in ammoPools)
-						while (pool.GiveAmmo(self, 1)); // fill 'er up.
+						while (pool.GiveAmmo(self, 1))
+							; // fill 'er up.
 			});
 		}
+
+
 	}
 }

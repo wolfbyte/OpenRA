@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2019 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -211,8 +211,27 @@ namespace OpenRA.Mods.Common.Scripting
 						return;
 
 					if (!group.Any())
-						using (f)
-							f.Call().Dispose();
+					{
+						// Functions can only be .Call()ed once, so operate on a copy so we can reuse it later
+						var temp = (LuaFunction)f.CopyReference();
+						using (temp)
+							temp.Call().Dispose();
+					}
+				}
+				catch (Exception e)
+				{
+					Context.FatalError(e.Message);
+				}
+			};
+
+			Action<Actor> onMemberAdded = m =>
+			{
+				try
+				{
+					if (!actors.Contains(m) || group.Contains(m))
+						return;
+
+					group.Add(m);
 				}
 				catch (Exception e)
 				{
@@ -221,7 +240,10 @@ namespace OpenRA.Mods.Common.Scripting
 			};
 
 			foreach (var a in group)
+			{
 				GetScriptTriggers(a).OnRemovedInternal += onMemberRemoved;
+				GetScriptTriggers(a).OnAddedInternal += onMemberAdded;
+			}
 		}
 
 		[Desc("Call a function when this actor is captured. The callback function " +

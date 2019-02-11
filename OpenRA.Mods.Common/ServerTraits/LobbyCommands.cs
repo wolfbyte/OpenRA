@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2019 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -654,6 +654,7 @@ namespace OpenRA.Mods.Common.Server
 			targetClient.SpawnPoint = 0;
 			targetClient.Team = 0;
 			targetClient.Color = HSLColor.FromRGB(255, 255, 255);
+			targetClient.State = Session.ClientState.NotReady;
 			server.SendMessage("{0} moved {1} to spectators.".F(client.Name, targetClient.Name));
 			Log.Write("server", "{0} moved {1} to spectators.".F(client.Name, targetClient.Name));
 			server.SyncLobbyClients();

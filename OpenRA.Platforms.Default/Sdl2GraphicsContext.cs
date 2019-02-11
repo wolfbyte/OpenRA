@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2019 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -55,12 +55,6 @@ namespace OpenRA.Platforms.Default
 		{
 			VerifyThreadAffinity();
 			return new Texture();
-		}
-
-		public ITexture CreateTexture(Bitmap bitmap)
-		{
-			VerifyThreadAffinity();
-			return new Texture(bitmap);
 		}
 
 		public IFrameBuffer CreateFrameBuffer(Size s)
@@ -254,6 +248,21 @@ namespace OpenRA.Platforms.Default
 					OpenGL.glEnable(OpenGL.GL_BLEND);
 					OpenGL.CheckGLError();
 					OpenGL.glBlendFunc(OpenGL.GL_DST_COLOR, OpenGL.GL_SRC_COLOR);
+					break;
+				case BlendMode.LowAdditive:
+					OpenGL.glEnable(OpenGL.GL_BLEND);
+					OpenGL.CheckGLError();
+					OpenGL.glBlendFunc(OpenGL.GL_DST_COLOR, OpenGL.GL_ONE);
+					break;
+				case BlendMode.Screen:
+					OpenGL.glEnable(OpenGL.GL_BLEND);
+					OpenGL.CheckGLError();
+					OpenGL.glBlendFunc(OpenGL.GL_SRC_COLOR, OpenGL.GL_ONE_MINUS_SRC_COLOR);
+					break;
+				case BlendMode.Translucent:
+					OpenGL.glEnable(OpenGL.GL_BLEND);
+					OpenGL.CheckGLError();
+					OpenGL.glBlendFunc(OpenGL.GL_DST_COLOR, OpenGL.GL_ONE_MINUS_DST_COLOR);
 					break;
 			}
 

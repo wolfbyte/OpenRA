@@ -106,6 +106,7 @@
     <Compile Include="Activities\Move\Move.cs" />
     <Compile Include="Activities\Move\MoveAdjacentTo.cs" />
     <Compile Include="Activities\Move\MoveWithinRange.cs" />
+    <Compile Include="Activities\Move\VisualMoveIntoTarget.cs" />
     <Compile Include="Activities\Parachute.cs" />
     <Compile Include="Activities\Rearm.cs" />
     <Compile Include="Activities\RemoveSelf.cs" />
@@ -123,6 +124,7 @@
     <Compile Include="Activities\WaitForTransport.cs" />
     <Compile Include="ActorExts.cs" />
     <Compile Include="AIUtils.cs" />
+    <Compile Include="TargetExtensions.cs" />
     <Compile Include="Traits\BotModules\Squads\AttackOrFleeFuzzy.cs" />
     <Compile Include="Traits\BotModules\BotModuleLogic\BaseBuilderQueueManager.cs" />
     <Compile Include="Traits\Player\ModularBot.cs" />
@@ -153,7 +155,6 @@
     <Compile Include="Effects\MapNotificationEffect.cs" />
     <Compile Include="Effects\RallyPointIndicator.cs" />
     <Compile Include="Effects\SpriteEffect.cs" />
-    <Compile Include="FileFormats\Png.cs" />
     <Compile Include="Graphics\RailgunRenderable.cs" />
     <Compile Include="Lint\CheckNotifications.cs" />
     <Compile Include="Projectiles\AreaBeam.cs" />
@@ -292,7 +293,6 @@
     <Compile Include="Traits\Attack\AttackFrontal.cs" />
     <Compile Include="Traits\Attack\AttackGarrisoned.cs" />
     <Compile Include="Traits\Attack\AttackOmni.cs" />
-    <Compile Include="Traits\Attack\AttackSuicides.cs" />
     <Compile Include="Traits\Attack\AttackTurreted.cs" />
     <Compile Include="Traits\AttackWander.cs" />
     <Compile Include="Traits\AutoTarget.cs" />
@@ -603,6 +603,7 @@
     <Compile Include="Traits\World\ActorSpawnManager.cs" />
     <Compile Include="Traits\ActorSpawner.cs" />
     <Compile Include="UpdateRules\Rules\20181215\RemoveAttackIgnoresVisibility.cs" />
+    <Compile Include="UpdateRules\Rules\20181215\RemoveAttackSuicides.cs" />
     <Compile Include="UpdateRules\Rules\20181215\RemovedDemolishLocking.cs" />
     <Compile Include="UpdateRules\Rules\20181215\RemoveNegativeDamageFullHealthCheck.cs" />
     <Compile Include="UpdateRules\Rules\20181215\RemoveResourceExplodeModifier.cs" />

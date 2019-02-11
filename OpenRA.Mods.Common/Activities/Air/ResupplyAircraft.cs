@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2019 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -38,12 +38,10 @@ namespace OpenRA.Mods.Common.Activities
 			}
 			else
 			{
-				// HACK: Append NextInQueue to TakeOff to avoid moving to the Rallypoint (if NextInQueue is non-null).
 				ChildActivity = ActivityUtils.SequenceActivities(
 					aircraft.GetResupplyActivities(host)
 					.Append(new AllowYieldingReservation(self))
-					.Append(new TakeOff(self))
-					.Append(NextInQueue)
+					.Append(new TakeOff(self, (a, b, c) => NextInQueue == null && b.NextInQueue == null))
 					.ToArray());
 			}
 		}

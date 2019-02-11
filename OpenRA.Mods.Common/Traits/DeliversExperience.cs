@@ -1,6 +1,6 @@
 #region Copyright & License Information
 /*
- * Copyright 2007-2018 The OpenRA Developers (see AUTHORS)
+ * Copyright 2007-2019 The OpenRA Developers (see AUTHORS)
  * This file is part of OpenRA, which is free software. It is made
  * available to you under the terms of the GNU General Public License
  * as published by the Free Software Foundation, either version 3 of
@@ -71,21 +71,20 @@ namespace OpenRA.Mods.Common.Traits
 			if (order.OrderString != "DeliverExperience")
 				return;
 
-			var target = self.ResolveFrozenActorOrder(order, Color.Yellow);
-			if (target.Type != TargetType.Actor)
-				return;
-
-			var targetGainsExperience = target.Actor.Trait<GainsExperience>();
-			if (targetGainsExperience.Level == targetGainsExperience.MaxLevel)
+			if (order.Target.Type == TargetType.Actor)
+			{
+				var targetGainsExperience = order.Target.Actor.Trait<GainsExperience>();
+				if (targetGainsExperience.Level == targetGainsExperience.MaxLevel)
+					return;
+			}
+			else if (order.Target.Type != TargetType.FrozenActor)
 				return;
 
 			if (!order.Queued)
 				self.CancelActivity();
 
-			var level = gainsExperience.Level;
-
-			self.SetTargetLine(target, Color.Yellow);
-			self.QueueActivity(new DonateExperience(self, target.Actor, level, info.PlayerExperience, targetGainsExperience));
+			self.SetTargetLine(order.Target, Color.Yellow);
+			self.QueueActivity(new DonateExperience(self, order.Target, gainsExperience.Level, info.PlayerExperience));
 		}
 
 		public class DeliversExperienceOrderTargeter : UnitOrderTargeter
