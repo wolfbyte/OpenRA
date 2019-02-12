@@ -15,6 +15,7 @@ using System.Drawing;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Orders;
 using OpenRA.Traits;
+using OpenRA.Mods.AS.Activities;
 
 namespace OpenRA.Mods.Common.Traits
 {
@@ -147,7 +148,7 @@ namespace OpenRA.Mods.Common.Traits
 				self.SetTargetLine(target, Color.Green);
 
 				self.CancelActivity();
-				self.QueueActivity(new EnterSharedTransport(self, order.Target.Actor));
+				self.QueueActivity(new EnterSharedTransport(self, order.Target));
 			}
 		}
 
