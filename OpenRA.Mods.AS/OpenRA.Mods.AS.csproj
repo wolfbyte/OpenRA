@@ -104,6 +104,8 @@
     <Compile Include="Traits\AIDeployHelper.cs" />
     <Compile Include="Traits\AttackLeapAS.cs" />
     <Compile Include="Traits\Berserkable.cs" />
+    <Compile Include="Traits\BotModules\BaseBuilderBotASModule.cs" />
+    <Compile Include="Traits\BotModules\BotModuleLogic\BaseBuilderQueueManagerAS.cs" />
     <Compile Include="Traits\BotModules\BotModuleLogic\SupportPowerDecisionAS.cs" />
     <Compile Include="Traits\BotModules\SupportPowerBotASModule.cs" />
     <Compile Include="Traits\CashCollectable.cs" />
