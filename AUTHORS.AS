@@ -37,6 +37,7 @@ The plugin is maintained by
    > ProductionCost/TimeMultiplier
    > mindcontrol traits cleanup
    > /taunt command
+   > Intelligence logic
 
  * Pavel Penev (penev92)
    > PaletteFromJasc32File - base JASC palette parser
