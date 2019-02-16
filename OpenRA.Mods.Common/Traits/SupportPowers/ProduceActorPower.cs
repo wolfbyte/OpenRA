@@ -36,6 +36,9 @@ namespace OpenRA.Mods.Common.Traits
 			"The filename of the audio is defined per faction in notifications.yaml.")]
 		public readonly string BlockedAudio = null;
 
+		[Desc("Allows the actors to be produced immediately when charged.")]
+		public readonly bool AutoFire = false;
+
 		public override object Create(ActorInitializer init) { return new ProduceActorPower(init, this); }
 	}
 
@@ -52,6 +55,15 @@ namespace OpenRA.Mods.Common.Traits
 		public override void SelectTarget(Actor self, string order, SupportPowerManager manager)
 		{
 			self.World.IssueOrder(new Order(order, manager.Self, false));
+		}
+
+		public override void Charged(Actor self, string key)
+		{
+			base.Charged(self, key);
+
+			var info = Info as ProduceActorPowerInfo;
+			if (info.AutoFire)
+				self.Owner.PlayerActor.Trait<SupportPowerManager>().Powers[key].Activate(new Order());
 		}
 
 		public override void Activate(Actor self, Order order, SupportPowerManager manager)
