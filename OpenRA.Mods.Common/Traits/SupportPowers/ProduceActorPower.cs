@@ -42,14 +42,20 @@ namespace OpenRA.Mods.Common.Traits
 		public override object Create(ActorInitializer init) { return new ProduceActorPower(init, this); }
 	}
 
-	public class ProduceActorPower : SupportPower
+	public class ProduceActorPower : SupportPower, ITick
 	{
 		readonly string faction;
+		readonly string key;
+		readonly bool autoFire;
+
+		int ticks;
 
 		public ProduceActorPower(ActorInitializer init, ProduceActorPowerInfo info)
 			: base(init.Self, info)
 		{
 			faction = init.Contains<FactionInit>() ? init.Get<FactionInit, string>() : init.Self.Owner.Faction.InternalName;
+			autoFire = info.AutoFire;
+			key = info.AllowMultiple ? info.OrderName + "_" + init.Self.ActorID : info.OrderName;
 		}
 
 		public override void SelectTarget(Actor self, string order, SupportPowerManager manager)
@@ -61,9 +67,11 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			base.Charged(self, key);
 
-			var info = Info as ProduceActorPowerInfo;
-			if (info.AutoFire)
+			if (autoFire)
+			{
 				self.Owner.PlayerActor.Trait<SupportPowerManager>().Powers[key].Activate(new Order());
+				ticks = 10;
+			}
 		}
 
 		public override void Activate(Actor self, Order order, SupportPowerManager manager)
@@ -104,6 +112,12 @@ namespace OpenRA.Mods.Common.Traits
 				Game.Sound.PlayNotification(self.World.Map.Rules, manager.Self.Owner, "Speech", info.ReadyAudio, self.Owner.Faction.InternalName);
 			else
 				Game.Sound.PlayNotification(self.World.Map.Rules, manager.Self.Owner, "Speech", info.BlockedAudio, self.Owner.Faction.InternalName);
+		}
+
+		void ITick.Tick(Actor self)
+		{
+			if (autoFire && self.Owner.PlayerActor.Trait<SupportPowerManager>().Powers[key].Ready && --ticks < 0)
+				self.Owner.PlayerActor.Trait<SupportPowerManager>().Powers[key].Activate(new Order());
 		}
 	}
 }
