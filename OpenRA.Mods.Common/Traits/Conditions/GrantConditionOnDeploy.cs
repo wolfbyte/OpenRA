@@ -36,6 +36,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Can this actor deploy on slopes?")]
 		public readonly bool CanDeployOnRamps = false;
 
+		[Desc("Does this actor need to synchronize it's deployment with other actors?")]
+		public readonly bool SynchronizeDeployment = false;
+
 		[Desc("Cursor to display when able to (un)deploy the actor.")]
 		public readonly string DeployCursor = "deploy";
 
@@ -140,12 +143,29 @@ namespace OpenRA.Mods.Common.Traits
 
 		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return !IsTraitPaused && !IsTraitDisabled; }
 
+		bool IsGroupDeployNeeded(Actor self)
+		{
+			var actors = self.World.Selection.Actors.ToHashSet();
+
+			foreach (var a in actors)
+			{
+				var gcod = a.TraitOrDefault<GrantConditionOnDeploy>();
+				if (gcod != null && gcod.DeployState != DeployState.Deployed && gcod.Info.SynchronizeDeployment)
+					return true;
+			}
+
+			return false;
+		}
+
 		public void ResolveOrder(Actor self, Order order)
 		{
 			if (IsTraitDisabled || IsTraitPaused)
 				return;
 
 			if (order.OrderString != "GrantConditionOnDeploy" || deployState == DeployState.Deploying || deployState == DeployState.Undeploying)
+				return;
+
+			if (Info.SynchronizeDeployment && deployState == DeployState.Deployed && IsGroupDeployNeeded(self))
 				return;
 
 			if (!order.Queued)
