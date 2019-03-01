@@ -131,7 +131,18 @@ namespace OpenRA.Mods.Common.Traits
 		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
 		{
 			if (order.OrderID == "GrantConditionOnDeploy")
-				return new Order(order.OrderID, self, queued);
+			{
+				var gcodorder = new Order(order.OrderID, self, queued);
+
+				// HACK HACK HACK
+				if (Info.SynchronizeDeployment)
+				{
+					var actors = self.World.Selection.Actors.Select(x => x.ActorID.ToString());
+					gcodorder.TargetString = string.Join(",", actors);
+				}
+
+				return gcodorder;
+			}
 
 			return null;
 		}
@@ -143,14 +154,18 @@ namespace OpenRA.Mods.Common.Traits
 
 		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return !IsTraitPaused && !IsTraitDisabled; }
 
-		bool IsGroupDeployNeeded(Actor self)
+		bool IsGroupDeployNeeded(Actor self, string actorString)
 		{
-			var actors = self.World.Selection.Actors.ToHashSet();
+			if (string.IsNullOrEmpty(actorString))
+				return false;
+
+			var actorIDs = actorString.Split(',').Select(x => { uint result; uint.TryParse(x, out result); return result; });
+			var actors = self.World.Actors.Where(x => x.IsInWorld && !x.IsDead && actorIDs.Contains(x.ActorID));
 
 			foreach (var a in actors)
 			{
 				var gcod = a.TraitOrDefault<GrantConditionOnDeploy>();
-				if (gcod != null && gcod.DeployState != DeployState.Deployed && gcod.Info.SynchronizeDeployment)
+				if (gcod != null && gcod.DeployState != DeployState.Deployed)
 					return true;
 			}
 
@@ -165,7 +180,7 @@ namespace OpenRA.Mods.Common.Traits
 			if (order.OrderString != "GrantConditionOnDeploy" || deployState == DeployState.Deploying || deployState == DeployState.Undeploying)
 				return;
 
-			if (Info.SynchronizeDeployment && deployState == DeployState.Deployed && IsGroupDeployNeeded(self))
+			if (Info.SynchronizeDeployment && deployState == DeployState.Deployed && IsGroupDeployNeeded(self, order.TargetString))
 				return;
 
 			if (!order.Queued)
