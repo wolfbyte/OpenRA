@@ -96,6 +96,7 @@
     <Compile Include="Projectiles\KKNDLaser.cs" />
     <Compile Include="Projectiles\ElectricBolt.cs" />
     <Compile Include="Projectiles\ParaBomb.cs" />
+    <Compile Include="Projectiles\SmokeParticleRailgun.cs" />
     <Compile Include="Projectiles\WarheadTrailProjectile.cs" />
     <Compile Include="Projectiles\InstantExplode.cs" />
     <Compile Include="Projectiles\RadBeam.cs" />
