@@ -164,7 +164,7 @@ namespace OpenRA.Mods.Common.Activities
 			// path guarantees that they will return as soon as possible, once the actor is back in a
 			// valid position.
 			// This means that it is safe to unconditionally return true, which avoids breaking parent
-			// activities that rely on cancellation succeeding (but not necessarily immediately
+			// activities that rely on cancellation succeeding (but not necessarily immediately)
 			ChildActivity.Cancel(self, false);
 
 			return true;
@@ -197,10 +197,7 @@ namespace OpenRA.Mods.Common.Activities
 				return NextActivity;
 
 			if (path == null)
-			{
 				path = EvalPath();
-				SanityCheckPath(mobile);
-			}
 
 			if (path.Count == 0)
 			{
@@ -258,16 +255,6 @@ namespace OpenRA.Mods.Common.Activities
 			// If we only queue the activity and not run it, units will lose one tick and pause briefly!
 			ChildActivity = ActivityUtils.RunActivity(self, ChildActivity);
 			return this;
-		}
-
-		[Conditional("SANITY_CHECKS")]
-		void SanityCheckPath(Mobile mobile)
-		{
-			if (path.Count == 0)
-				return;
-			var d = path[path.Count - 1] - mobile.ToCell;
-			if (d.LengthSquared > 2)
-				throw new InvalidOperationException("(Move) Sanity check failed");
 		}
 
 		Pair<CPos, SubCell>? PopPath(Actor self)

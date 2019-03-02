@@ -838,12 +838,13 @@ namespace OpenRA.Mods.Common.Traits
 			}
 			else if (order.OrderString == "ReturnToBase" && rearmableInfo != null && rearmableInfo.RearmActors.Any())
 			{
-				UnReserve();
-				self.CancelActivity();
+				if (!order.Queued)
+					UnReserve();
+
 				if (!Info.CanHover)
-					self.QueueActivity(new ReturnToBase(self, Info.AbortOnResupply, null, false));
+					self.QueueActivity(order.Queued, new ReturnToBase(self, Info.AbortOnResupply, null, false));
 				else
-					self.QueueActivity(new HeliReturnToBase(self, Info.AbortOnResupply, null, false));
+					self.QueueActivity(order.Queued, new HeliReturnToBase(self, Info.AbortOnResupply, null, false));
 			}
 		}
 
