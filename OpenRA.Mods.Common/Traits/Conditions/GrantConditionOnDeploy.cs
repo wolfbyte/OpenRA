@@ -149,7 +149,14 @@ namespace OpenRA.Mods.Common.Traits
 
 		Order IIssueDeployOrder.IssueDeployOrder(Actor self, bool queued)
 		{
-			return new Order("GrantConditionOnDeploy", self, queued);
+			var gcodorder = new Order("GrantConditionOnDeploy", self, queued);
+			if (Info.SynchronizeDeployment)
+			{
+				var actors = self.World.Selection.Actors.Select(x => x.ActorID.ToString());
+				gcodorder.TargetString = string.Join(",", actors);
+			}
+
+			return gcodorder;
 		}
 
 		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return !IsTraitPaused && !IsTraitDisabled; }
