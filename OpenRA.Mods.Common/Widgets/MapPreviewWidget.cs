@@ -11,17 +11,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Graphics;
 using OpenRA.Network;
+using OpenRA.Primitives;
 using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Common.Widgets
 {
 	public class SpawnOccupant
 	{
-		public readonly HSLColor Color;
+		public readonly Color Color;
 		public readonly string PlayerName;
 		public readonly int Team;
 		public readonly string Faction;
@@ -182,7 +182,7 @@ namespace OpenRA.Mods.Common.Widgets
 			TooltipSpawnIndex = -1;
 			if (ShowSpawnPoints)
 			{
-				var colors = SpawnOccupants().ToDictionary(c => c.Key, c => c.Value.Color.RGB);
+				var colors = SpawnOccupants().ToDictionary(c => c.Key, c => c.Value.Color);
 
 				var spawnPoints = preview.SpawnPoints;
 				var gridType = preview.GridType;

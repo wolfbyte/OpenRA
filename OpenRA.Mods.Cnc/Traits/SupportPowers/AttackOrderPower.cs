@@ -10,11 +10,11 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common.Graphics;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Cnc.Traits
@@ -44,7 +44,8 @@ namespace OpenRA.Mods.Cnc.Traits
 		public override void Activate(Actor self, Order order, SupportPowerManager manager)
 		{
 			base.Activate(self, order, manager);
-			attack.AttackTarget(Target.FromCell(self.World, order.TargetLocation), false, false, true);
+
+			attack.AttackTarget(order.Target, false, false, true);
 		}
 
 		protected override void Created(Actor self)

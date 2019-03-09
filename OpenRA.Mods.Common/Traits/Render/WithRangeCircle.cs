@@ -10,9 +10,9 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common.Graphics;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits.Render
@@ -86,7 +86,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 					self.CenterPosition,
 					Info.Range,
 					0,
-					Info.UsePlayerColor ? self.Owner.Color.RGB : Info.Color,
+					Info.UsePlayerColor ? self.Owner.Color : Info.Color,
 					Color.FromArgb(96, Color.Black));
 
 			yield break;
@@ -107,7 +107,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 					self.CenterPosition,
 					Info.Range,
 					1,
-					Info.UsePlayerColor ? self.Owner.Color.RGB : Info.Color,
+					Info.UsePlayerColor ? self.Owner.Color : Info.Color,
 					3,
 					Color.FromArgb(96, Color.Black));
 		}

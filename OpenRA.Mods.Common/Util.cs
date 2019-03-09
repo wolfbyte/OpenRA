@@ -11,11 +11,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.GameRules;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Support;
 using OpenRA.Traits;
 
@@ -235,7 +235,7 @@ namespace OpenRA.Mods.Common
 			if (t == typeof(WVec))
 				return "3D World Vector";
 
-			if (t == typeof(HSLColor) || t == typeof(Color))
+			if (t == typeof(Color))
 				return "Color (RRGGBB[AA] notation)";
 
 			if (t == typeof(IProjectileInfo))

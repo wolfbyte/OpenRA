@@ -11,7 +11,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using OpenRA.Primitives;
 using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Common.Widgets.Logic
@@ -58,7 +58,6 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 				{
 					var line = l;
 					var lineWidth = 0;
-					var xOffset = descTemplate.Bounds.X;
 
 					while (line.Length > 0)
 					{

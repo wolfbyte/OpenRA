@@ -9,9 +9,9 @@
  */
 #endregion
 
-using System.Drawing;
 using OpenRA.Mods.Common.Effects;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
@@ -38,7 +38,7 @@ namespace OpenRA.Mods.Common.Activities
 				exp.GiveExperience(playerExperience);
 
 			if (self.Owner.IsAlliedWith(self.World.RenderPlayer))
-				self.World.AddFrameEndTask(w => w.Add(new FloatingText(targetActor.CenterPosition, targetOwner.Color.RGB, FloatingText.FormatCashTick(donated), 30)));
+				self.World.AddFrameEndTask(w => w.Add(new FloatingText(targetActor.CenterPosition, targetOwner.Color, FloatingText.FormatCashTick(donated), 30)));
 
 			foreach (var nct in targetActor.TraitsImplementing<INotifyCashTransfer>())
 				nct.OnAcceptingCash(targetActor, self);

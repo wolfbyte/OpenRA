@@ -10,7 +10,6 @@
 #endregion
 
 using System;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Primitives;
 using OpenRA.Support;
@@ -62,7 +61,7 @@ namespace OpenRA.Graphics
 
 		void PrecacheColor(Color c, string name)
 		{
-			using (new PerfTimer("PrecacheColor {0} {1}px {2}".F(name, size, c.Name)))
+			using (new PerfTimer("PrecacheColor {0} {1}px {2}".F(name, size, c)))
 				for (var n = (char)0x20; n < (char)0x7f; n++)
 					if (glyphs[Pair.New(n, c)] == null)
 						throw new InvalidOperationException();

@@ -10,9 +10,9 @@
 #endregion
 
 using System;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Graphics;
+using OpenRA.Primitives;
 
 namespace OpenRA.Widgets
 {
@@ -256,8 +256,7 @@ namespace OpenRA.Widgets
 
 		public static Color GetContrastColor(Color fgColor, Color bgDark, Color bgLight)
 		{
-			var fg = new HSLColor(fgColor);
-			return fg.RGB == Color.White || fg.L > 80 ? bgDark : bgLight;
+			return fgColor == Color.White || fgColor.GetBrightness() > 0.33 ? bgDark : bgLight;
 		}
 	}
 

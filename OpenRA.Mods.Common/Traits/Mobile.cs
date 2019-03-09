@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Activities;
@@ -22,7 +21,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("Unit is able to move.")]
-	public class MobileInfo : ConditionalTraitInfo, IMoveInfo, IPositionableInfo, IFacingInfo, IActorPreviewInitInfo,
+	public class MobileInfo : PausableConditionalTraitInfo, IMoveInfo, IPositionableInfo, IFacingInfo, IActorPreviewInitInfo,
 		IEditorActorOptions
 	{
 		[Desc("Which Locomotor does this trait use. Must be defined on the World actor.")]
@@ -125,7 +124,7 @@ namespace OpenRA.Mods.Common.Traits
 		}
 	}
 
-	public class Mobile : ConditionalTrait<MobileInfo>, INotifyCreated, IIssueOrder, IResolveOrder, IOrderVoice, IPositionable, IMove,
+	public class Mobile : PausableConditionalTrait<MobileInfo>, IIssueOrder, IResolveOrder, IOrderVoice, IPositionable, IMove,
 		IFacing, IDeathActorInitModifier, INotifyAddedToWorld, INotifyRemovedFromWorld, INotifyBlockingMove, IActorPreviewInitModifier, INotifyBecomingIdle
 	{
 		readonly Actor self;
@@ -221,7 +220,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public void Nudge(Actor self, Actor nudger, bool force)
 		{
-			if (IsTraitDisabled)
+			if (IsTraitDisabled || IsTraitPaused)
 				return;
 
 			// Initial fairly braindead implementation.
@@ -684,7 +683,14 @@ namespace OpenRA.Mods.Common.Traits
 				Nudge(self, blocking, true);
 		}
 
-		IEnumerable<IOrderTargeter> IIssueOrder.Orders { get { yield return new MoveOrderTargeter(self, this); } }
+		IEnumerable<IOrderTargeter> IIssueOrder.Orders
+		{
+			get
+			{
+				if (!IsTraitDisabled)
+					yield return new MoveOrderTargeter(self, this);
+			}
+		}
 
 		// Note: Returns a valid order even if the unit can't move to the target
 		Order IIssueOrder.IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
@@ -697,18 +703,20 @@ namespace OpenRA.Mods.Common.Traits
 
 		void IResolveOrder.ResolveOrder(Actor self, Order order)
 		{
+			if (IsTraitDisabled)
+				return;
+
 			if (order.OrderString == "Move")
 			{
-				var loc = self.World.Map.Clamp(order.TargetLocation);
-
-				if (!Info.LocomotorInfo.MoveIntoShroud && !self.Owner.Shroud.IsExplored(loc))
+				var cell = self.World.Map.Clamp(this.self.World.Map.CellContaining(order.Target.CenterPosition));
+				if (!Info.LocomotorInfo.MoveIntoShroud && !self.Owner.Shroud.IsExplored(cell))
 					return;
 
 				if (!order.Queued)
 					self.CancelActivity();
 
-				self.SetTargetLine(Target.FromCell(self.World, loc), Color.Green);
-				self.QueueActivity(order.Queued, new Move(self, loc, WDist.FromCells(8), null, true));
+				self.SetTargetLine(Target.FromCell(self.World, cell), Color.Green);
+				self.QueueActivity(order.Queued, new Move(self, cell, WDist.FromCells(8), null, true));
 			}
 
 			if (order.OrderString == "Stop")
@@ -720,12 +728,20 @@ namespace OpenRA.Mods.Common.Traits
 
 		string IOrderVoice.VoicePhraseForOrder(Actor self, Order order)
 		{
-			if (!Info.LocomotorInfo.MoveIntoShroud && !self.Owner.Shroud.IsExplored(order.TargetLocation))
+			if (IsTraitDisabled)
 				return null;
 
 			switch (order.OrderString)
 			{
 				case "Move":
+					if (!Info.LocomotorInfo.MoveIntoShroud && order.Target.Type != TargetType.Invalid)
+					{
+						var cell = self.World.Map.CellContaining(order.Target.CenterPosition);
+						if (!self.Owner.Shroud.IsExplored(cell))
+							return null;
+					}
+
+					return Info.Voice;
 				case "Scatter":
 				case "Stop":
 					return Info.Voice;
@@ -767,7 +783,7 @@ namespace OpenRA.Mods.Common.Traits
 				cursor = self.World.Map.Contains(location) ?
 					(self.World.Map.GetTerrainInfo(location).CustomCursor ?? mobile.Info.Cursor) : mobile.Info.BlockedCursor;
 
-				if (mobile.IsTraitDisabled
+				if (mobile.IsTraitPaused
 					|| (!explored && !locomotorInfo.MoveIntoShroud)
 					|| (explored && locomotorInfo.MovementCostForCell(self.World, location) == int.MaxValue))
 					cursor = mobile.Info.BlockedCursor;

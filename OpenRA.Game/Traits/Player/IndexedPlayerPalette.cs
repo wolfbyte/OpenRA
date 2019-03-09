@@ -10,9 +10,9 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using OpenRA.Graphics;
+using OpenRA.Primitives;
 
 namespace OpenRA.Traits
 {
@@ -52,7 +52,7 @@ namespace OpenRA.Traits
 			this.info = info;
 		}
 
-		public void LoadPlayerPalettes(WorldRenderer wr, string playerName, HSLColor color, bool replaceExisting)
+		public void LoadPlayerPalettes(WorldRenderer wr, string playerName, Color color, bool replaceExisting)
 		{
 			var basePalette = wr.Palette(info.BasePalette).Palette;
 			ImmutablePalette pal;

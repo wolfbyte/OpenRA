@@ -53,14 +53,13 @@ namespace OpenRA.Mods.Common.Traits
 			if (order.OrderString != "PlaceBeacon")
 				return;
 
-			var pos = self.World.Map.CenterOfCell(order.TargetLocation);
-
 			self.World.AddFrameEndTask(w =>
 			{
 				if (playerBeacon != null)
 					self.World.Remove(playerBeacon);
 
-				playerBeacon = new Beacon(self.Owner, pos, info.Duration, info.Palette, info.IsPlayerPalette, info.BeaconImage, info.ArrowSequence, info.CircleSequence);
+				playerBeacon = new Beacon(self.Owner, order.Target.CenterPosition, info.Duration,
+					info.Palette, info.IsPlayerPalette, info.BeaconImage, info.ArrowSequence, info.CircleSequence);
 
 				self.World.Add(playerBeacon);
 
@@ -75,8 +74,8 @@ namespace OpenRA.Mods.Common.Traits
 
 					playerRadarPing = radarPings.Add(
 						() => self.Owner.IsAlliedWith(self.World.RenderPlayer),
-						pos,
-						self.Owner.Color.RGB,
+						order.Target.CenterPosition,
+						self.Owner.Color,
 						info.Duration);
 				}
 			});

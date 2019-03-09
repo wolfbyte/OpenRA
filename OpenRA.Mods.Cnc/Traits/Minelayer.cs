@@ -11,12 +11,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Graphics;
 using OpenRA.Mods.Cnc.Activities;
 using OpenRA.Mods.Common.Orders;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Cnc.Traits
@@ -89,22 +89,24 @@ namespace OpenRA.Mods.Cnc.Traits
 
 		void IResolveOrder.ResolveOrder(Actor self, Order order)
 		{
-			if (order.OrderString == "BeginMinefield")
-				minefieldStart = order.TargetLocation;
+			if (order.OrderString != "BeginMinefield" && order.OrderString != "PlaceMinefield" && order.OrderString != "PlaceMine")
+				return;
 
-			if (order.OrderString == "PlaceMine")
+			var cell = self.World.Map.CellContaining(order.Target.CenterPosition);
+			if (order.OrderString == "BeginMinefield")
+				minefieldStart = cell;
+			else if (order.OrderString == "PlaceMine")
 			{
-				minefieldStart = order.TargetLocation;
-				Minefield = new CPos[] { order.TargetLocation };
+				minefieldStart = cell;
+				Minefield = new[] { cell };
 				self.CancelActivity();
 				self.QueueActivity(new LayMines(self));
 			}
-
-			if (order.OrderString == "PlaceMinefield")
+			else if (order.OrderString == "PlaceMinefield")
 			{
 				var movement = self.Trait<IPositionable>();
 
-				Minefield = GetMinefieldCells(minefieldStart, order.TargetLocation, info.MinefieldDepth)
+				Minefield = GetMinefieldCells(minefieldStart, cell, info.MinefieldDepth)
 					.Where(p => movement.CanEnterCell(p, null, false)).ToArray();
 
 				if (Minefield.Length == 1 && Minefield[0] != self.Location)
