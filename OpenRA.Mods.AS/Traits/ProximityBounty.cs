@@ -114,7 +114,7 @@ namespace OpenRA.Mods.AS.Traits
 				var grantedBounty = currentBounty;
 
 				if (Info.ShowBounty && self.Owner.IsAlliedWith(self.World.RenderPlayer))
-					self.World.AddFrameEndTask(w => w.Add(new FloatingText(self.CenterPosition, self.Owner.Color.RGB, FloatingText.FormatCashTick(grantedBounty), 30)));
+					self.World.AddFrameEndTask(w => w.Add(new FloatingText(self.CenterPosition, self.Owner.Color, FloatingText.FormatCashTick(grantedBounty), 30)));
 
 				self.Owner.PlayerActor.Trait<PlayerResources>().GiveCash(currentBounty);
 

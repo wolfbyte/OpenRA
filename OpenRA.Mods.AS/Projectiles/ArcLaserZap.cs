@@ -9,11 +9,11 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using OpenRA.GameRules;
 using OpenRA.Graphics;
 using OpenRA.Mods.AS.Graphics;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.AS.Projectiles
@@ -61,7 +61,7 @@ namespace OpenRA.Mods.AS.Projectiles
 
 		public IProjectile Create(ProjectileArgs args)
 		{
-			var c = UsePlayerColor ? args.SourceActor.Owner.Color.RGB : Color;
+			var c = UsePlayerColor ? args.SourceActor.Owner.Color : Color;
 			return new ArcLaserZap(this, args, c);
 		}
 	}

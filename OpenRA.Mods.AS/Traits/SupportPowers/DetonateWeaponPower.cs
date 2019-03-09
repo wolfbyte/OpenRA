@@ -10,7 +10,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Effects;
 using OpenRA.GameRules;
@@ -100,7 +99,7 @@ namespace OpenRA.Mods.AS.Traits
 				wsb.PlayCustomAnimation(self, Info.ActivationSequence);
 			}
 
-			var targetPosition = self.World.Map.CenterOfCell(order.TargetLocation) + new WVec(WDist.Zero, WDist.Zero, Info.AirburstAltitude);
+			var targetPosition = order.Target.CenterPosition + new WVec(WDist.Zero, WDist.Zero, Info.AirburstAltitude);
 
 			Action detonateWeapon = () => self.World.AddFrameEndTask(w => Info.WeaponInfo.Impact(Target.FromPos(targetPosition), self, Enumerable.Empty<int>()));
 
@@ -205,7 +204,7 @@ namespace OpenRA.Mods.AS.Traits
 					world.Map.CenterOfCell(xy),
 					power.Info.TargetCircleRange,
 					0,
-					power.Info.TargetCircleUsePlayerColor ? power.Self.Owner.Color.RGB : power.Info.TargetCircleColor,
+					power.Info.TargetCircleUsePlayerColor ? power.Self.Owner.Color : power.Info.TargetCircleColor,
 					Color.FromArgb(96, Color.Black));
 			}
 		}

@@ -9,7 +9,6 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using OpenRA.GameRules;
 using OpenRA.Graphics;
 using OpenRA.Mods.AS.Graphics;
@@ -85,7 +84,7 @@ namespace OpenRA.Mods.AS.Projectiles
 		{
 			this.args = args;
 			this.info = info;
-			var playerColors = args.SourceActor.Owner.Color.RGB;
+			var playerColors = args.SourceActor.Owner.Color;
 			var colors = info.Colors;
 			for (int i = 0; i < info.PlayerColorZaps; i++)
 				colors.Append(playerColors);

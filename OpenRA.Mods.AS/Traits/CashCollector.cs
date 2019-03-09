@@ -125,7 +125,7 @@ namespace OpenRA.Mods.AS.Traits
 			}
 
 			if (Info.ShowTicks && self.Owner.IsAlliedWith(self.World.RenderPlayer))
-				self.World.AddFrameEndTask(w => w.Add(new FloatingText(self.CenterPosition, self.Owner.Color.RGB, FloatingText.FormatCashTick(cash), 30)));
+				self.World.AddFrameEndTask(w => w.Add(new FloatingText(self.CenterPosition, self.Owner.Color, FloatingText.FormatCashTick(cash), 30)));
 
 			self.Owner.PlayerActor.Trait<PlayerResources>().GiveCash(cash);
 		}
