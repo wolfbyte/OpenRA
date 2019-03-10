@@ -75,7 +75,6 @@ Container@CONNECTIONFAILED_PANEL:
 					X: 140
 					Y: 80
 					Width: 155
-					MaxLength: 20
 					Height: 25
 		Button@ABORT_BUTTON:
 			Key: escape

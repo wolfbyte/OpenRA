@@ -39,7 +39,6 @@ Background@CONNECTIONFAILED_PANEL:
 			X: PARENT_RIGHT - 285
 			Y: 111
 			Width: 190
-			MaxLength: 20
 			Height: 25
 		Button@RETRY_BUTTON:
 			X: PARENT_RIGHT - 430

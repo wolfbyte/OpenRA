@@ -40,7 +40,6 @@ Container@MULTIPLAYER_CREATESERVER_PANEL:
 					X: 110
 					Y: 50
 					Width: 145
-					MaxLength: 20
 					Height: 25
 				Label@AFTER_PASSWORD_LABEL:
 					X: 265
