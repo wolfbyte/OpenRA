@@ -36,15 +36,15 @@ namespace OpenRA.Mods.Common.Activities
 		protected override void OnFirstRun(Actor self)
 		{
 			if (self.Info.HasTraitInfo<IFacingInfo>())
-				QueueChild(new Turn(self, Facing));
+				QueueChild(self, new Turn(self, Facing));
 
 			if (self.Info.HasTraitInfo<AircraftInfo>())
-				QueueChild(new HeliLand(self, true));
+				QueueChild(self, new HeliLand(self, true));
 		}
 
 		public override Activity Tick(Actor self)
 		{
-			if (IsCanceled)
+			if (IsCanceling)
 				return NextActivity;
 
 			if (ChildActivity != null)
@@ -71,7 +71,7 @@ namespace OpenRA.Mods.Common.Activities
 				IsInterruptible = false;
 
 				// Wait forever
-				QueueChild(new WaitFor(() => false));
+				QueueChild(self, new WaitFor(() => false));
 				makeAnimation.Reverse(self, () => DoTransform(self));
 				return this;
 			}
@@ -81,7 +81,7 @@ namespace OpenRA.Mods.Common.Activities
 
 		protected override void OnLastRun(Actor self)
 		{
-			if (!IsCanceled)
+			if (!IsCanceling)
 				DoTransform(self);
 		}
 

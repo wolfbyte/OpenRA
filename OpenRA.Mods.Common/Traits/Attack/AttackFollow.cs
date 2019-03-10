@@ -176,7 +176,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			public override Activity Tick(Actor self)
 			{
-				if (IsCanceled)
+				if (IsCanceling)
 				{
 					// Cancel the requested target, but keep firing on it while in range
 					attack.opportunityTarget = attack.requestedTarget;
@@ -275,7 +275,7 @@ namespace OpenRA.Mods.Common.Traits
 				}
 
 				wasMovingWithinRange = true;
-				return ActivityUtils.SequenceActivities(
+				return ActivityUtils.SequenceActivities(self,
 					move.MoveWithinRange(target, minRange, maxRange, checkTarget.CenterPosition, Color.Red),
 					this);
 			}

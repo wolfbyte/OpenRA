@@ -33,14 +33,14 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
-			if (IsCanceled)
+			if (IsCanceling)
 				return NextActivity;
 
 			var target = targets.ClosestTo(self);
 			if (target == null)
 				return this;
 
-			return ActivityUtils.SequenceActivities(
+			return ActivityUtils.SequenceActivities(self,
 				new AttackMoveActivity(self, move.MoveTo(target.Location, 2)),
 				new Wait(25),
 				this);

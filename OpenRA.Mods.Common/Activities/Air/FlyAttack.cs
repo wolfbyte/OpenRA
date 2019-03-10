@@ -53,7 +53,7 @@ namespace OpenRA.Mods.Common.Activities
 			if (aircraft.ForceLanding)
 				Cancel(self);
 
-			if (IsCanceled)
+			if (IsCanceling)
 				return NextActivity;
 
 			bool targetIsHiddenActor;
@@ -77,7 +77,7 @@ namespace OpenRA.Mods.Common.Activities
 
 			// If all valid weapons have depleted their ammo and Rearmable trait exists, return to RearmActor to reload and then resume the activity
 			if (rearmable != null && !useLastVisibleTarget && attackAircraft.Armaments.All(x => x.IsTraitPaused || !x.Weapon.IsValidAgainst(target, self.World, self)))
-				return ActivityUtils.SequenceActivities(new ReturnToBase(self, aircraft.Info.AbortOnResupply), this);
+				return ActivityUtils.SequenceActivities(self, new ReturnToBase(self, aircraft.Info.AbortOnResupply), this);
 
 			if (attackAircraft.IsTraitDisabled)
 				return NextActivity;
@@ -93,7 +93,7 @@ namespace OpenRA.Mods.Common.Activities
 					return NextActivity;
 
 				// Fly towards the last known position
-				return ActivityUtils.SequenceActivities(
+				return ActivityUtils.SequenceActivities(self,
 					new Fly(self, target, WDist.Zero, lastVisibleMaximumRange, checkTarget.CenterPosition, Color.Red),
 					this);
 			}
@@ -106,18 +106,18 @@ namespace OpenRA.Mods.Common.Activities
 			{
 				// TODO: This should fire each weapon at its maximum range
 				if (attackAircraft != null && target.IsInRange(self.CenterPosition, attackAircraft.GetMinimumRange()))
-					ChildActivity = ActivityUtils.SequenceActivities(
+					ChildActivity = ActivityUtils.SequenceActivities(self,
 						new FlyTimed(ticksUntilTurn, self),
 						new Fly(self, target, checkTarget.CenterPosition, Color.Red),
 						new FlyTimed(ticksUntilTurn, self));
 				else
-					ChildActivity = ActivityUtils.SequenceActivities(
+					ChildActivity = ActivityUtils.SequenceActivities(self,
 						new Fly(self, target, checkTarget.CenterPosition, Color.Red),
 						new FlyTimed(ticksUntilTurn, self));
 
 				// HACK: This needs to be done in this round-about way because TakeOff doesn't behave as expected when it doesn't have a NextActivity.
 				if (self.World.Map.DistanceAboveTerrain(self.CenterPosition).Length < aircraft.Info.MinAirborneAltitude)
-					ChildActivity = ActivityUtils.SequenceActivities(new TakeOff(self), ChildActivity);
+					ChildActivity = ActivityUtils.SequenceActivities(self, new TakeOff(self), ChildActivity);
 			}
 
 			ActivityUtils.RunActivity(self, ChildActivity);
