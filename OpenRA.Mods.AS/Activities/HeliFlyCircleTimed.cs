@@ -25,7 +25,7 @@ namespace OpenRA.Mods.AS.Activities
 
 		public override Activity Tick(Actor self)
 		{
-			if (IsCanceled || remainingTicks-- == 0)
+			if (IsCanceling || remainingTicks-- == 0)
 				return NextActivity;
 
 			base.Tick(self);
