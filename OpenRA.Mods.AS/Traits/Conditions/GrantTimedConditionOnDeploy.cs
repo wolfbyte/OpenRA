@@ -233,7 +233,7 @@ namespace OpenRA.Mods.AS.Traits
 			if (IsTraitPaused || IsTraitDisabled)
 				return;
 
-			if (deployState == TimedDeployState.Ready || deployState == TimedDeployState.Deploying)
+			if (deployState == TimedDeployState.Ready || deployState == TimedDeployState.Deploying || deployState == TimedDeployState.Undeploying)
 				return;
 
 			if (--ticks < 0)
