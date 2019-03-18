@@ -137,7 +137,9 @@ namespace OpenRA.Mods.AS.Activities
 
 		public override void Cancel(Actor self, bool keepQueue = false)
 		{
-			enterTransport?.Cancel(self);
+			if (enterTransport != null)
+				enterTransport.Cancel(self);
+
 			base.Cancel(self);
 		}
 	}
