@@ -701,7 +701,7 @@
 		RequiresCondition: criticalspeed
 		Modifier: 50
 	Mobile:
-		RequiresCondition: !empdisable
+		PauseOnCondition: empdisable
 
 ^CivilianInfantry:
 	Inherits@1: ^Infantry
@@ -728,7 +728,7 @@
 		Action: Kill
 	DrawLineToTarget:
 	Mobile:
-		RequiresCondition: !empdisable && !being-captured
+		PauseOnCondition: empdisable || being-captured
 		Locomotor: wheeled
 		TurnSpeed: 5
 		Voice: Move
@@ -749,7 +749,7 @@
 		Condition: damaged
 		ValidDamageStates: Light, Medium, Heavy, Critical
 	Repairable:
-		RepairBuildings: gadept
+		RepairActors: gadept
 		Voice: Move
 	Passenger:
 		CargoType: Vehicle
@@ -841,7 +841,7 @@
 	SelectionDecorations:
 		Palette: pips
 	Repairable:
-		RepairBuildings: gadept
+		RepairActors: gadept
 		Voice: Move
 	Aircraft:
 		AirborneCondition: airborne
@@ -1066,7 +1066,7 @@
 		TurnSpeed: 5
 		Voice: Move
 		Speed: 113
-		RequiresCondition: !empdisable
+		PauseOnCondition: empdisable
 		Locomotor: train
 	Cargo:
 		Types: Infantry

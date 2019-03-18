@@ -91,7 +91,7 @@ namespace OpenRA.Mods.Cnc.Traits
 
 			public override Activity Tick(Actor self)
 			{
-				if (IsCanceled || !attack.CanAttack(self, target))
+				if (IsCanceling || !attack.CanAttack(self, target))
 					return NextActivity;
 
 				if (attack.charges == 0)
@@ -103,7 +103,7 @@ namespace OpenRA.Mods.Cnc.Traits
 				if (!string.IsNullOrEmpty(attack.info.ChargeAudio))
 					Game.Sound.Play(SoundType.World, attack.info.ChargeAudio, self.CenterPosition);
 
-				return ActivityUtils.SequenceActivities(new Wait(attack.info.InitialChargeDelay), new ChargeFire(attack, target), this);
+				return ActivityUtils.SequenceActivities(self, new Wait(attack.info.InitialChargeDelay), new ChargeFire(attack, target), this);
 			}
 		}
 
@@ -120,7 +120,7 @@ namespace OpenRA.Mods.Cnc.Traits
 
 			public override Activity Tick(Actor self)
 			{
-				if (IsCanceled || !attack.CanAttack(self, target))
+				if (IsCanceling || !attack.CanAttack(self, target))
 					return NextActivity;
 
 				if (attack.charges == 0)
@@ -128,7 +128,7 @@ namespace OpenRA.Mods.Cnc.Traits
 
 				attack.DoAttack(self, target);
 
-				return ActivityUtils.SequenceActivities(new Wait(attack.info.ChargeDelay), this);
+				return ActivityUtils.SequenceActivities(self, new Wait(attack.info.ChargeDelay), this);
 			}
 		}
 	}

@@ -58,7 +58,7 @@ namespace OpenRA.Mods.AS.Traits
 		{
 			base.Activate(self, order, manager);
 
-			SendAirstrike(self, self.World.Map.CenterOfCell(order.TargetLocation));
+			SendAirstrike(self, order.Target.CenterPosition);
 		}
 
 		public void SendAirstrike(Actor self, WPos target, bool randomize = true, int attackFacing = 0)

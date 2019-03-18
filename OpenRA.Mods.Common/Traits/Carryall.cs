@@ -10,7 +10,6 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common.Activities;
@@ -245,12 +244,11 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				if (order.OrderString == "DeliverUnit")
 				{
-					var cell = self.World.Map.Clamp(order.TargetLocation);
-
+					var cell = self.World.Map.Clamp(self.World.Map.CellContaining(order.Target.CenterPosition));
 					if (!aircraftInfo.MoveIntoShroud && !self.Owner.Shroud.IsExplored(cell))
 						return;
 
-					var targetLocation = move.NearestMoveableCell(order.TargetLocation);
+					var targetLocation = move.NearestMoveableCell(cell);
 					self.SetTargetLine(Target.FromCell(self.World, targetLocation), Color.Yellow);
 					self.QueueActivity(order.Queued, new DeliverUnit(self, targetLocation));
 				}

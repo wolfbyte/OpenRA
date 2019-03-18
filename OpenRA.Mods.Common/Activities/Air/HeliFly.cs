@@ -10,9 +10,9 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
@@ -73,7 +73,7 @@ namespace OpenRA.Mods.Common.Activities
 			if (aircraft.ForceLanding)
 				Cancel(self);
 
-			if (IsCanceled)
+			if (IsCanceling)
 				return NextActivity;
 
 			bool targetIsHiddenActor;
@@ -156,7 +156,7 @@ namespace OpenRA.Mods.Common.Activities
 		{
 			var activity = base.Tick(self);
 
-			if (activity == null && !IsCanceled && info.LandWhenIdle)
+			if (activity == null && !IsCanceling && info.LandWhenIdle)
 			{
 				if (info.TurnToLand)
 					self.QueueActivity(new Turn(self, info.InitialFacing));

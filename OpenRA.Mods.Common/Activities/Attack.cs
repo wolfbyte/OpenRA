@@ -10,10 +10,10 @@
 #endregion
 
 using System;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
@@ -39,8 +39,6 @@ namespace OpenRA.Mods.Common.Activities
 
 		WDist minRange;
 		WDist maxRange;
-		Activity turnActivity;
-		Activity moveActivity;
 		AttackStatus attackStatus = AttackStatus.UnableToAttack;
 
 		public Attack(Actor self, Target target, bool allowMovement, bool forceAttack)
@@ -73,7 +71,13 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
-			if (IsCanceled)
+			if (ChildActivity != null)
+			{
+				ChildActivity = ActivityUtils.RunActivity(self, ChildActivity);
+				return this;
+			}
+
+			if (IsCanceling)
 				return NextActivity;
 
 			bool targetIsHiddenActor;
@@ -114,12 +118,10 @@ namespace OpenRA.Mods.Common.Activities
 
 				// Move towards the last known position
 				wasMovingWithinRange = true;
-				return ActivityUtils.SequenceActivities(
-					move.MoveWithinRange(target, WDist.Zero, lastVisibleMaximumRange, checkTarget.CenterPosition, Color.Red),
-					this);
+				QueueChild(self, move.MoveWithinRange(target, WDist.Zero, lastVisibleMaximumRange, checkTarget.CenterPosition, Color.Red), true);
+				return this;
 			}
 
-			turnActivity = moveActivity = null;
 			attackStatus = AttackStatus.UnableToAttack;
 
 			foreach (var attack in attackTraits.Where(x => !x.IsTraitDisabled))
@@ -128,26 +130,17 @@ namespace OpenRA.Mods.Common.Activities
 				attack.IsAiming = status == AttackStatus.Attacking || status == AttackStatus.NeedsToTurn;
 			}
 
-			if (attackStatus.HasFlag(AttackStatus.Attacking))
-				return this;
-
-			if (attackStatus.HasFlag(AttackStatus.NeedsToTurn))
-				return turnActivity;
-
 			if (attackStatus.HasFlag(AttackStatus.NeedsToMove))
-			{
 				wasMovingWithinRange = true;
-				return moveActivity;
-			}
+
+			if (attackStatus >= AttackStatus.NeedsToTurn)
+				return this;
 
 			return NextActivity;
 		}
 
 		protected virtual AttackStatus TickAttack(Actor self, AttackFrontal attack)
 		{
-			if (IsCanceled)
-				return AttackStatus.UnableToAttack;
-
 			if (!target.IsValidFor(self))
 				return AttackStatus.UnableToAttack;
 
@@ -172,10 +165,7 @@ namespace OpenRA.Mods.Common.Activities
 				var sightRange = rs != null ? rs.Range : WDist.FromCells(2);
 
 				attackStatus |= AttackStatus.NeedsToMove;
-				moveActivity = ActivityUtils.SequenceActivities(
-					move.MoveWithinRange(target, sightRange, target.CenterPosition, Color.Red),
-					this);
-
+				QueueChild(self, move.MoveWithinRange(target, sightRange, target.CenterPosition, Color.Red), true);
 				return AttackStatus.NeedsToMove;
 			}
 
@@ -199,12 +189,8 @@ namespace OpenRA.Mods.Common.Activities
 					return AttackStatus.UnableToAttack;
 
 				attackStatus |= AttackStatus.NeedsToMove;
-
 				var checkTarget = useLastVisibleTarget ? lastVisibleTarget : target;
-				moveActivity = ActivityUtils.SequenceActivities(
-					move.MoveWithinRange(target, minRange, maxRange, checkTarget.CenterPosition, Color.Red),
-					this);
-
+				QueueChild(self, move.MoveWithinRange(target, minRange, maxRange, checkTarget.CenterPosition, Color.Red), true);
 				return AttackStatus.NeedsToMove;
 			}
 
@@ -213,13 +199,12 @@ namespace OpenRA.Mods.Common.Activities
 			if (!Util.FacingWithinTolerance(facing.Facing, desiredFacing, ((AttackFrontalInfo)attack.Info).FacingTolerance))
 			{
 				attackStatus |= AttackStatus.NeedsToTurn;
-				turnActivity = ActivityUtils.SequenceActivities(new Turn(self, desiredFacing), this);
+				QueueChild(self, new Turn(self, desiredFacing), true);
 				return AttackStatus.NeedsToTurn;
 			}
 
 			attackStatus |= AttackStatus.Attacking;
 			attack.DoAttack(self, target, armaments);
-
 			return AttackStatus.Attacking;
 		}
 	}

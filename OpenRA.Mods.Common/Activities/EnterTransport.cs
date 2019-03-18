@@ -10,10 +10,10 @@
 #endregion
 
 using System;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
@@ -105,7 +105,7 @@ namespace OpenRA.Mods.Common.Activities
 			}
 
 			// Try and find a new transport nearby
-			if (IsCanceled || string.IsNullOrEmpty(type))
+			if (IsCanceling || string.IsNullOrEmpty(type))
 				return NextActivity;
 
 			Func<Actor, bool> isValidTransport = a =>
@@ -133,12 +133,12 @@ namespace OpenRA.Mods.Common.Activities
 			return NextActivity;
 		}
 
-		public override bool Cancel(Actor self, bool keepQueue = false)
+		public override void Cancel(Actor self, bool keepQueue = false)
 		{
-			if (!IsCanceled && enterTransport != null && !enterTransport.Cancel(self))
-				return false;
+			if (!IsCanceling && enterTransport != null)
+				enterTransport.Cancel(self);
 
-			return base.Cancel(self, keepQueue);
+			base.Cancel(self, keepQueue);
 		}
 	}
 }

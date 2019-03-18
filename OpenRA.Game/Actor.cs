@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using Eluant;
 using Eluant.ObjectBinding;
@@ -223,15 +222,13 @@ namespace OpenRA
 			if (CurrentActivity == null)
 				CurrentActivity = nextActivity;
 			else
-				CurrentActivity.RootActivity.Queue(nextActivity);
+				CurrentActivity.RootActivity.Queue(this, nextActivity);
 		}
 
-		public bool CancelActivity()
+		public void CancelActivity()
 		{
 			if (CurrentActivity != null)
-				return CurrentActivity.RootActivity.Cancel(this);
-
-			return true;
+				CurrentActivity.RootActivity.Cancel(this);
 		}
 
 		public override int GetHashCode()

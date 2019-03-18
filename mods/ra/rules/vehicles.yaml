@@ -399,7 +399,7 @@ JEEP:
 	Mobile:
 		TurnSpeed: 10
 		Speed: 170
-		RequiresCondition: !notmobile && !being-captured
+		PauseOnCondition: notmobile || being-captured
 	RevealsShroud:
 		Range: 8c0
 		RevealGeneratedShroud: False
@@ -444,7 +444,7 @@ APC:
 		Type: Heavy
 	Mobile:
 		Speed: 142
-		RequiresCondition: !notmobile && !being-captured
+		PauseOnCondition: notmobile || being-captured
 	RevealsShroud:
 		Range: 5c0
 		RevealGeneratedShroud: False
@@ -553,7 +553,7 @@ MGG:
 	Armor:
 		Type: Heavy
 	Mobile:
-		Speed: 99
+		Speed: 85
 	WithIdleOverlay@SPINNER:
 		Offset: -299,0,171
 		Sequence: spinner
@@ -571,7 +571,7 @@ MGG:
 MRJ:
 	Inherits: ^Vehicle
 	Valued:
-		Cost: 1100
+		Cost: 1000
 	Tooltip:
 		Name: Mobile Radar Jammer
 	UpdatesPlayerStatistics:
@@ -587,7 +587,7 @@ MRJ:
 	Armor:
 		Type: Heavy
 	Mobile:
-		Speed: 99
+		Speed: 85
 	RevealsShroud:
 		Range: 7c0
 	WithIdleOverlay@SPINNER:
@@ -802,7 +802,8 @@ QTNK:
 	Armor:
 		Type: Heavy
 	Mobile:
-		RequiresCondition: !deployed && !being-captured
+		RequiresCondition: !deployed
+		PauseOnCondition: being-captured
 		Speed: 56
 	Chronoshiftable:
 		RequiresCondition: !deployed && !being-captured
@@ -842,7 +843,7 @@ STNK:
 	Mobile:
 		Speed: 142
 		Locomotor: heavywheeled
-		RequiresCondition: !notmobile && !being-captured
+		PauseOnCondition: notmobile || being-captured
 	RevealsShroud:
 		Range: 7c0
 		RevealGeneratedShroud: False

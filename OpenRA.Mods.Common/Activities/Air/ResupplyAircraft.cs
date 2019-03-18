@@ -16,7 +16,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
 {
-	public class ResupplyAircraft : CompositeActivity
+	public class ResupplyAircraft : Activity
 	{
 		public ResupplyAircraft(Actor self) { }
 
@@ -30,27 +30,29 @@ namespace OpenRA.Mods.Common.Activities
 
 			if (!aircraft.Info.TakeOffOnResupply)
 			{
-				ChildActivity = ActivityUtils.SequenceActivities(
-					aircraft.GetResupplyActivities(host)
-					.Append(new AllowYieldingReservation(self))
-					.Append(new WaitFor(() => NextInQueue != null || aircraft.ReservedActor == null))
-					.ToArray());
+				ChildActivity = ActivityUtils.SequenceActivities(self, aircraft.GetResupplyActivities(host).ToArray());
+				QueueChild(self, new AllowYieldingReservation(self));
+				QueueChild(self, new WaitFor(() => NextInQueue != null || aircraft.ReservedActor == null));
 			}
 			else
 			{
-				ChildActivity = ActivityUtils.SequenceActivities(
-					aircraft.GetResupplyActivities(host)
-					.Append(new AllowYieldingReservation(self))
-					.Append(new TakeOff(self, (a, b, c) => NextInQueue == null && b.NextInQueue == null))
-					.ToArray());
+				ChildActivity = ActivityUtils.SequenceActivities(self, aircraft.GetResupplyActivities(host).ToArray());
+				QueueChild(self, new AllowYieldingReservation(self));
+				QueueChild(self, new TakeOff(self, (a, b, c) => NextInQueue == null && b.NextInQueue == null));
 			}
 		}
 
 		public override Activity Tick(Actor self)
 		{
+			if (ChildActivity != null)
+			{
+				ChildActivity = ActivityUtils.RunActivity(self, ChildActivity);
+				return this;
+			}
+
 			// Conditional fixes being able to stop aircraft from resupplying.
-			if (IsCanceled && NextInQueue == null)
-				OnFirstRun(self);
+			if (IsCanceling && NextInQueue == null)
+				return new ResupplyAircraft(self);
 
 			return NextActivity;
 		}

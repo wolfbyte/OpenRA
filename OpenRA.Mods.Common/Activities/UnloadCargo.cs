@@ -10,7 +10,6 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
@@ -57,7 +56,7 @@ namespace OpenRA.Mods.Common.Activities
 		public override Activity Tick(Actor self)
 		{
 			cargo.Unloading = false;
-			if (IsCanceled || cargo.IsEmpty(self))
+			if (IsCanceling || cargo.IsEmpty(self))
 				return NextActivity;
 
 			foreach (var inu in notifiers)
@@ -71,7 +70,7 @@ namespace OpenRA.Mods.Common.Activities
 			{
 				self.NotifyBlocker(BlockedExitCells(actor));
 
-				return ActivityUtils.SequenceActivities(new Wait(10), this);
+				return ActivityUtils.SequenceActivities(self, new Wait(10), this);
 			}
 
 			cargo.Unload(self);

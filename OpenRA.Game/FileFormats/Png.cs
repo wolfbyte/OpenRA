@@ -11,12 +11,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
+using ICSharpCode.SharpZipLib.Checksums;
 using ICSharpCode.SharpZipLib.Zip.Compression.Streams;
+using OpenRA.Primitives;
 
 namespace OpenRA.FileFormats
 {
@@ -36,6 +38,7 @@ namespace OpenRA.FileFormats
 			s.Position += 8;
 			var headerParsed = false;
 			var isPaletted = false;
+			var is24Bit = false;
 			var data = new List<byte>();
 
 			for (;;)
@@ -62,6 +65,7 @@ namespace OpenRA.FileFormats
 							var bitDepth = ms.ReadUInt8();
 							var colorType = (PngColorType)ms.ReadByte();
 							isPaletted = IsPaletted(bitDepth, colorType);
+							is24Bit = colorType == PngColorType.Color;
 
 							var dataLength = Width * Height;
 							if (!isPaletted)
@@ -128,21 +132,33 @@ namespace OpenRA.FileFormats
 							{
 								using (var ds = new InflaterInputStream(ns))
 								{
-									var pxStride = isPaletted ? 1 : 4;
-									var stride = Width * pxStride;
+									var pxStride = isPaletted ? 1 : is24Bit ? 3 : 4;
+									var srcStride = Width * pxStride;
+									var destStride = Width * (isPaletted ? 1 : 4);
 
-									var prevLine = new byte[stride];
+									var prevLine = new byte[srcStride];
 									for (var y = 0; y < Height; y++)
 									{
 										var filter = (PngFilter)ds.ReadByte();
-										var line = ds.ReadBytes(stride);
+										var line = ds.ReadBytes(srcStride);
 
-										for (var i = 0; i < stride; i++)
+										for (var i = 0; i < srcStride; i++)
 											line[i] = i < pxStride
 												? UnapplyFilter(filter, line[i], 0, prevLine[i], 0)
 												: UnapplyFilter(filter, line[i], line[i - pxStride], prevLine[i], prevLine[i - pxStride]);
 
-										Array.Copy(line, 0, Data, y * stride, line.Length);
+										if (is24Bit)
+										{
+											// Fold alpha channel into RGB data
+											for (var i = 0; i < line.Length / 3; i++)
+											{
+												Array.Copy(line, 3 * i, Data, y * destStride + 4 * i, 3);
+												Data[y * destStride + 4 * i + 3] = 255;
+											}
+										}
+										else
+											Array.Copy(line, 0, Data, y * destStride, line.Length);
+
 										prevLine = line;
 									}
 								}
@@ -156,6 +172,26 @@ namespace OpenRA.FileFormats
 					}
 				}
 			}
+		}
+
+		public Png(byte[] data, int width, int height, Color[] palette = null,
+			Dictionary<string, string> embeddedData = null)
+		{
+			var expectLength = width * height;
+			if (palette == null)
+				expectLength *= 4;
+
+			if (data.Length != expectLength)
+				throw new InvalidDataException("Input data does not match expected length");
+
+			Width = width;
+			Height = height;
+
+			Palette = palette;
+			Data = data;
+
+			if (embeddedData != null)
+				EmbeddedData = embeddedData;
 		}
 
 		public static bool Verify(Stream s)
@@ -204,7 +240,121 @@ namespace OpenRA.FileFormats
 			if (bitDepth == 8 && colorType == (PngColorType.Color | PngColorType.Alpha))
 				return false;
 
+			if (bitDepth == 8 && colorType == PngColorType.Color)
+				return false;
+
 			throw new InvalidDataException("Unknown pixel format");
+		}
+
+		public byte[] Save()
+		{
+			var pixelFormat = Palette != null ? System.Drawing.Imaging.PixelFormat.Format8bppIndexed : System.Drawing.Imaging.PixelFormat.Format32bppArgb;
+
+			// Save to a memory stream that we can then parse to add the embedded data
+			using (var bitmapStream = new MemoryStream())
+			{
+				using (var bitmap = new System.Drawing.Bitmap(Width, Height, pixelFormat))
+				{
+					if (Palette != null)
+					{
+						// Setting bitmap.Palette.Entries directly doesn't work
+						var bPal = bitmap.Palette;
+						for (var i = 0; i < 256; i++)
+							bPal.Entries[i] = System.Drawing.Color.FromArgb(Palette[i].ToArgb());
+
+						bitmap.Palette = bPal;
+						var bd = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, Width, Height), System.Drawing.Imaging.ImageLockMode.WriteOnly,
+							pixelFormat);
+						for (var i = 0; i < Height; i++)
+							Marshal.Copy(Data, i * Width, IntPtr.Add(bd.Scan0, i * bd.Stride), Width);
+
+						bitmap.UnlockBits(bd);
+					}
+					else
+					{
+						unsafe
+						{
+							var bd = bitmap.LockBits(new System.Drawing.Rectangle(0, 0, Width, Height), System.Drawing.Imaging.ImageLockMode.WriteOnly, pixelFormat);
+							var colors = (int*)bd.Scan0;
+							for (var y = 0; y < Height; y++)
+							{
+								for (var x = 0; x < Width; x++)
+								{
+									var i = y * Width + x;
+
+									// Convert RGBA to ARGB
+									colors[i] = Color.FromArgb(Data[4 * i + 3], Data[4 * i + 0], Data[4 * i + 1],
+										Data[4 * i + 2]).ToArgb();
+								}
+							}
+
+							bitmap.UnlockBits(bd);
+						}
+					}
+
+					bitmap.Save(bitmapStream, System.Drawing.Imaging.ImageFormat.Png);
+				}
+
+				if (!EmbeddedData.Any())
+					return bitmapStream.ToArray();
+
+				// Add embedded metadata to the end of the image
+				bitmapStream.Position = 0;
+				var outputStream = new MemoryStream();
+				using (var bw = new BinaryWriter(outputStream))
+				{
+					bw.Write(bitmapStream.ReadBytes(8));
+					var crc32 = new Crc32();
+
+					for (;;)
+					{
+						var length = IPAddress.NetworkToHostOrder(bitmapStream.ReadInt32());
+						var type = Encoding.UTF8.GetString(bitmapStream.ReadBytes(4));
+						var content = bitmapStream.ReadBytes(length);
+						var crc = bitmapStream.ReadUInt32();
+
+						switch (type)
+						{
+							case "tEXt":
+								break;
+
+							case "IEND":
+								bitmapStream.Close();
+
+								foreach (var kv in EmbeddedData)
+								{
+									bw.Write(IPAddress.NetworkToHostOrder(kv.Key.Length + 1 + kv.Value.Length));
+									bw.Write("tEXt".ToCharArray());
+									bw.Write(kv.Key.ToCharArray());
+									bw.Write((byte)0x00);
+									bw.Write(kv.Value.ToCharArray());
+									crc32.Reset();
+									crc32.Update(Encoding.ASCII.GetBytes("tEXt"));
+									crc32.Update(Encoding.ASCII.GetBytes(kv.Key + (char)0x00 + kv.Value));
+									bw.Write((uint)IPAddress.NetworkToHostOrder((int)crc32.Value));
+								}
+
+								bw.Write(0);
+								bw.Write(type.ToCharArray());
+								bw.Write(crc);
+
+								return outputStream.ToArray();
+
+							default:
+								bw.Write(IPAddress.NetworkToHostOrder(length));
+								bw.Write(type.ToCharArray());
+								bw.Write(content);
+								bw.Write(crc);
+								break;
+						}
+					}
+				}
+			}
+		}
+
+		public void Save(string path)
+		{
+			File.WriteAllBytes(path, Save());
 		}
 	}
 }

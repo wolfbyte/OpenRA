@@ -144,37 +144,9 @@ namespace OpenRA.Mods.Common.Activities
 			}
 		}
 
-		public override bool Cancel(Actor self, bool keepQueue = false)
-		{
-			if (ChildActivity == null)
-				return base.Cancel(self, keepQueue);
-
-			// Although MoveFirstHalf and MoveSecondHalf can't be interrupted,
-			// we prevent them from moving forever by removing the path.
-			if (path != null)
-				path.Clear();
-
-			// Remove queued activities
-			if (!keepQueue && NextInQueue != null)
-				NextInQueue = null;
-
-			// In current implementation, ChildActivity can be Turn, MoveFirstHalf and MoveSecondHalf.
-			// Turn may be interrupted freely while they are turning.
-			// Unlike Turn, MoveFirstHalf and MoveSecondHalf are not Interruptable, but clearing the
-			// path guarantees that they will return as soon as possible, once the actor is back in a
-			// valid position.
-			// This means that it is safe to unconditionally return true, which avoids breaking parent
-			// activities that rely on cancellation succeeding (but not necessarily immediately
-			ChildActivity.Cancel(self, false);
-
-			return true;
-		}
-
 		public override Activity Tick(Actor self)
 		{
-			// ChildActivity is the top priority, unlike other activities.
-			// Even if this activity is canceled, we must let the child be run so that units
-			// will not end up in an odd place.
+			// Let the child be run so that units will not end up in an odd place.
 			if (ChildActivity != null)
 			{
 				ChildActivity = ActivityUtils.RunActivity(self, ChildActivity);
@@ -187,20 +159,17 @@ namespace OpenRA.Mods.Common.Activities
 
 			// If the actor is inside a tunnel then we must let them move
 			// all the way through before moving to the next activity
-			if (IsCanceled && self.Location.Layer != CustomMovementLayerType.Tunnel)
+			if (IsCanceling && self.Location.Layer != CustomMovementLayerType.Tunnel)
 				return NextActivity;
 
-			if (mobile.IsTraitDisabled)
+			if (mobile.IsTraitDisabled || mobile.IsTraitPaused)
 				return this;
 
 			if (destination == mobile.ToCell)
 				return NextActivity;
 
 			if (path == null)
-			{
 				path = EvalPath();
-				SanityCheckPath(mobile);
-			}
 
 			if (path.Count == 0)
 			{
@@ -230,8 +199,7 @@ namespace OpenRA.Mods.Common.Activities
 				// To avoid issues, we also make these mini-turns uninterruptible (like MovePart activities) to ensure the actor
 				// finishes that mini-turn before starting something else.
 				var facingWithinTolerance = Util.FacingWithinTolerance(mobile.Facing, firstFacing, mobile.TurnSpeed);
-				QueueChild(new Turn(self, firstFacing, facingWithinTolerance, !facingWithinTolerance));
-				ChildActivity = ActivityUtils.RunActivity(self, ChildActivity);
+				QueueChild(self, new Turn(self, firstFacing, facingWithinTolerance, !facingWithinTolerance), true);
 				return this;
 			}
 
@@ -245,29 +213,8 @@ namespace OpenRA.Mods.Common.Activities
 			var to = Util.BetweenCells(self.World, mobile.FromCell, mobile.ToCell) +
 				(map.Grid.OffsetOfSubCell(mobile.FromSubCell) + map.Grid.OffsetOfSubCell(mobile.ToSubCell)) / 2;
 
-			QueueChild(new MoveFirstHalf(
-				this,
-				from,
-				to,
-				mobile.Facing,
-				mobile.Facing,
-				0));
-
-			// While carrying out one Move order, MoveSecondHalf finishes its work from time to time and returns null.
-			// That causes the ChildActivity to be null and makes us return to this part of code.
-			// If we only queue the activity and not run it, units will lose one tick and pause briefly!
-			ChildActivity = ActivityUtils.RunActivity(self, ChildActivity);
+			QueueChild(self, new MoveFirstHalf(this, from, to, mobile.Facing, mobile.Facing, 0), true);
 			return this;
-		}
-
-		[Conditional("SANITY_CHECKS")]
-		void SanityCheckPath(Mobile mobile)
-		{
-			if (path.Count == 0)
-				return;
-			var d = path[path.Count - 1] - mobile.ToCell;
-			if (d.LengthSquared > 2)
-				throw new InvalidOperationException("(Move) Sanity check failed");
 		}
 
 		Pair<CPos, SubCell>? PopPath(Actor self)
@@ -400,7 +347,7 @@ namespace OpenRA.Mods.Common.Activities
 				if (ret == this)
 					return ret;
 
-				Queue(ret);
+				Queue(self, ret);
 				return NextActivity;
 			}
 
@@ -465,7 +412,7 @@ namespace OpenRA.Mods.Common.Activities
 				var fromSubcellOffset = map.Grid.OffsetOfSubCell(mobile.FromSubCell);
 				var toSubcellOffset = map.Grid.OffsetOfSubCell(mobile.ToSubCell);
 
-				if (!IsCanceled || self.Location.Layer == CustomMovementLayerType.Tunnel)
+				if (!IsCanceling || self.Location.Layer == CustomMovementLayerType.Tunnel)
 				{
 					var nextCell = parent.PopPath(self);
 					if (nextCell != null)

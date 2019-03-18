@@ -11,10 +11,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
@@ -49,13 +49,13 @@ namespace OpenRA.Mods.Common.Activities
 			return self.World.ActorsHavingTrait<Reservable>()
 				.Where(a => a.Owner == self.Owner
 					&& rearmInfo.RearmActors.Contains(a.Info.Name)
-					&& (!unreservedOnly || !Reservable.IsReserved(a)))
+					&& (!unreservedOnly || Reservable.IsAvailableFor(a, self)))
 				.ClosestTo(self);
 		}
 
 		void Calculate(Actor self)
 		{
-			if (dest == null || dest.IsDead || Reservable.IsReserved(dest))
+			if (dest == null || dest.IsDead || !Reservable.IsAvailableFor(dest, self))
 				dest = ChooseResupplier(self, true);
 
 			if (dest == null)
@@ -110,7 +110,7 @@ namespace OpenRA.Mods.Common.Activities
 			if (alwaysLand)
 				return true;
 
-			if (repairableInfo != null && repairableInfo.RepairBuildings.Contains(dest.Info.Name) && self.GetDamageState() != DamageState.Undamaged)
+			if (repairableInfo != null && repairableInfo.RepairActors.Contains(dest.Info.Name) && self.GetDamageState() != DamageState.Undamaged)
 				return true;
 
 			return rearmable != null && rearmable.Info.RearmActors.Contains(dest.Info.Name)
@@ -124,7 +124,7 @@ namespace OpenRA.Mods.Common.Activities
 			if (aircraft.ForceLanding)
 				return NextActivity;
 
-			if (IsCanceled || self.IsDead)
+			if (IsCanceling || self.IsDead)
 				return NextActivity;
 
 			if (!isCalculated)
@@ -135,7 +135,7 @@ namespace OpenRA.Mods.Common.Activities
 				var nearestResupplier = ChooseResupplier(self, false);
 
 				if (nearestResupplier != null)
-					return ActivityUtils.SequenceActivities(
+					return ActivityUtils.SequenceActivities(self,
 						new Fly(self, Target.FromActor(nearestResupplier), WDist.Zero, aircraft.Info.WaitDistanceFromResupplyBase, targetLineColor: Color.Green),
 						new FlyCircle(self, aircraft.Info.NumberOfTicksToVerifyAvailableAirport),
 						this);
@@ -168,7 +168,7 @@ namespace OpenRA.Mods.Common.Activities
 			if (!abortOnResupply)
 				landingProcedures.Add(NextActivity);
 
-			return ActivityUtils.SequenceActivities(landingProcedures.ToArray());
+			return ActivityUtils.SequenceActivities(self, landingProcedures.ToArray());
 		}
 	}
 }

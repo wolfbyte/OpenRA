@@ -242,7 +242,7 @@
 	DrawLineToTarget:
 	UpdatesPlayerStatistics:
 	Mobile:
-		RequiresCondition: !being-captured
+		PauseOnCondition: being-captured
 		Locomotor: wheeled
 		TurnSpeed: 5
 	SelectionDecorations:
@@ -259,6 +259,7 @@
 		Condition: damaged
 		ValidDamageStates: Light, Medium, Heavy, Critical
 	Repairable:
+		RepairActors: fix
 	Chronoshiftable:
 	Passenger:
 		CargoType: Vehicle
@@ -281,6 +282,7 @@
 		CancelActivity: True
 	CaptureNotification:
 		Notification: UnitStolen
+		LoseNotification: UnitLost
 	MustBeDestroyed:
 	Voiced:
 		VoiceSet: VehicleVoice
@@ -515,6 +517,7 @@
 		Types: Ship
 	Chronoshiftable:
 	RepairableNear:
+		RepairActors: spen, syrd
 	GpsDot:
 		String: Ship
 	WithDamageOverlay:
@@ -606,7 +609,7 @@
 	Inherits: ^NeutralPlane
 	Inherits@2: ^GainsExperience
 	Repairable:
-		RepairBuildings: fix
+		RepairActors: fix
 
 ^Helicopter:
 	Inherits: ^Plane

@@ -9,9 +9,9 @@
  */
 #endregion
 
-using System.Drawing;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
@@ -47,7 +47,7 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
-			if (IsCanceled)
+			if (IsCanceling)
 				return NextActivity;
 
 			bool targetIsHiddenActor;
@@ -83,7 +83,7 @@ namespace OpenRA.Mods.Common.Activities
 
 			// Move into range
 			wasMovingWithinRange = true;
-			return ActivityUtils.SequenceActivities(
+			return ActivityUtils.SequenceActivities(self,
 				move.MoveWithinRange(target, minRange, maxRange, checkTarget.CenterPosition, targetLineColor),
 				this);
 		}

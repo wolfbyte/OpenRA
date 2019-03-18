@@ -43,13 +43,11 @@ namespace OpenRA.Mods.Common.Activities
 			return NextActivity;
 		}
 
-		public override bool Cancel(Actor self, bool keepQueue = false)
+		public override void Cancel(Actor self, bool keepQueue = false)
 		{
-			if (!base.Cancel(self, keepQueue))
-				return false;
-
+			base.Cancel(self, keepQueue);
 			Dispose();
-			return true;
+			return;
 		}
 
 		public void Dispose()

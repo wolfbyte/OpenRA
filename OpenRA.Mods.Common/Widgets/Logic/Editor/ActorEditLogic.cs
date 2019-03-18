@@ -122,8 +122,7 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 				var actorId = actorIDField.Text.ToLowerInvariant();
 				if (CurrentActor.ID.ToLowerInvariant() != actorId)
 				{
-					var found = world.Map.ActorDefinitions.Any(x => x.Key.ToLowerInvariant() == actorId);
-					if (found)
+					if (editorActorLayer[actorId] != null)
 					{
 						nextActorIDStatus = ActorIDStatus.Duplicate;
 						return;
@@ -143,8 +142,6 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 
 		void SetActorID(World world, string actorId)
 		{
-			var actorDef = world.Map.ActorDefinitions.First(x => x.Key == CurrentActor.ID);
-			actorDef.Key = actorId;
 			CurrentActor.ID = actorId;
 			nextActorIDStatus = ActorIDStatus.Normal;
 		}
@@ -215,12 +212,12 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 						});
 
 						item.Get<LabelWidget>("LABEL").GetText = () => option.Name;
-						item.GetColor = () => option.Color.RGB;
+						item.GetColor = () => option.Color;
 						return item;
 					};
 
 					ownerDropdown.GetText = () => selectedOwner.Name;
-					ownerDropdown.GetColor = () => selectedOwner.Color.RGB;
+					ownerDropdown.GetColor = () => selectedOwner.Color;
 					ownerDropdown.OnClick = () =>
 					{
 						var owners = editorActorLayer.Players.Players.Values.OrderBy(p => p.Name);

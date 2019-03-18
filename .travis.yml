@@ -39,7 +39,7 @@ script:
  - make all SDK="-sdk:4.5"
  - make check
  - make check-scripts
- - make test
+# - make test
  - make nunit
 
 # Automatically update the trait documentation and Lua API

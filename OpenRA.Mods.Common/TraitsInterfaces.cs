@@ -11,7 +11,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using OpenRA.Activities;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common.Activities;
@@ -380,6 +379,7 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		byte Index { get; }
 		bool InteractsWithDefaultLayer { get; }
+		bool ReturnToGroundLayerOnIdle { get; }
 
 		bool EnabledForActor(ActorInfo a, LocomotorInfo li);
 		int EntryMovementCost(ActorInfo a, LocomotorInfo li, CPos cell);

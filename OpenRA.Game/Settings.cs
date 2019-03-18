@@ -11,10 +11,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using OpenRA.Graphics;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA
@@ -166,8 +166,6 @@ namespace OpenRA
 
 		public string Language = "english";
 		public string DefaultLanguage = "english";
-
-		public ImageFormat ScreenshotFormat = ImageFormat.Png;
 	}
 
 	public class SoundSettings
@@ -189,9 +187,9 @@ namespace OpenRA
 	{
 		[Desc("Sets the player nickname for in-game and IRC chat.")]
 		public string Name = "Newbie";
-		public HSLColor Color = new HSLColor(75, 255, 180);
+		public Color Color = Color.FromAhsl(75, 255, 180);
 		public string LastServer = "localhost:1234";
-		public HSLColor[] CustomColors = { };
+		public Color[] CustomColors = { };
 	}
 
 	public class GameSettings

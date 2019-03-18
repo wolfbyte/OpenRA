@@ -10,10 +10,10 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common.Graphics;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits.Render
@@ -64,7 +64,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 				throw new YamlException("Font '{0}' is not listed in the mod.yaml's Fonts section".F(info.Font));
 
 			decorationBounds = self.TraitsImplementing<IDecorationBounds>().ToArray();
-			color = info.UsePlayerColor ? self.Owner.Color.RGB : info.Color;
+			color = info.UsePlayerColor ? self.Owner.Color : info.Color;
 		}
 
 		IEnumerable<IRenderable> IRenderAboveShroudWhenSelected.RenderAboveShroud(Actor self, WorldRenderer wr)
@@ -123,7 +123,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 		void INotifyOwnerChanged.OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)
 		{
 			if (info.UsePlayerColor)
-				color = newOwner.Color.RGB;
+				color = newOwner.Color;
 		}
 	}
 }

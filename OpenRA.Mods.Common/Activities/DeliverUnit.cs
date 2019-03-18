@@ -83,7 +83,7 @@ namespace OpenRA.Mods.Common.Activities
 				return this;
 			}
 
-			if (IsCanceled)
+			if (IsCanceling)
 				return NextActivity;
 
 			if ((carryall.State == Carryall.CarryallState.Idle || carryall.Carryable.IsDead) && state != DeliveryState.TakeOff)
@@ -98,7 +98,7 @@ namespace OpenRA.Mods.Common.Activities
 					// Can't land, so wait at the target until something changes
 					if (!targetLocation.HasValue)
 					{
-						innerActivity = ActivityUtils.SequenceActivities(
+						innerActivity = ActivityUtils.SequenceActivities(self,
 							new HeliFly(self, Target.FromCell(self.World, destination)),
 							new Wait(25));
 
@@ -117,7 +117,7 @@ namespace OpenRA.Mods.Common.Activities
 						{
 							var facing = (targetPosition - self.CenterPosition).Yaw.Facing;
 							localOffset = carryall.CarryableOffset.Rotate(body.QuantizeOrientation(self, WRot.FromFacing(facing)));
-							innerActivity = ActivityUtils.SequenceActivities(
+							innerActivity = ActivityUtils.SequenceActivities(self,
 								new HeliFly(self, Target.FromPos(targetPosition - body.LocalToWorld(localOffset))),
 								new Turn(self, facing));
 
@@ -170,7 +170,7 @@ namespace OpenRA.Mods.Common.Activities
 					return this;
 
 				case DeliveryState.TakeOff:
-					return ActivityUtils.SequenceActivities(new HeliFly(self, Target.FromPos(self.CenterPosition)), NextActivity);
+					return ActivityUtils.SequenceActivities(self, new HeliFly(self, Target.FromPos(self.CenterPosition)), NextActivity);
 
 				case DeliveryState.Aborted:
 					carryall.UnreserveCarryable(self);
@@ -206,12 +206,12 @@ namespace OpenRA.Mods.Common.Activities
 			});
 		}
 
-		public override bool Cancel(Actor self, bool keepQueue = false)
+		public override void Cancel(Actor self, bool keepQueue = false)
 		{
-			if (!IsCanceled && innerActivity != null && !innerActivity.Cancel(self))
-				return false;
+			if (!IsCanceling && innerActivity != null)
+				innerActivity.Cancel(self);
 
-			return base.Cancel(self);
+			base.Cancel(self);
 		}
 	}
 }

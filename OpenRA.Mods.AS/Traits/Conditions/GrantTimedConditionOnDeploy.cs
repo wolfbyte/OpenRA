@@ -10,13 +10,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Orders;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Traits.Render;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.AS.Traits
@@ -45,6 +45,9 @@ namespace OpenRA.Mods.AS.Traits
 
 		[SequenceReference, Desc("Animation to play for deploying.")]
 		public readonly string DeployAnimation = null;
+
+		[SequenceReference, Desc("Animation to play for undeploying.")]
+		public readonly string UndeployAnimation = null;
 
 		[Desc("Apply (un)deploy animations to sprite bodies with these names.")]
 		public readonly string[] BodyNames = { "body" };
@@ -208,13 +211,13 @@ namespace OpenRA.Mods.AS.Traits
 
 			var wsb = wsbs.FirstEnabledTraitOrDefault();
 
-			if (string.IsNullOrEmpty(Info.DeployAnimation) || wsb == null)
+			if (string.IsNullOrEmpty(Info.UndeployAnimation) || wsb == null)
 				OnUndeployCompleted();
 			else
 			{
 				if (manager != null && !string.IsNullOrEmpty(Info.DeployingCondition) && deployingToken == ConditionManager.InvalidConditionToken)
 					deployingToken = manager.GrantCondition(self, Info.DeployingCondition);
-				wsb.PlayCustomAnimationBackwards(self, Info.DeployAnimation, OnUndeployCompleted);
+				wsb.PlayCustomAnimation(self, Info.UndeployAnimation, OnUndeployCompleted);
 			}
 		}
 
@@ -235,7 +238,7 @@ namespace OpenRA.Mods.AS.Traits
 			if (IsTraitPaused || IsTraitDisabled)
 				return;
 
-			if (deployState == TimedDeployState.Ready || deployState == TimedDeployState.Deploying)
+			if (deployState == TimedDeployState.Ready || deployState == TimedDeployState.Deploying || deployState == TimedDeployState.Undeploying)
 				return;
 
 			if (--ticks < 0)

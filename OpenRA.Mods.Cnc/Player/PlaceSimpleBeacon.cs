@@ -53,7 +53,7 @@ namespace OpenRA.Mods.Cnc.Traits
 			if (order.OrderString != "PlaceBeacon")
 				return;
 
-			var pos = self.World.Map.CenterOfCell(order.TargetLocation);
+			var pos = order.Target.CenterPosition;
 
 			self.World.AddFrameEndTask(w =>
 			{
@@ -75,7 +75,7 @@ namespace OpenRA.Mods.Cnc.Traits
 					playerRadarPing = radarPings.Add(
 						() => self.Owner.IsAlliedWith(self.World.RenderPlayer),
 						pos,
-						self.Owner.Color.RGB,
+						self.Owner.Color,
 						info.Duration);
 				}
 			});

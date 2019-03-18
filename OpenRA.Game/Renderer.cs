@@ -11,9 +11,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Graphics;
+using OpenRA.Primitives;
 using OpenRA.Support;
 
 namespace OpenRA
@@ -214,7 +214,7 @@ namespace OpenRA
 		{
 			// Must remain inside the current scissor rect
 			if (scissorState.Any())
-				rect.Intersect(scissorState.Peek());
+				rect = Rectangle.Intersect(rect, scissorState.Peek());
 
 			Flush();
 			Context.EnableScissor(rect.Left, rect.Top, rect.Width, rect.Height);

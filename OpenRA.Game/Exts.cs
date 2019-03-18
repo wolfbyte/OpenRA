@@ -11,11 +11,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using OpenRA.Primitives;
 using OpenRA.Support;
 using OpenRA.Traits;
 
@@ -77,16 +76,6 @@ namespace OpenRA
 				return max;
 			else
 				return val;
-		}
-
-		public static bool Contains(this Rectangle r, int2 p)
-		{
-			return r.Contains(p.ToPoint());
-		}
-
-		public static bool Contains(this RectangleF r, int2 p)
-		{
-			return r.Contains(p.ToPointF());
 		}
 
 		static int WindingDirectionTest(int2 v0, int2 v1, int2 p)
@@ -447,8 +436,6 @@ namespace OpenRA
 
 			return result;
 		}
-
-		public static Rectangle Bounds(this Bitmap b) { return new Rectangle(0, 0, b.Width, b.Height); }
 
 		public static int ToBits(this IEnumerable<bool> bits)
 		{

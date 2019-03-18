@@ -12,8 +12,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Drawing.Imaging;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -230,43 +228,8 @@ namespace OpenRA
 			else if (fieldType == typeof(Color))
 			{
 				Color color;
-				if (value != null && HSLColor.TryParseRGB(value, out color))
+				if (value != null && Color.TryParse(value, out color))
 					return color;
-
-				return InvalidValueAction(value, fieldType, fieldName);
-			}
-			else if (fieldType == typeof(Color[]))
-			{
-				if (value != null)
-				{
-					var parts = value.Split(',');
-					var colors = new Color[parts.Length];
-
-					for (var i = 0; i < colors.Length; i++)
-						if (!HSLColor.TryParseRGB(parts[i], out colors[i]))
-							return InvalidValueAction(value, fieldType, fieldName);
-
-					return colors;
-				}
-
-				return InvalidValueAction(value, fieldType, fieldName);
-			}
-			else if (fieldType == typeof(HSLColor))
-			{
-				if (value != null)
-				{
-					Color rgb;
-					if (HSLColor.TryParseRGB(value, out rgb))
-						return new HSLColor(rgb);
-
-					// Allow old HSLColor/ColorRamp formats to be parsed as HSLColor
-					var parts = value.Split(',');
-					if (parts.Length == 3 || parts.Length == 4)
-						return new HSLColor(
-							(byte)Exts.ParseIntegerInvariant(parts[0]).Clamp(0, 255),
-							(byte)Exts.ParseIntegerInvariant(parts[1]).Clamp(0, 255),
-							(byte)Exts.ParseIntegerInvariant(parts[2]).Clamp(0, 255));
-				}
 
 				return InvalidValueAction(value, fieldType, fieldName);
 			}
@@ -449,29 +412,6 @@ namespace OpenRA
 				{
 					return InvalidValueAction(value, fieldType, fieldName);
 				}
-			}
-			else if (fieldType == typeof(ImageFormat))
-			{
-				if (value != null)
-				{
-					switch (value.ToLowerInvariant())
-					{
-					case "bmp":
-						return ImageFormat.Bmp;
-					case "gif":
-						return ImageFormat.Gif;
-					case "jpg":
-					case "jpeg":
-						return ImageFormat.Jpeg;
-					case "tif":
-					case "tiff":
-						return ImageFormat.Tiff;
-					default:
-						return ImageFormat.Png;
-					}
-				}
-
-				return InvalidValueAction(value, fieldType, fieldName);
 			}
 			else if (fieldType == typeof(bool))
 				return ParseYesNo(value, fieldType, fieldName);

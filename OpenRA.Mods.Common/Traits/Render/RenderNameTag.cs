@@ -10,10 +10,10 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common.Graphics;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits.Render
@@ -38,7 +38,7 @@ namespace OpenRA.Mods.Common.Traits.Render
 		public RenderNameTag(Actor self, RenderNameTagInfo info)
 		{
 			font = Game.Renderer.Fonts[info.Font];
-			color = self.Owner.Color.RGB;
+			color = self.Owner.Color;
 
 			if (self.Owner.PlayerName.Length > info.MaxLength)
 				name = self.Owner.PlayerName.Substring(0, info.MaxLength);

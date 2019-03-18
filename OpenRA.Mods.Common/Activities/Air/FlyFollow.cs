@@ -9,9 +9,9 @@
  */
 #endregion
 
-using System.Drawing;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
@@ -51,7 +51,7 @@ namespace OpenRA.Mods.Common.Activities
 			if (aircraft.ForceLanding)
 				Cancel(self);
 
-			if (IsCanceled)
+			if (IsCanceling)
 				return NextActivity;
 
 			bool targetIsHiddenActor;
@@ -89,7 +89,7 @@ namespace OpenRA.Mods.Common.Activities
 			}
 
 			wasMovingWithinRange = true;
-			return ActivityUtils.SequenceActivities(
+			return ActivityUtils.SequenceActivities(self,
 				aircraft.MoveWithinRange(target, minRange, maxRange, checkTarget.CenterPosition, targetLineColor),
 				this);
 		}

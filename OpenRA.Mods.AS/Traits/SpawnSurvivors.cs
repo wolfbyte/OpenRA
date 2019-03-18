@@ -8,6 +8,8 @@
  */
 #endregion
 
+using System.Collections.Generic;
+using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Primitives;
 using OpenRA.Traits;
@@ -40,12 +42,17 @@ namespace OpenRA.Mods.AS.Traits
 			if (!Info.DeathTypes.IsEmpty && !attack.Damage.DamageTypes.Overlaps(Info.DeathTypes))
 				return;
 
+			var buildingInfo = self.Info.TraitInfoOrDefault<BuildingInfo>();
+			var eligibleLocations = buildingInfo != null
+				? buildingInfo.Tiles(self.Location).ToList()
+				: new List<CPos>() { self.World.Map.CellContaining(self.CenterPosition) };
+
 			foreach (var actorType in Info.Actors)
 			{
 				var td = new TypeDictionary();
 
 				td.Add(new OwnerInit(self.Owner));
-				td.Add(new LocationInit(self.World.Map.CellContaining(self.CenterPosition)));
+				td.Add(new LocationInit(eligibleLocations.Random(self.World.SharedRandom)));
 
 				var unit = self.World.CreateActor(false, actorType.ToLowerInvariant(), td);
 				self.World.AddFrameEndTask(w =>

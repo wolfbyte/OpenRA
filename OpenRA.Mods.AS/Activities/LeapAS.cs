@@ -57,7 +57,7 @@ namespace OpenRA.Mods.AS.Activities
 
 		public override Activity Tick(Actor self)
 		{
-			if (ticks == 0 && IsCanceled)
+			if (ticks == 0 && IsCanceling)
 				return NextActivity;
 
 			mobile.SetVisualPosition(self, WPos.LerpQuadratic(from, to, angle, ++ticks, length));

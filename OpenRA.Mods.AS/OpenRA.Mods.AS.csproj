@@ -48,7 +48,6 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="Eluant">
       <HintPath>..\thirdparty\download\Eluant.dll</HintPath>
       <Private>False</Private>
@@ -102,6 +101,7 @@
     <Compile Include="Projectiles\KKNDLaser.cs" />
     <Compile Include="Projectiles\ElectricBolt.cs" />
     <Compile Include="Projectiles\ParaBomb.cs" />
+    <Compile Include="Projectiles\SmokeParticleRailgun.cs" />
     <Compile Include="Projectiles\WarheadTrailProjectile.cs" />
     <Compile Include="Projectiles\InstantExplode.cs" />
     <Compile Include="Projectiles\RadBeam.cs" />
@@ -110,6 +110,8 @@
     <Compile Include="Traits\AIDeployHelper.cs" />
     <Compile Include="Traits\AttackLeapAS.cs" />
     <Compile Include="Traits\Berserkable.cs" />
+    <Compile Include="Traits\BotModules\BaseBuilderBotASModule.cs" />
+    <Compile Include="Traits\BotModules\BotModuleLogic\BaseBuilderQueueManagerAS.cs" />
     <Compile Include="Traits\BotModules\BotModuleLogic\SupportPowerDecisionAS.cs" />
     <Compile Include="Traits\BotModules\SupportPowerBotASModule.cs" />
     <Compile Include="Traits\CashCollectable.cs" />
@@ -125,11 +127,13 @@
     <Compile Include="Traits\Doctrine.cs" />
     <Compile Include="Traits\EligibleForRandomActorCrate.cs" />
     <Compile Include="Traits\ExplodeWeapon.cs" />
+    <Compile Include="Traits\GivesIntelligence.cs" />
     <Compile Include="Traits\InfiltrateForProxyActor.cs" />
     <Compile Include="Traits\DelayedWeaponTrigger.cs" />
     <Compile Include="Traits\Player\Taunts.cs" />
     <Compile Include="Traits\Player\TeleportNetworkManager.cs" />
     <Compile Include="Traits\SpawnSurvivors.cs" />
+    <Compile Include="Traits\RevealsShroudToIntelligenceOwner.cs" />
     <Compile Include="Traits\TeleportNetwork.cs" />
     <Compile Include="Traits\TeleportNetworkPrimaryExit.cs" />
     <Compile Include="Traits\MindControllable.cs" />

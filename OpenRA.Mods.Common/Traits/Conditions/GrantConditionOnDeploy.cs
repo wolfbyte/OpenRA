@@ -36,6 +36,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Can this actor deploy on slopes?")]
 		public readonly bool CanDeployOnRamps = false;
 
+		[Desc("Does this actor need to synchronize it's deployment with other actors?")]
+		public readonly bool SynchronizeDeployment = false;
+
 		[Desc("Cursor to display when able to (un)deploy the actor.")]
 		public readonly string DeployCursor = "deploy";
 
@@ -45,11 +48,11 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Facing that the actor must face before deploying. Set to -1 to deploy regardless of facing.")]
 		public readonly int Facing = -1;
 
-		[Desc("Sound to play when deploying.")]
-		public readonly string DeploySound = null;
+		[Desc("Play a randomly selected sound from this list when deploying.")]
+		public readonly string[] DeploySounds = null;
 
-		[Desc("Sound to play when undeploying.")]
-		public readonly string UndeploySound = null;
+		[Desc("Play a randomly selected sound from this list when undeploying.")]
+		public readonly string[] UndeploySounds = null;
 
 		[Desc("Skip make/deploy animation?")]
 		public readonly bool SkipMakeAnimation = false;
@@ -128,7 +131,18 @@ namespace OpenRA.Mods.Common.Traits
 		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
 		{
 			if (order.OrderID == "GrantConditionOnDeploy")
-				return new Order(order.OrderID, self, queued);
+			{
+				var gcodorder = new Order(order.OrderID, self, queued);
+
+				// HACK HACK HACK
+				if (Info.SynchronizeDeployment)
+				{
+					var actors = self.World.Selection.Actors.Select(x => x.ActorID.ToString());
+					gcodorder.TargetString = string.Join(",", actors);
+				}
+
+				return gcodorder;
+			}
 
 			return null;
 		}
@@ -140,10 +154,35 @@ namespace OpenRA.Mods.Common.Traits
 
 		Order IIssueDeployOrder.IssueDeployOrder(Actor self, bool queued)
 		{
-			return new Order("GrantConditionOnDeploy", self, queued);
+			var gcodorder = new Order("GrantConditionOnDeploy", self, queued);
+			if (Info.SynchronizeDeployment)
+			{
+				var actors = self.World.Selection.Actors.Select(x => x.ActorID.ToString());
+				gcodorder.TargetString = string.Join(",", actors);
+			}
+
+			return gcodorder;
 		}
 
 		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return !IsTraitPaused && !IsTraitDisabled; }
+
+		bool IsGroupDeployNeeded(Actor self, string actorString)
+		{
+			if (string.IsNullOrEmpty(actorString))
+				return false;
+
+			var actorIDs = actorString.Split(',').Select(x => { uint result; uint.TryParse(x, out result); return result; });
+			var actors = self.World.Actors.Where(x => x.IsInWorld && !x.IsDead && actorIDs.Contains(x.ActorID));
+
+			foreach (var a in actors)
+			{
+				var gcod = a.TraitOrDefault<GrantConditionOnDeploy>();
+				if (gcod != null && gcod.DeployState != DeployState.Deployed)
+					return true;
+			}
+
+			return false;
+		}
 
 		public void ResolveOrder(Actor self, Order order)
 		{
@@ -151,6 +190,9 @@ namespace OpenRA.Mods.Common.Traits
 				return;
 
 			if (order.OrderString != "GrantConditionOnDeploy" || deployState == DeployState.Deploying || deployState == DeployState.Undeploying)
+				return;
+
+			if (Info.SynchronizeDeployment && deployState == DeployState.Deployed && IsGroupDeployNeeded(self, order.TargetString))
 				return;
 
 			if (!order.Queued)
@@ -226,8 +268,8 @@ namespace OpenRA.Mods.Common.Traits
 			if (!IsValidTerrain(self.Location))
 				return;
 
-			if (!string.IsNullOrEmpty(Info.DeploySound))
-				Game.Sound.Play(SoundType.World, Info.DeploySound, self.CenterPosition);
+			if (Info.DeploySounds != null && Info.DeploySounds.Any())
+				Game.Sound.Play(SoundType.World, Info.DeploySounds.Random(self.World.LocalRandom), self.CenterPosition);
 
 			// Revoke condition that is applied while undeployed.
 			if (!init)
@@ -250,8 +292,8 @@ namespace OpenRA.Mods.Common.Traits
 			if (!init && deployState != DeployState.Deployed)
 				return;
 
-			if (!string.IsNullOrEmpty(Info.UndeploySound))
-				Game.Sound.Play(SoundType.World, Info.UndeploySound, self.CenterPosition);
+			if (Info.UndeploySounds != null && Info.UndeploySounds.Any())
+				Game.Sound.Play(SoundType.World, Info.UndeploySounds.Random(self.World.LocalRandom), self.CenterPosition);
 
 			if (!init)
 				OnUndeployStarted();

@@ -24,7 +24,6 @@ Background@DIRECTCONNECT_PANEL:
 			X: 150
 			Y: 60
 			Width: 210
-			MaxLength: 50
 			Height: 25
 		Label@PORT_LABEL:
 			X: 360

@@ -10,10 +10,10 @@
 #endregion
 
 using System.Collections.Generic;
-using System.Drawing;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Pathfinder;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
@@ -49,11 +49,14 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
-			if (IsCanceled)
+			if (IsCanceling)
 				return NextActivity;
 
 			if (harv.IsFull)
-				return ActivityUtils.SequenceActivities(new DeliverResources(self), NextActivity);
+			{
+				// HACK: DeliverResources is ignored if there are queued activities, so discard NextActivity
+				return ActivityUtils.SequenceActivities(self, new DeliverResources(self));
+			}
 
 			var closestHarvestablePosition = ClosestHarvestablePos(self);
 
@@ -79,13 +82,13 @@ namespace OpenRA.Mods.Common.Activities
 				// Avoid creating an activity cycle
 				var next = NextInQueue;
 				NextInQueue = null;
-				return ActivityUtils.SequenceActivities(next, new Wait(randFrames), this);
+				return ActivityUtils.SequenceActivities(self, next, new Wait(randFrames), this);
 			}
 			else
 			{
 				// Attempt to claim the target cell
 				if (!claimLayer.TryClaimCell(self, closestHarvestablePosition.Value))
-					return ActivityUtils.SequenceActivities(new Wait(25), this);
+					return ActivityUtils.SequenceActivities(self, new Wait(25), this);
 
 				harv.LastSearchFailed = false;
 
@@ -97,7 +100,7 @@ namespace OpenRA.Mods.Common.Activities
 					n.MovingToResources(self, closestHarvestablePosition.Value, this);
 
 				self.SetTargetLine(Target.FromCell(self.World, closestHarvestablePosition.Value), Color.Red, false);
-				return ActivityUtils.SequenceActivities(mobile.MoveTo(closestHarvestablePosition.Value, 1), new HarvestResource(self), this);
+				return ActivityUtils.SequenceActivities(self, mobile.MoveTo(closestHarvestablePosition.Value, 1), new HarvestResource(self), this);
 			}
 		}
 

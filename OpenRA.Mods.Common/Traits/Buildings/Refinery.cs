@@ -133,7 +133,7 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				var temp = currentDisplayValue;
 				if (self.Owner.IsAlliedWith(self.World.RenderPlayer))
-					self.World.AddFrameEndTask(w => w.Add(new FloatingText(self.CenterPosition, self.Owner.Color.RGB, FloatingText.FormatCashTick(temp), 30)));
+					self.World.AddFrameEndTask(w => w.Add(new FloatingText(self.CenterPosition, self.Owner.Color, FloatingText.FormatCashTick(temp), 30)));
 				currentDisplayTick = info.TickRate;
 				currentDisplayValue = 0;
 			}
@@ -150,12 +150,12 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			if (!preventDock)
 			{
-				dockOrder.Queue(new CallFunc(() => dockedHarv = harv, false));
-				dockOrder.Queue(DockSequence(harv, self));
-				dockOrder.Queue(new CallFunc(() => dockedHarv = null, false));
+				dockOrder.Queue(self, new CallFunc(() => dockedHarv = harv, false));
+				dockOrder.Queue(self, DockSequence(harv, self));
+				dockOrder.Queue(self, new CallFunc(() => dockedHarv = null, false));
 			}
 
-			dockOrder.Queue(new CallFunc(() => harv.Trait<Harvester>().ContinueHarvesting(harv)));
+			dockOrder.Queue(self, new CallFunc(() => harv.Trait<Harvester>().ContinueHarvesting(harv)));
 		}
 
 		void INotifyOwnerChanged.OnOwnerChanged(Actor self, Player oldOwner, Player newOwner)

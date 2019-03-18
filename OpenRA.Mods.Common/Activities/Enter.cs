@@ -9,11 +9,9 @@
  */
 #endregion
 
-using System;
-using System.Drawing;
-using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Activities
@@ -77,7 +75,7 @@ namespace OpenRA.Mods.Common.Activities
 			useLastVisibleTarget = targetIsHiddenActor || !target.IsValidFor(self);
 
 			// Cancel immediately if the target died while we were entering it
-			if (!IsCanceled && useLastVisibleTarget && lastState == EnterState.Entering)
+			if (!IsCanceling && useLastVisibleTarget && lastState == EnterState.Entering)
 				Cancel(self, true);
 
 			TickInner(self, target, useLastVisibleTarget);
@@ -103,7 +101,7 @@ namespace OpenRA.Mods.Common.Activities
 				{
 					// NOTE: We can safely cancel in this case because we know the
 					// actor has finished any in-progress move activities
-					if (IsCanceled)
+					if (IsCanceling)
 						return NextActivity;
 
 					// Lost track of the target
@@ -136,7 +134,7 @@ namespace OpenRA.Mods.Common.Activities
 
 					// Subclasses can cancel the activity during TryStartEnter
 					// Return immediately to avoid an extra tick's delay
-					if (IsCanceled)
+					if (IsCanceling)
 						return NextActivity;
 
 					lastState = EnterState.Waiting;
@@ -147,7 +145,7 @@ namespace OpenRA.Mods.Common.Activities
 				{
 					// Check that we reached the requested position
 					var targetPos = target.Positions.PositionClosestTo(self.CenterPosition);
-					if (!IsCanceled && self.CenterPosition == targetPos && target.Type == TargetType.Actor)
+					if (!IsCanceling && self.CenterPosition == targetPos && target.Type == TargetType.Actor)
 						OnEnterComplete(self, target.Actor);
 
 					lastState = EnterState.Exiting;
@@ -162,14 +160,14 @@ namespace OpenRA.Mods.Common.Activities
 			return this;
 		}
 
-		public override bool Cancel(Actor self, bool keepQueue = false)
+		public override void Cancel(Actor self, bool keepQueue = false)
 		{
 			OnCancel(self);
 
-			if (!IsCanceled && moveActivity != null && !moveActivity.Cancel(self))
-				return false;
+			if (!IsCanceling && moveActivity != null)
+				moveActivity.Cancel(self);
 
-			return base.Cancel(self, keepQueue);
+			base.Cancel(self, keepQueue);
 		}
 	}
 }

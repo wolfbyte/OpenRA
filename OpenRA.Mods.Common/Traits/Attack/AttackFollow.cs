@@ -10,9 +10,9 @@
 #endregion
 
 using System;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Activities;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -176,7 +176,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			public override Activity Tick(Actor self)
 			{
-				if (IsCanceled)
+				if (IsCanceling)
 				{
 					// Cancel the requested target, but keep firing on it while in range
 					attack.opportunityTarget = attack.requestedTarget;
@@ -206,7 +206,7 @@ namespace OpenRA.Mods.Common.Traits
 					lastVisibleMinimumRange = attack.GetMinimumRange();
 
 					// Try and sit at least one cell away from the min or max ranges to give some leeway if the target starts moving.
-					if (target.Actor.Info.HasTraitInfo<IMoveInfo>())
+					if (move != null && target.Actor.Info.HasTraitInfo<IMoveInfo>())
 					{
 						var preferMinRange = Math.Min(lastVisibleMinimumRange.Length + 1024, lastVisibleMaximumRange.Length);
 						var preferMaxRange = Math.Max(lastVisibleMaximumRange.Length - 1024, lastVisibleMinimumRange.Length);
@@ -275,7 +275,7 @@ namespace OpenRA.Mods.Common.Traits
 				}
 
 				wasMovingWithinRange = true;
-				return ActivityUtils.SequenceActivities(
+				return ActivityUtils.SequenceActivities(self,
 					move.MoveWithinRange(target, minRange, maxRange, checkTarget.CenterPosition, Color.Red),
 					this);
 			}

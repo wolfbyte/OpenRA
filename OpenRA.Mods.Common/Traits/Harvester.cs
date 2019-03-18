@@ -9,13 +9,14 @@
  */
 #endregion
 
+using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Orders;
 using OpenRA.Mods.Common.Pathfinder;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
@@ -37,6 +38,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("How fast it can dump it's carryage.")]
 		public readonly int BaleUnloadDelay = 4;
+
+		[Desc("How many bales can it dump at once.")]
+		public readonly int BaleUnloadAmount = 1;
 
 		[Desc("How many squares to show the fill level.")]
 		public readonly int PipCount = 7;
@@ -323,11 +327,15 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				var type = contents.First().Key;
 				var iao = proc.Trait<IAcceptResources>();
-				if (!iao.CanGiveResource(type.ValuePerUnit))
+				var count = Math.Min(contents[type], Info.BaleUnloadAmount);
+				var value = type.ValuePerUnit * count;
+
+				if (!iao.CanGiveResource(value))
 					return false;
 
-				iao.GiveResource(type.ValuePerUnit);
-				if (--contents[type] == 0)
+				iao.GiveResource(value);
+				contents[type] -= count;
+				if (contents[type] == 0)
 					contents.Remove(type);
 
 				currentUnloadTicks = Info.BaleUnloadDelay;
@@ -391,11 +399,12 @@ namespace OpenRA.Mods.Common.Traits
 
 				self.CancelActivity();
 
-				CPos? loc;
-				if (order.TargetLocation != CPos.Zero)
+				CPos loc;
+				if (order.Target.Type != TargetType.Invalid)
 				{
 					// Find the nearest claimable cell to the order location (useful for group-select harvest):
-					loc = mobile.NearestCell(order.TargetLocation, p => mobile.CanEnterCell(p) && claimLayer.TryClaimCell(self, p), 1, 6);
+					var cell = self.World.Map.CellContaining(order.Target.CenterPosition);
+					loc = mobile.NearestCell(cell, p => mobile.CanEnterCell(p) && claimLayer.TryClaimCell(self, p), 1, 6);
 				}
 				else
 				{
@@ -403,7 +412,7 @@ namespace OpenRA.Mods.Common.Traits
 					loc = self.Location;
 				}
 
-				self.SetTargetLine(Target.FromCell(self.World, loc.Value), Color.Red);
+				self.SetTargetLine(Target.FromCell(self.World, loc), Color.Red);
 
 				// FindResources takes care of calling INotifyHarvesterAction
 				self.QueueActivity(new FindResources(self));

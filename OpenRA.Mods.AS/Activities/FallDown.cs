@@ -66,11 +66,5 @@ namespace OpenRA.Mods.AS.Activities
 
 			return this;
 		}
-
-		// Only the last queued activity (given order) is kept
-		public override void Queue(Activity activity)
-		{
-			NextActivity = activity;
-		}
 	}
 }

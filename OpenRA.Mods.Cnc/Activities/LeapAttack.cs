@@ -9,14 +9,13 @@
  */
 #endregion
 
-using System;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Activities;
 using OpenRA.Mods.Cnc.Traits;
 using OpenRA.Mods.Common;
 using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Cnc.Activities
@@ -67,7 +66,7 @@ namespace OpenRA.Mods.Cnc.Activities
 				return this;
 			}
 
-			if (IsCanceled)
+			if (IsCanceling)
 				return NextActivity;
 
 			bool targetIsHiddenActor;
@@ -98,7 +97,7 @@ namespace OpenRA.Mods.Cnc.Activities
 				if (!allowMovement || lastVisibleMaxRange == WDist.Zero || lastVisibleMaxRange < lastVisibleMinRange)
 					return NextActivity;
 
-				QueueChild(mobile.MoveWithinRange(target, lastVisibleMinRange, lastVisibleMaxRange, checkTarget.CenterPosition, Color.Red));
+				QueueChild(self, mobile.MoveWithinRange(target, lastVisibleMinRange, lastVisibleMaxRange, checkTarget.CenterPosition, Color.Red), true);
 				return this;
 			}
 
@@ -128,11 +127,11 @@ namespace OpenRA.Mods.Cnc.Activities
 			var desiredFacing = (destination - origin).Yaw.Facing;
 			if (mobile.Facing != desiredFacing)
 			{
-				QueueChild(new Turn(self, desiredFacing));
+				QueueChild(self, new Turn(self, desiredFacing), true);
 				return this;
 			}
 
-			QueueChild(new Leap(self, target, mobile, targetMobile, info.Speed.Length, attack, edible));
+			QueueChild(self, new Leap(self, target, mobile, targetMobile, info.Speed.Length, attack, edible), true);
 
 			// Re-queue the child activities to kill the target if it didn't die in one go
 			return this;

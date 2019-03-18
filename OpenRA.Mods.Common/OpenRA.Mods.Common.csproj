@@ -46,10 +46,6 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="Eluant">
       <HintPath>..\thirdparty\download\Eluant.dll</HintPath>
       <Private>False</Private>
@@ -127,6 +123,7 @@
     <Compile Include="TargetExtensions.cs" />
     <Compile Include="Traits\BotModules\Squads\AttackOrFleeFuzzy.cs" />
     <Compile Include="Traits\BotModules\BotModuleLogic\BaseBuilderQueueManager.cs" />
+    <Compile Include="Traits\ExperienceTrickler.cs" />
     <Compile Include="Traits\Player\ModularBot.cs" />
     <Compile Include="Traits\BotModules\HarvesterBotModule.cs" />
     <Compile Include="Traits\BotModules\SupportPowerBotModule.cs" />
@@ -155,6 +152,7 @@
     <Compile Include="Effects\MapNotificationEffect.cs" />
     <Compile Include="Effects\RallyPointIndicator.cs" />
     <Compile Include="Effects\SpriteEffect.cs" />
+    <Compile Include="Effects\SpawnActorEffect.cs" />
     <Compile Include="Graphics\RailgunRenderable.cs" />
     <Compile Include="Lint\CheckNotifications.cs" />
     <Compile Include="Projectiles\AreaBeam.cs" />
@@ -241,7 +239,7 @@
     <Compile Include="Scripting\Global\CoordinateGlobals.cs" />
     <Compile Include="Scripting\Global\DateTimeGlobal.cs" />
     <Compile Include="Scripting\Global\FacingGlobal.cs" />
-    <Compile Include="Scripting\Global\HSLColorGlobal.cs" />
+    <Compile Include="Scripting\Global\ColorGlobal.cs" />
     <Compile Include="Scripting\Global\MapGlobal.cs" />
     <Compile Include="Scripting\Global\MediaGlobal.cs" />
     <Compile Include="Scripting\Global\PlayerGlobal.cs" />
@@ -614,6 +612,8 @@
     <Compile Include="UpdateRules\Rules\20181215\ChangeTakeOffSoundAndLandingSound.cs" />
     <Compile Include="UpdateRules\Rules\20181215\AddCarryableHarvester.cs" />
     <Compile Include="UpdateRules\Rules\20181215\RequireProductionType.cs" />
+    <Compile Include="UpdateRules\Rules\20190106\MakeMobilePausableConditional.cs" />
+    <Compile Include="UpdateRules\Rules\20190106\MultipleDeploySounds.cs" />
     <Compile Include="UtilityCommands\CheckYaml.cs" />
     <Compile Include="UtilityCommands\CheckCodeStyle.cs" />
     <Compile Include="UtilityCommands\ConvertPngToShpCommand.cs" />
@@ -960,6 +960,7 @@
     <Compile Include="UpdateRules\Rules\20181215\RemovedAutoCarryallCircleTurnSpeed.cs" />
     <Compile Include="UpdateRules\Rules\20181215\ReplacedWithChargeAnimation.cs" />
     <Compile Include="UpdateRules\Rules\20181215\RefactorResourceLevelAnimating.cs" />
+    <Compile Include="UpdateRules\Rules\20190106\StreamlineRepairableTraits.cs" />
     <Compile Include="Traits\Player\PlayerResources.cs" />
     <Compile Include="UtilityCommands\DumpSequenceSheetsCommand.cs" />
     <Compile Include="Traits\Render\WithBuildingRepairDecoration.cs" />

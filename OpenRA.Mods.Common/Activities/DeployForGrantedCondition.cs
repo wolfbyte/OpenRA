@@ -30,7 +30,7 @@ namespace OpenRA.Mods.Common.Activities
 		{
 			// Turn to the required facing.
 			if (deploy.Info.Facing != -1 && canTurn)
-				QueueChild(new Turn(self, deploy.Info.Facing));
+				QueueChild(self, new Turn(self, deploy.Info.Facing));
 		}
 
 		public override Activity Tick(Actor self)
@@ -43,7 +43,7 @@ namespace OpenRA.Mods.Common.Activities
 			}
 
 			// Without this, turn for facing deploy angle will be canceled and immediately deploy!
-			if (IsCanceled)
+			if (IsCanceling)
 				return NextActivity;
 
 			if (IsInterruptible)

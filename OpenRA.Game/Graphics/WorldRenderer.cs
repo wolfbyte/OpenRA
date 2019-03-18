@@ -11,9 +11,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using OpenRA.Effects;
+using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Graphics
@@ -67,7 +67,7 @@ namespace OpenRA.Graphics
 			debugVis = Exts.Lazy(() => world.WorldActor.TraitOrDefault<DebugVisualizations>());
 		}
 
-		public void UpdatePalettesForPlayer(string internalName, HSLColor color, bool replaceExisting)
+		public void UpdatePalettesForPlayer(string internalName, Color color, bool replaceExisting)
 		{
 			foreach (var pal in World.WorldActor.TraitsImplementing<ILoadsPlayerPalettes>())
 				pal.LoadPlayerPalettes(this, internalName, color, replaceExisting);
