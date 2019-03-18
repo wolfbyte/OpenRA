@@ -16,6 +16,7 @@ using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Orders;
 using OpenRA.Traits;
 using OpenRA.Mods.AS.Activities;
+using OpenRA.Primitives;
 
 namespace OpenRA.Mods.Common.Traits
 {

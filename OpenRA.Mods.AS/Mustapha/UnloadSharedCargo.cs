@@ -57,7 +57,7 @@ namespace OpenRA.Mods.Common.Activities
 		public override Activity Tick(Actor self)
 		{
 			cargo.Unloading = false;
-			if (IsCanceled || cargo.Manager.IsEmpty())
+			if (IsCanceling || cargo.Manager.IsEmpty())
 				return NextActivity;
 
 			foreach (var inu in notifiers)
@@ -71,7 +71,7 @@ namespace OpenRA.Mods.Common.Activities
 			{
 				self.NotifyBlocker(BlockedExitCells(actor));
 
-				return ActivityUtils.SequenceActivities(new Wait(10), this);
+				return ActivityUtils.SequenceActivities(self, new Wait(10));
 			}
 
 			cargo.Unload(self);

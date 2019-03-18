@@ -16,6 +16,7 @@ using OpenRA.Activities;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Traits;
 using OpenRA.Mods.Common.Activities;
+using OpenRA.Primitives;
 
 namespace OpenRA.Mods.AS.Activities
 {
@@ -106,7 +107,7 @@ namespace OpenRA.Mods.AS.Activities
 			}
 
 			// Try and find a new transport nearby
-			if (IsCanceled || string.IsNullOrEmpty(type))
+			if (IsCanceling || string.IsNullOrEmpty(type))
 				return NextActivity;
 
 			Func<Actor, bool> isValidTransport = a =>
@@ -134,12 +135,10 @@ namespace OpenRA.Mods.AS.Activities
 			return NextActivity;
 		}
 
-		public override bool Cancel(Actor self, bool keepQueue = false)
+		public override void Cancel(Actor self, bool keepQueue = false)
 		{
-			if (!IsCanceled && enterTransport != null && !enterTransport.Cancel(self))
-				return false;
-
-			return base.Cancel(self, keepQueue);
+			enterTransport?.Cancel(self);
+			base.Cancel(self);
 		}
 	}
 }
