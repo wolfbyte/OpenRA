@@ -13,8 +13,8 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
 {
-	[Desc("Applies a condition to the actor at specified damage states.")]
-	public class GrantConditionOnDamageStateInfo : ITraitInfo, Requires<IHealthInfo>
+	[Desc("Applies a condition to the actor at when its health is between 2 specific values.")]
+	public class GrantConditionOnHealthInfo : ITraitInfo, IRulesetLoaded, Requires<IHealthInfo>
 	{
 		[FieldLoader.Require]
 		[GrantedConditionReference]
@@ -27,38 +27,51 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Play a random sound from this list when disabled.")]
 		public readonly string[] DisabledSounds = { };
 
-		[Desc("Levels of damage at which to grant the condition.")]
-		public readonly DamageState ValidDamageStates = DamageState.Heavy | DamageState.Critical;
+		[Desc("Minimum level of health at which to grant the condition.")]
+		public readonly int MinHP = 0;
 
-		[Desc("Is the condition irrevocable once it has been activated?")]
+		[Desc("Maximum level of health at which to grant the condition.",
+			"Non-positive values will make it use Health.HP.")]
+		public readonly int MaxHP = 0;
+
+		[Desc("Is the condition irrevokable once it has been granted?")]
 		public readonly bool GrantPermanently = false;
 
-		public object Create(ActorInitializer init) { return new GrantConditionOnDamageState(init.Self, this); }
+		public object Create(ActorInitializer init) { return new GrantConditionOnHealth(init.Self, this); }
+
+		public void RulesetLoaded(Ruleset rules, ActorInfo ai)
+		{
+			var health = ai.TraitInfo<IHealthInfo>();
+			if (health.MaxHP < MinHP)
+				throw new YamlException("Minimum HP ({0}) for GrantConditionOnHealth can't be more than actor's Maximum HP ({1})".F(MinHP, health.MaxHP));
+		}
 	}
 
-	public class GrantConditionOnDamageState : INotifyDamageStateChanged, INotifyCreated
+	public class GrantConditionOnHealth : INotifyCreated, INotifyDamage
 	{
-		readonly GrantConditionOnDamageStateInfo info;
+		readonly GrantConditionOnHealthInfo info;
 		readonly IHealth health;
+		readonly int maxHP;
 
 		ConditionManager conditionManager;
 		int conditionToken = ConditionManager.InvalidConditionToken;
 
-		public GrantConditionOnDamageState(Actor self, GrantConditionOnDamageStateInfo info)
+		public GrantConditionOnHealth(Actor self, GrantConditionOnHealthInfo info)
 		{
 			this.info = info;
 			health = self.Trait<IHealth>();
+			maxHP = info.MaxHP > 0 ? info.MaxHP : health.MaxHP;
 		}
 
 		void INotifyCreated.Created(Actor self)
 		{
 			conditionManager = self.Trait<ConditionManager>();
-			GrantConditionOnValidDamageState(self, health.DamageState);
+			GrantConditionOnValidHealth(self, health.HP);
 		}
 
-		void GrantConditionOnValidDamageState(Actor self, DamageState state)
+		void GrantConditionOnValidHealth(Actor self, int hp)
 		{
-			if (!info.ValidDamageStates.HasFlag(state) || conditionToken != ConditionManager.InvalidConditionToken)
+			if (info.MinHP > hp || maxHP < hp || conditionToken != ConditionManager.InvalidConditionToken)
 				return;
 
 			conditionToken = conditionManager.GrantCondition(self, info.Condition);
@@ -67,15 +80,15 @@ namespace OpenRA.Mods.Common.Traits
 			Game.Sound.Play(SoundType.World, sound, self.CenterPosition);
 		}
 
-		void INotifyDamageStateChanged.DamageStateChanged(Actor self, AttackInfo e)
+		void INotifyDamage.Damaged(Actor self, AttackInfo e)
 		{
 			var granted = conditionToken != ConditionManager.InvalidConditionToken;
 			if (granted && info.GrantPermanently)
 				return;
 
-			if (!granted && !info.ValidDamageStates.HasFlag(e.PreviousDamageState))
-				GrantConditionOnValidDamageState(self, health.DamageState);
-			else if (granted && !info.ValidDamageStates.HasFlag(e.DamageState) && info.ValidDamageStates.HasFlag(e.PreviousDamageState))
+			if (!granted)
+				GrantConditionOnValidHealth(self, health.HP);
+			else if (granted && (info.MinHP > health.HP || maxHP < health.HP))
 			{
 				conditionToken = conditionManager.RevokeCondition(self, conditionToken);
 
