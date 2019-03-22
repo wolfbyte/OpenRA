@@ -51,10 +51,12 @@ namespace OpenRA.Mods.AS.Effects
 					info.BeaconImage,
 					info.BeaconPoster,
 					info.BeaconPosterPalette,
+					info.BeaconSequence,
 					info.ArrowSequence,
 					info.CircleSequence,
 					info.ClockSequence,
-						() => 1 - ((planes.First().OccupiesSpace.CenterPosition - pos).HorizontalLength - info.BeaconDistanceOffset.Length) * 1f / distance);
+					() => 1 - ((planes.First().OccupiesSpace.CenterPosition - pos).HorizontalLength - info.BeaconDistanceOffset.Length) * 1f / distance,
+					info.BeaconDelay);
 
 				world.AddFrameEndTask(w => w.Add(beacon));
 			}

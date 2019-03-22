@@ -150,6 +150,7 @@ namespace OpenRA.Mods.AS.Traits
 					FireArmamentPowerInfo.BeaconImage,
 					FireArmamentPowerInfo.BeaconPoster,
 					FireArmamentPowerInfo.BeaconPosterPalette,
+					FireArmamentPowerInfo.BeaconSequence,
 					FireArmamentPowerInfo.ArrowSequence,
 					FireArmamentPowerInfo.CircleSequence,
 					FireArmamentPowerInfo.ClockSequence,
