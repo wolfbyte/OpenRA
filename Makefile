@@ -102,7 +102,7 @@ endif
 game_SRCS := $(shell find OpenRA.Game/ -iname '*.cs')
 game_TARGET = OpenRA.Game.exe
 game_KIND = winexe
-game_LIBS = $(COMMON_LIBS) $(game_DEPS) System.Drawing.dll thirdparty/download/SharpFont.dll thirdparty/download/Open.Nat.dll
+game_LIBS = $(COMMON_LIBS) $(game_DEPS) thirdparty/download/Open.Nat.dll
 PROGRAMS += game
 game: $(game_TARGET)
 
@@ -297,7 +297,8 @@ setupasfolder:
 	@mkdir -p ./mods/as
 
 clean:
-	@-$(RM_F) *.exe *.dll *.dylib *.dll.config ./OpenRA*/*.dll ./OpenRA*/*.mdb *.mdb mods/**/*.dll mods/**/*.mdb *.resources
+	@-$(RM_F) $(shell find . -maxdepth 1 -iname '*.dll.config' -a ! -iname 'OpenRA.Platforms.Default.dll.config')
+	@-$(RM_F) *.exe *.dll *.dylib ./OpenRA*/*.dll ./OpenRA*/*.mdb *.mdb mods/**/*.dll mods/**/*.mdb *.resources
 	@-$(RM_RF) ./*/bin ./*/obj
 	@-$(RM_RF) ./thirdparty/download
 
@@ -348,6 +349,7 @@ install-engine:
 	@-echo "Installing OpenRA engine to $(DATA_INSTALL_DIR)"
 	@$(INSTALL_DIR) "$(DATA_INSTALL_DIR)"
 	@$(INSTALL_PROGRAM) $(foreach prog,$(CORE),$($(prog)_TARGET)) "$(DATA_INSTALL_DIR)"
+	@$(CP) OpenRA.Platforms.Default.dll.config "$(DATA_INSTALL_DIR)"
 
 	@$(INSTALL_DATA) "GeoLite2-Country.mmdb.gz" "$(DATA_INSTALL_DIR)/GeoLite2-Country.mmdb.gz"
 	@$(INSTALL_DATA) VERSION "$(DATA_INSTALL_DIR)/VERSION"
@@ -361,8 +363,7 @@ install-engine:
 	@$(CP) Eluant* "$(DATA_INSTALL_DIR)"
 	@$(INSTALL_PROGRAM) ICSharpCode.SharpZipLib.dll "$(DATA_INSTALL_DIR)"
 	@$(INSTALL_PROGRAM) FuzzyLogicLibrary.dll "$(DATA_INSTALL_DIR)"
-	@$(INSTALL_PROGRAM) SharpFont.dll "$(DATA_INSTALL_DIR)"
-	@$(CP) SharpFont.dll.config "$(DATA_INSTALL_DIR)"
+	@$(CP) OpenRA.Platforms.Default.dll.config "$(DATA_INSTALL_DIR)"
 	@$(INSTALL_PROGRAM) Open.Nat.dll "$(DATA_INSTALL_DIR)"
 	@$(INSTALL_PROGRAM) MaxMind.Db.dll "$(DATA_INSTALL_DIR)"
 	@$(INSTALL_PROGRAM) rix0rrr.BeaconLib.dll "$(DATA_INSTALL_DIR)"
