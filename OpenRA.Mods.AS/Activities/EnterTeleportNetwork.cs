@@ -90,10 +90,10 @@ namespace OpenRA.Mods.AS.Activities
 						// Exit delay is ignored.
 						if (rp != null)
 							self.QueueActivity(new AttackMoveActivity(
-								self, move.MoveTo(rp.Location, 1)));
+								self, () => move.MoveTo(rp.Location, 1)));
 						else
 							self.QueueActivity(new AttackMoveActivity(
-								self, move.MoveTo(exitLocation, 1)));
+								self, () => move.MoveTo(exitLocation, 1)));
 					}
 				}
 
