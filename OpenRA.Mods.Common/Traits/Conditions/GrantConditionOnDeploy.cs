@@ -37,7 +37,7 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly bool CanDeployOnRamps = false;
 
 		[Desc("Does this actor need to synchronize it's deployment with other actors?")]
-		public readonly bool SynchronizeDeployment = false;
+		public readonly bool SmartDeploy = false;
 
 		[Desc("Cursor to display when able to (un)deploy the actor.")]
 		public readonly string DeployCursor = "deploy";
@@ -131,52 +131,54 @@ namespace OpenRA.Mods.Common.Traits
 		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
 		{
 			if (order.OrderID == "GrantConditionOnDeploy")
-			{
-				var gcodorder = new Order(order.OrderID, self, queued);
-
-				// HACK HACK HACK
-				if (Info.SynchronizeDeployment)
-				{
-					var actors = self.World.Selection.Actors.Select(x => x.ActorID.ToString());
-					gcodorder.TargetString = string.Join(",", actors);
-				}
-
-				return gcodorder;
-			}
+				return new Order(order.OrderID, self, queued);
 
 			return null;
 		}
 
 		Order IIssueDeployOrder.IssueDeployOrder(Actor self, bool queued)
 		{
-			var gcodorder = new Order("GrantConditionOnDeploy", self, queued);
-			if (Info.SynchronizeDeployment)
-			{
-				var actors = self.World.Selection.Actors.Select(x => x.ActorID.ToString());
-				gcodorder.TargetString = string.Join(",", actors);
-			}
-
-			return gcodorder;
+			return new Order("GrantConditionOnDeploy", self, queued);
 		}
 
-		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self) { return !IsTraitPaused && !IsTraitDisabled; }
-
-		bool IsGroupDeployNeeded(Actor self, string actorString)
+		bool IIssueDeployOrder.CanIssueDeployOrder(Actor self)
 		{
-			if (string.IsNullOrEmpty(actorString))
-				return false;
+			return !IsTraitPaused && !IsTraitDisabled && IsGroupDeployNeeded(self);
+		}
 
-			var actorIDs = actorString.Split(',').Select(x => { uint result; uint.TryParse(x, out result); return result; });
-			var actors = self.World.Actors.Where(x => x.IsInWorld && !x.IsDead && actorIDs.Contains(x.ActorID));
+		bool IsGroupDeployNeeded(Actor self)
+		{
+			if (!Info.SmartDeploy)
+				return true;
+
+			var actors = self.World.Selection.Actors;
+
+			bool hasDeployedActors = false;
+			bool hasUndeployedActors = false;
 
 			foreach (var a in actors)
 			{
-				var gcod = a.TraitOrDefault<GrantConditionOnDeploy>();
-				if (gcod != null && gcod.DeployState != DeployState.Deployed)
-					return true;
+				GrantConditionOnDeploy gcod = null;
+				if (!a.IsDead && a.IsInWorld)
+					gcod = a.TraitOrDefault<GrantConditionOnDeploy>();
+
+				if (!hasDeployedActors && gcod != null && (gcod.DeployState == DeployState.Deploying || gcod.DeployState == DeployState.Deployed))
+					hasDeployedActors = true;
+
+				if (!hasUndeployedActors && gcod != null && (gcod.DeployState == DeployState.Undeploying || gcod.DeployState == DeployState.Undeployed))
+					hasUndeployedActors = true;
+
+				if (hasDeployedActors && hasUndeployedActors)
+				{
+					var self_gcod = self.TraitOrDefault<GrantConditionOnDeploy>();
+					if (self_gcod.DeployState == DeployState.Undeploying || self_gcod.DeployState == DeployState.Undeployed)
+						return true;
+
+					return false;
+				}
 			}
 
-			return false;
+			return true;
 		}
 
 		public void ResolveOrder(Actor self, Order order)
@@ -185,9 +187,6 @@ namespace OpenRA.Mods.Common.Traits
 				return;
 
 			if (order.OrderString != "GrantConditionOnDeploy" || deployState == DeployState.Deploying || deployState == DeployState.Undeploying)
-				return;
-
-			if (Info.SynchronizeDeployment && deployState == DeployState.Deployed && IsGroupDeployNeeded(self, order.TargetString))
 				return;
 
 			if (!order.Queued)
