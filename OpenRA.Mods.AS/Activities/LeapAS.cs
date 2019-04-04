@@ -45,7 +45,6 @@ namespace OpenRA.Mods.AS.Activities
 			this.target = Target.FromActor(target);
 			mobile = self.Trait<Mobile>();
 			mobile.SetLocation(mobile.FromCell, mobile.FromSubCell, targetMobile.FromCell, targetMobile.FromSubCell);
-			mobile.IsMoving = true;
 
 			from = self.CenterPosition;
 			to = self.World.Map.CenterOfSubCell(targetMobile.FromCell, targetMobile.FromSubCell);
@@ -65,7 +64,6 @@ namespace OpenRA.Mods.AS.Activities
 			{
 				mobile.SetLocation(mobile.ToCell, mobile.ToSubCell, mobile.ToCell, mobile.ToSubCell);
 				mobile.FinishedMoving(self);
-				mobile.IsMoving = false;
 
 				trait.NotifyAttacking(self, target, armament);
 
