@@ -1,7 +1,7 @@
 ############################# INSTRUCTIONS #############################
 #
 # to compile, run:
-#   make [DEBUG=false]
+#   make [DEBUG=true]
 #
 # to check unit tests (requires NUnit version >= 2.6), run:
 #  make nunit [NUNIT_CONSOLE=<path-to/nunit[2]-console>] [NUNIT_LIBS_PATH=<path-to-libs-dir>] [NUNIT_LIBS=<nunit-libs>]
@@ -37,9 +37,8 @@
 
 ############################## TOOLCHAIN ###############################
 #
-SDK         ?=
-CSC         = mcs $(SDK)
-CSFLAGS     = -nologo -warn:4 -codepage:utf8 -langversion:5 -unsafe -warnaserror
+CSC         = csc
+CSFLAGS     = -nologo -warn:4 -langversion:5 -unsafe -warnaserror
 DEFINE      = TRACE
 COMMON_LIBS = System.dll System.Core.dll System.Numerics.dll thirdparty/download/ICSharpCode.SharpZipLib.dll thirdparty/download/FuzzyLogicLibrary.dll thirdparty/download/MaxMind.Db.dll thirdparty/download/Eluant.dll thirdparty/download/rix0rrr.BeaconLib.dll
 
@@ -57,7 +56,7 @@ WHITELISTED_CORE_ASSEMBLIES = mscorlib.dll System.dll System.Configuration.dll S
 NUNIT_LIBS_PATH :=
 NUNIT_LIBS  := $(NUNIT_LIBS_PATH)nunit.framework.dll
 
-DEBUG = true
+DEBUG = false
 ifeq ($(DEBUG), $(filter $(DEBUG),false no n off 0))
 CSFLAGS   += -debug:pdbonly -optimize+
 else
