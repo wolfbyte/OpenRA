@@ -62,10 +62,7 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Search radius (in cells) from the last harvest order location to find more resources.")]
 		public readonly int SearchFromOrderRadius = 12;
 
-		[Desc("Maximum duration of being idle before queueing a Wait activity.")]
-		public readonly int MaxIdleDuration = 25;
-
-		[Desc("Duration to wait before becoming idle again.")]
+		[Desc("Interval to wait between searches when there are no resources nearby.")]
 		public readonly int WaitDuration = 25;
 
 		[Desc("Find a new refinery to unload at if more than this many harvesters are already waiting.")]
@@ -73,6 +70,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		[Desc("The pathfinding cost penalty applied for each harvester waiting to unload at a refinery.")]
 		public readonly int UnloadQueueCostModifier = 12;
+
+		[Desc("Does the unit queue harvesting runs instead of individual harvest actions?")]
+		public readonly bool QueueFullLoad = false;
 
 		[GrantedConditionReference]
 		[Desc("Condition to grant while empty.")]
@@ -85,18 +85,16 @@ namespace OpenRA.Mods.Common.Traits
 	}
 
 	public class Harvester : IIssueOrder, IResolveOrder, IPips, IOrderVoice,
-		ISpeedModifier, ISync, INotifyCreated, INotifyIdle, INotifyBlockingMove
+		ISpeedModifier, ISync, INotifyCreated
 	{
 		public readonly HarvesterInfo Info;
 		readonly Mobile mobile;
 		readonly ResourceLayer resLayer;
 		readonly ResourceClaimLayer claimLayer;
 		readonly Dictionary<ResourceTypeInfo, int> contents = new Dictionary<ResourceTypeInfo, int>();
-		bool idleSmart = true;
 		INotifyHarvesterAction[] notifyHarvesterAction;
 		ConditionManager conditionManager;
 		int conditionToken = ConditionManager.InvalidConditionToken;
-		int idleDuration;
 
 		[Sync] public bool LastSearchFailed;
 		[Sync] public Actor OwnerLinkedProc = null;
@@ -104,7 +102,6 @@ namespace OpenRA.Mods.Common.Traits
 		[Sync] public Actor LinkedProc = null;
 		[Sync] int currentUnloadTicks;
 		public CPos? LastHarvestedCell = null;
-		public CPos? LastOrderLocation = null;
 
 		[Sync]
 		public int ContentValue
@@ -136,7 +133,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			// Note: This is queued in a FrameEndTask because otherwise the activity is dropped/overridden while moving out of a factory.
 			if (Info.SearchOnCreation)
-				self.World.AddFrameEndTask(w => self.QueueActivity(new FindResources(self)));
+				self.World.AddFrameEndTask(w => self.QueueActivity(new FindAndDeliverResources(self)));
 		}
 
 		public void SetProcLines(Actor proc)
@@ -169,13 +166,6 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			LastLinkedProc = null;
 			LinkProc(self, ClosestProc(self, ignore));
-		}
-
-		public void ContinueHarvesting(Actor self)
-		{
-			// Move out of the refinery dock and continue harvesting
-			UnblockRefinery(self);
-			self.QueueActivity(new FindResources(self));
 		}
 
 		bool IsAcceptableProcType(Actor proc)
@@ -246,74 +236,6 @@ namespace OpenRA.Mods.Common.Traits
 				contents[type.Info]++;
 
 			UpdateCondition(self);
-		}
-
-		public void UnblockRefinery(Actor self)
-		{
-			// Check that we're not in a critical location and being useless (refinery drop-off):
-			var lastproc = LastLinkedProc ?? LinkedProc;
-			if (lastproc != null && !lastproc.Disposed)
-			{
-				var deliveryLoc = lastproc.Location + lastproc.Trait<IAcceptResources>().DeliveryOffset;
-				if (self.Location == deliveryLoc)
-				{
-					// Get out of the way:
-					var unblockCell = LastHarvestedCell ?? (deliveryLoc + Info.UnblockCell);
-					var moveTo = mobile.NearestMoveableCell(unblockCell, 1, 5);
-
-					// FindResources takes care of calling INotifyHarvesterAction
-					self.QueueActivity(new FindResources(self));
-
-					self.QueueActivity(mobile.MoveTo(moveTo, 1));
-					self.SetTargetLine(Target.FromCell(self.World, moveTo), Color.Gray, false);
-				}
-			}
-		}
-
-		void INotifyBlockingMove.OnNotifyBlockingMove(Actor self, Actor blocking)
-		{
-			// I'm blocking someone else from moving to my location:
-			var act = self.CurrentActivity;
-
-			// If I'm just waiting around then get out of the way:
-			if (act is Wait)
-			{
-				self.CancelActivity();
-
-				var cell = self.Location;
-				var moveTo = mobile.NearestMoveableCell(cell, 2, 5);
-				self.QueueActivity(mobile.MoveTo(moveTo, 0));
-				self.SetTargetLine(Target.FromCell(self.World, moveTo), Color.Gray, false);
-
-				// Find more resources but not at this location:
-				self.QueueActivity(new FindResources(self, cell));
-			}
-		}
-
-		void INotifyIdle.TickIdle(Actor self)
-		{
-			// Should we be intelligent while idle?
-			if (!idleSmart)
-				return;
-
-			// Are we not empty? Deliver resources:
-			if (!IsEmpty)
-			{
-				self.QueueActivity(new DeliverResources(self));
-				return;
-			}
-
-			UnblockRefinery(self);
-			idleDuration += 1;
-
-			// Wait a bit before queueing Wait activity
-			if (idleDuration > Info.MaxIdleDuration)
-			{
-				idleDuration = 0;
-
-				// Wait for a bit before becoming idle again:
-				self.QueueActivity(new Wait(Info.WaitDuration));
-			}
 		}
 
 		// Returns true when unloading is complete
@@ -395,9 +317,6 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				// NOTE: An explicit harvest order allows the harvester to decide which refinery to deliver to.
 				LinkProc(self, OwnerLinkedProc = null);
-				idleSmart = true;
-
-				self.CancelActivity();
 
 				CPos loc;
 				if (order.Target.Type != TargetType.Invalid)
@@ -415,12 +334,7 @@ namespace OpenRA.Mods.Common.Traits
 				self.SetTargetLine(Target.FromCell(self.World, loc), Color.Red);
 
 				// FindResources takes care of calling INotifyHarvesterAction
-				self.QueueActivity(new FindResources(self));
-
-				LastOrderLocation = loc;
-
-				// This prevents harvesters returning to an empty patch when the player orders them to a new patch:
-				LastHarvestedCell = LastOrderLocation;
+				self.QueueActivity(order.Queued, new FindAndDeliverResources(self, loc));
 			}
 			else if (order.OrderString == "Deliver")
 			{
@@ -429,32 +343,18 @@ namespace OpenRA.Mods.Common.Traits
 				if (order.Target.Type != TargetType.Actor)
 					return;
 
-				// NOTE: An explicit deliver order forces the harvester to always deliver to this refinery.
 				var targetActor = order.Target.Actor;
 				var iao = targetActor.TraitOrDefault<IAcceptResources>();
 				if (iao == null || !iao.AllowDocking || !IsAcceptableProcType(targetActor))
 					return;
 
-				if (targetActor != OwnerLinkedProc)
-					LinkProc(self, OwnerLinkedProc = targetActor);
-
-				idleSmart = true;
-
 				self.SetTargetLine(order.Target, Color.Green);
-
-				self.CancelActivity();
-				self.QueueActivity(new DeliverResources(self));
-
-				foreach (var n in notifyHarvesterAction)
-					n.MovingToRefinery(self, targetActor, null);
+				self.QueueActivity(order.Queued, new FindAndDeliverResources(self, targetActor));
 			}
 			else if (order.OrderString == "Stop" || order.OrderString == "Move")
 			{
 				foreach (var n in notifyHarvesterAction)
 					n.MovementCancelled(self);
-
-				// Turn off idle smarts to obey the stop/move:
-				idleSmart = false;
 			}
 		}
 

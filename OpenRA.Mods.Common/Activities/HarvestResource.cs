@@ -36,6 +36,13 @@ namespace OpenRA.Mods.Common.Activities
 
 		public override Activity Tick(Actor self)
 		{
+			if (ChildActivity != null)
+			{
+				ChildActivity = ActivityUtils.RunActivity(self, ChildActivity);
+				if (ChildActivity != null)
+					return this;
+			}
+
 			if (IsCanceling)
 			{
 				claimLayer.RemoveClaim(self);
@@ -56,7 +63,10 @@ namespace OpenRA.Mods.Common.Activities
 				var current = facing.Facing;
 				var desired = body.QuantizeFacing(current, harvInfo.HarvestFacings);
 				if (desired != current)
-					return ActivityUtils.SequenceActivities(self, new Turn(self, desired), this);
+				{
+					QueueChild(self, new Turn(self, desired), true);
+					return this;
+				}
 			}
 
 			var resource = resLayer.Harvest(self.Location);
@@ -71,7 +81,8 @@ namespace OpenRA.Mods.Common.Activities
 			foreach (var t in self.TraitsImplementing<INotifyHarvesterAction>())
 				t.Harvested(self, resource);
 
-			return ActivityUtils.SequenceActivities(self, new Wait(harvInfo.BaleLoadDelay), this);
+			QueueChild(self, new Wait(harvInfo.BaleLoadDelay), true);
+			return this;
 		}
 	}
 }
