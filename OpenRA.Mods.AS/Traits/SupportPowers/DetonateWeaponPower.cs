@@ -14,9 +14,9 @@ using System.Linq;
 using OpenRA.Effects;
 using OpenRA.GameRules;
 using OpenRA.Graphics;
-using OpenRA.Mods.Common.Activities;
 using OpenRA.Mods.Common.Effects;
 using OpenRA.Mods.Common.Graphics;
+using OpenRA.Mods.Common.Orders;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Mods.Common.Traits.Render;
 using OpenRA.Primitives;
@@ -158,7 +158,7 @@ namespace OpenRA.Mods.AS.Traits
 		float FractionComplete { get { return ticks * 1f / Info.ActivationDelay; } }
 	}
 
-	public class SelectDetonateWeaponPowerTarget : IOrderGenerator
+	public class SelectDetonateWeaponPowerTarget : OrderGenerator
 	{
 		readonly SupportPowerManager manager;
 		readonly string order;
@@ -175,23 +175,23 @@ namespace OpenRA.Mods.AS.Traits
 			this.power = power;
 		}
 
-		public IEnumerable<Order> Order(World world, CPos cell, int2 worldPixel, MouseInput mi)
+		protected override IEnumerable<Order> OrderInner(World world, CPos cell, int2 worldPixel, MouseInput mi)
 		{
 			world.CancelInputMode();
 			if (mi.Button == MouseButton.Left && world.Map.Contains(cell))
 				yield return new Order(order, manager.Self, Target.FromCell(world, cell), false) { SuppressVisualFeedback = true };
 		}
 
-		public virtual void Tick(World world)
+		protected override void Tick(World world)
 		{
 			// Cancel the OG if we can't use the power
 			if (!manager.Powers.ContainsKey(order))
 				world.CancelInputMode();
 		}
 
-		public IEnumerable<IRenderable> Render(WorldRenderer wr, World world) { yield break; }
+		protected override IEnumerable<IRenderable> Render(WorldRenderer wr, World world) { yield break; }
 
-		public IEnumerable<IRenderable> RenderAboveShroud(WorldRenderer wr, World world)
+		protected override IEnumerable<IRenderable> RenderAboveShroud(WorldRenderer wr, World world)
 		{
 			var xy = wr.Viewport.ViewToWorld(Viewport.LastMousePos);
 
@@ -210,7 +210,7 @@ namespace OpenRA.Mods.AS.Traits
 			}
 		}
 
-		public string GetCursor(World world, CPos cell, int2 worldPixel, MouseInput mi)
+		protected override string GetCursor(World world, CPos cell, int2 worldPixel, MouseInput mi)
 		{
 			return world.Map.Contains(cell) ? power.Info.Cursor : "generic-blocked";
 		}
