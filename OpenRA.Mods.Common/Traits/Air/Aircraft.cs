@@ -844,10 +844,7 @@ namespace OpenRA.Mods.Common.Traits
 				if (Reservable.IsAvailableFor(targetActor, self))
 					self.SetTargetLine(Target.FromActor(targetActor), Color.Green);
 
-				if (!Info.CanHover && !Info.VTOL)
-					self.QueueActivity(order.Queued, new ReturnToBase(self, Info.AbortOnResupply, targetActor));
-				else
-					self.QueueActivity(order.Queued, new HeliReturnToBase(self, Info.AbortOnResupply, targetActor));
+				self.QueueActivity(order.Queued, new ReturnToBase(self, Info.AbortOnResupply, targetActor));
 			}
 			else if (order.OrderString == "Stop")
 			{
@@ -862,13 +859,16 @@ namespace OpenRA.Mods.Common.Traits
 			}
 			else if (order.OrderString == "ReturnToBase" && rearmable != null && rearmable.Info.RearmActors.Any())
 			{
+				// Don't restart activity every time deploy hotkey is triggered
+				if (self.CurrentActivity is ReturnToBase || GetActorBelow() != null)
+					return;
+
 				if (!order.Queued)
 					UnReserve();
 
-				if (!Info.CanHover)
-					self.QueueActivity(order.Queued, new ReturnToBase(self, Info.AbortOnResupply, null, false));
-				else
-					self.QueueActivity(order.Queued, new HeliReturnToBase(self, Info.AbortOnResupply, null, false));
+				// Aircraft with TakeOffOnResupply would immediately take off again, so there's no point in forcing them to land
+				// on a resupplier. For aircraft without it, it makes more sense to land than to idle above a free resupplier, though.
+				self.QueueActivity(order.Queued, new ReturnToBase(self, Info.AbortOnResupply, null, !Info.TakeOffOnResupply));
 			}
 		}
 
