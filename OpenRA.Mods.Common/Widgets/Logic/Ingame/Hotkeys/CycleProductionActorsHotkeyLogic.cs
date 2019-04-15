@@ -14,6 +14,7 @@ using System.Linq;
 using OpenRA.Graphics;
 using OpenRA.Mods.Common.Lint;
 using OpenRA.Mods.Common.Traits;
+using OpenRA.Traits;
 using OpenRA.Widgets;
 
 namespace OpenRA.Mods.Common.Widgets.Logic.Ingame
@@ -46,7 +47,8 @@ namespace OpenRA.Mods.Common.Widgets.Logic.Ingame
 
 			var facilities = world.ActorsHavingTrait<Production>()
 				.Where(a => a.Owner == player && !a.Info.HasTraitInfo<BaseBuildingInfo>()
-					&& a.TraitsImplementing<Production>().Any(t => !t.IsTraitDisabled))
+					&& a.TraitsImplementing<Production>().Any(t => !t.IsTraitDisabled)
+					&& a.TraitsImplementing<IPositionable>().Any())
 				.OrderBy(f => f.TraitsImplementing<Production>().First(t => !t.IsTraitDisabled).Info.Produces.First())
 				.ToList();
 
