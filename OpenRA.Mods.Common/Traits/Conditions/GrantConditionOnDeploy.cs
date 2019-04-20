@@ -263,7 +263,7 @@ namespace OpenRA.Mods.Common.Traits
 				return;
 
 			if (Info.DeploySounds != null && Info.DeploySounds.Any())
-				Game.Sound.Play(SoundType.World, Info.DeploySounds.Random(self.World.LocalRandom), self.CenterPosition);
+				Game.Sound.Play(SoundType.World, Info.DeploySounds, self.World, self.CenterPosition);
 
 			// Revoke condition that is applied while undeployed.
 			if (!init)
@@ -287,7 +287,7 @@ namespace OpenRA.Mods.Common.Traits
 				return;
 
 			if (Info.UndeploySounds != null && Info.UndeploySounds.Any())
-				Game.Sound.Play(SoundType.World, Info.UndeploySounds.Random(self.World.LocalRandom), self.CenterPosition);
+				Game.Sound.Play(SoundType.World, Info.UndeploySounds, self.World, self.CenterPosition);
 
 			if (!init)
 				OnUndeployStarted();
