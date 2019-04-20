@@ -56,7 +56,7 @@ namespace OpenRA.Mods.AS.Traits
 			base.Created(self);
 		}
 
-		public override void DoAttack(Actor self, Target target, IEnumerable<Armament> armaments = null)
+		public override void DoAttack(Actor self, Target target)
 		{
 			if (target.Type != TargetType.Actor || !CanAttack(self, target))
 				return;
