@@ -24,13 +24,15 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		[FieldLoader.Require]
 		[Desc("The condition to apply. Must be included in the target actor's ExternalConditions list.")]
-		public readonly string Condition = null;
+		public readonly Dictionary<int, string> Conditions = new Dictionary<int, string>();
 
+		[FieldLoader.Require]
 		[Desc("Duration of the condition (in ticks). Set to 0 for a permanent condition.")]
-		public readonly int Duration = 0;
+		public readonly Dictionary<int, int> Durations = new Dictionary<int, int>();
 
+		[FieldLoader.Require]
 		[Desc("Cells - affects whole cells only")]
-		public readonly int Range = 1;
+		public readonly Dictionary<int, int> Ranges = new Dictionary<int, int>();
 
 		[Desc("Sound to instantly play at the targeted area.")]
 		public readonly string OnFireSound = null;
@@ -77,16 +79,16 @@ namespace OpenRA.Mods.Common.Traits
 			foreach (var a in UnitsInRange(self.World.Map.CellContaining(order.Target.CenterPosition)))
 			{
 				var external = a.TraitsImplementing<ExternalCondition>()
-					.FirstOrDefault(t => t.Info.Condition == info.Condition && t.CanGrantCondition(a, self));
+					.FirstOrDefault(t => t.Info.Condition == info.Conditions.First(c => c.Key == GetLevel()).Value && t.CanGrantCondition(a, self));
 
 				if (external != null)
-					external.GrantCondition(a, self, info.Duration);
+					external.GrantCondition(a, self, info.Durations.First(d => d.Key == GetLevel()).Value);
 			}
 		}
 
 		public IEnumerable<Actor> UnitsInRange(CPos xy)
 		{
-			var range = info.Range;
+			var range = info.Ranges.First(r => r.Key == GetLevel()).Value;
 			var tiles = Self.World.Map.FindTilesInCircle(xy, range);
 			var units = new List<Actor>();
 			foreach (var t in tiles)
@@ -98,7 +100,7 @@ namespace OpenRA.Mods.Common.Traits
 					return false;
 
 				return a.TraitsImplementing<ExternalCondition>()
-					.Any(t => t.Info.Condition == info.Condition && t.CanGrantCondition(a, Self));
+					.Any(t => t.Info.Condition == info.Conditions.First(c => c.Key == GetLevel()).Value && t.CanGrantCondition(a, Self));
 			});
 		}
 
@@ -119,7 +121,7 @@ namespace OpenRA.Mods.Common.Traits
 				this.manager = manager;
 				this.order = order;
 				this.power = power;
-				range = power.info.Range;
+				range = power.info.Ranges.First(r => r.Key == power.GetLevel()).Value;
 				tile = world.Map.Rules.Sequences.GetSequence("overlay", "target-select").GetSprite(0);
 			}
 

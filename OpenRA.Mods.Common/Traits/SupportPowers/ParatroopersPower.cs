@@ -21,9 +21,12 @@ namespace OpenRA.Mods.Common.Traits
 {
 	public class ParatroopersPowerInfo : SupportPowerInfo
 	{
-		[ActorReference(typeof(AircraftInfo))]
-		public readonly string UnitType = "badr";
-		public readonly int SquadSize = 1;
+		[FieldLoader.Require]
+		public readonly Dictionary<int, string> UnitTypes = new Dictionary<int, string>();
+
+		[FieldLoader.Require]
+		public readonly Dictionary<int, int> SquadSizes = new Dictionary<int, int>();
+
 		public readonly WVec SquadOffset = new WVec(-1536, 1536, 0);
 
 		[NotificationReference("Speech")]
@@ -36,9 +39,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Spawn and remove the plane this far outside the map.")]
 		public readonly WDist Cordon = new WDist(5120);
 
-		[ActorReference(typeof(PassengerInfo))]
+		[FieldLoader.Require]
 		[Desc("Troops to be delivered.  They will be distributed between the planes if SquadSize > 1.")]
-		public readonly string[] DropItems = { };
+		public readonly Dictionary<int, string[]> DropItems = new Dictionary<int, string[]>();
 
 		[Desc("Risks stuck units when they don't have the Paratrooper trait.")]
 		public readonly bool AllowImpassableCells = false;
@@ -97,7 +100,7 @@ namespace OpenRA.Mods.Common.Traits
 			if (randomize)
 				dropFacing = 256 * self.World.SharedRandom.Next(info.QuantizedFacings) / info.QuantizedFacings;
 
-			var utLower = info.UnitType.ToLowerInvariant();
+			var utLower = info.UnitTypes.First(ut => ut.Key == GetLevel()).Value.ToLowerInvariant();
 			ActorInfo unitType;
 			if (!self.World.Map.Rules.Actors.TryGetValue(utLower, out unitType))
 				throw new YamlException("Actors ruleset does not include the entry '{0}'".F(utLower));
@@ -160,7 +163,7 @@ namespace OpenRA.Mods.Common.Traits
 				}
 			};
 
-			foreach (var p in info.DropItems)
+			foreach (var p in info.DropItems.First(di => di.Key == GetLevel()).Value)
 			{
 				var unit = self.World.CreateActor(false, p.ToLowerInvariant(),
 					new TypeDictionary { new OwnerInit(self.Owner) });
@@ -174,12 +177,13 @@ namespace OpenRA.Mods.Common.Traits
 
 				Actor distanceTestActor = null;
 
-				var passengersPerPlane = (info.DropItems.Length + info.SquadSize - 1) / info.SquadSize;
+				var squadSize = info.SquadSizes.First(ss => ss.Key == GetLevel()).Value;
+				var passengersPerPlane = (info.DropItems.First(di => di.Key == GetLevel()).Value.Length + squadSize - 1) / squadSize;
 				var added = 0;
-				for (var i = -info.SquadSize / 2; i <= info.SquadSize / 2; i++)
+				for (var i = -squadSize / 2; i <= squadSize / 2; i++)
 				{
 					// Even-sized squads skip the lead plane
-					if (i == 0 && (info.SquadSize & 1) == 0)
+					if (i == 0 && (squadSize & 1) == 0)
 						continue;
 
 					// Includes the 90 degree rotation between body and world coordinates
@@ -187,7 +191,7 @@ namespace OpenRA.Mods.Common.Traits
 					var spawnOffset = new WVec(i * so.Y, -Math.Abs(i) * so.X, 0).Rotate(dropRotation);
 					var targetOffset = new WVec(i * so.Y, 0, 0).Rotate(dropRotation);
 
-					var a = w.CreateActor(info.UnitType, new TypeDictionary
+					var a = w.CreateActor(info.UnitTypes.First(ut => ut.Key == GetLevel()).Value, new TypeDictionary
 					{
 						new CenterPositionInit(startEdge + spawnOffset),
 						new OwnerInit(self.Owner),
@@ -224,7 +228,7 @@ namespace OpenRA.Mods.Common.Traits
 						Info.BeaconPaletteIsPlayerPalette,
 						Info.BeaconPalette,
 						Info.BeaconImage,
-						Info.BeaconPoster,
+						Info.BeaconPosters.First(bp => bp.Key == GetLevel()).Value,
 						Info.BeaconPosterPalette,
 						Info.BeaconSequence,
 						Info.ArrowSequence,

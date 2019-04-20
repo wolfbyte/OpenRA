@@ -27,8 +27,8 @@ namespace OpenRA.Mods.AS.Traits
 	[Desc("Support power for detonating a weapon at the target position.")]
 	public class DetonateWeaponPowerInfo : SupportPowerInfo, IRulesetLoaded
 	{
-		[WeaponReference]
-		public readonly string Weapon = "";
+		[FieldLoader.Require]
+		public readonly Dictionary<int, string> Weapons = new Dictionary<int, string>();
 
 		[Desc("Delay between activation and explosion")]
 		public readonly int ActivationDelay = 10;
@@ -62,14 +62,23 @@ namespace OpenRA.Mods.AS.Traits
 		public readonly Color TargetCircleColor = Color.White;
 		public readonly bool TargetCircleUsePlayerColor = false;
 
-		public WeaponInfo WeaponInfo { get; private set; }
+		public readonly Dictionary<int, WeaponInfo> WeaponInfos = new Dictionary<int, WeaponInfo>();
 
 		public override object Create(ActorInitializer init) { return new DetonateWeaponPower(init.Self, this); }
 		public override void RulesetLoaded(Ruleset rules, ActorInfo ai)
 		{
-			base.RulesetLoaded(rules, ai);
+			foreach (var weapon in Weapons)
+			{
+				WeaponInfo weaponInfo;
+				var weaponToLower = weapon.Value.ToLowerInvariant();
+				if (!rules.Weapons.TryGetValue(weaponToLower, out weaponInfo))
+					throw new YamlException("Weapons Ruleset does not contain an entry '{0}'".F(weaponToLower));
 
-			WeaponInfo = rules.Weapons[Weapon.ToLowerInvariant()];
+				if (!WeaponInfos.ContainsKey(weapon.Key))
+					WeaponInfos.Add(weapon.Key, rules.Weapons[weaponToLower]);
+			}
+
+			base.RulesetLoaded(rules, ai);
 		}
 	}
 
@@ -101,7 +110,7 @@ namespace OpenRA.Mods.AS.Traits
 
 			var targetPosition = order.Target.CenterPosition + new WVec(WDist.Zero, WDist.Zero, Info.AirburstAltitude);
 
-			Action detonateWeapon = () => self.World.AddFrameEndTask(w => Info.WeaponInfo.Impact(Target.FromPos(targetPosition), self, Enumerable.Empty<int>()));
+			Action detonateWeapon = () => self.World.AddFrameEndTask(w => Info.WeaponInfos.First(wi => wi.Key == GetLevel()).Value.Impact(Target.FromPos(targetPosition), self, Enumerable.Empty<int>()));
 
 			self.World.AddFrameEndTask(w => w.Add(new DelayedAction(Info.ActivationDelay, detonateWeapon)));
 
@@ -122,7 +131,7 @@ namespace OpenRA.Mods.AS.Traits
 					Info.BeaconPaletteIsPlayerPalette,
 					Info.BeaconPalette,
 					Info.BeaconImage,
-					Info.BeaconPoster,
+					Info.BeaconPosters.First(bp => bp.Key == GetLevel()).Value,
 					Info.BeaconPosterPalette,
 					Info.BeaconSequence,
 					Info.ArrowSequence,

@@ -21,6 +21,7 @@ namespace OpenRA.Mods.AS.Effects
 {
 	public class AirstrikePowerASEffect : IEffect
 	{
+		readonly AirstrikePowerAS power;
 		readonly AirstrikePowerASInfo info;
 		readonly Player owner;
 		readonly World world;
@@ -31,8 +32,9 @@ namespace OpenRA.Mods.AS.Effects
 		Beacon beacon = null;
 		bool enteredRange = false;
 
-		public AirstrikePowerASEffect(World world, Player p, WPos pos, IEnumerable<Actor> planes, AirstrikePowerASInfo info)
+		public AirstrikePowerASEffect(World world, Player p, WPos pos, IEnumerable<Actor> planes, AirstrikePowerAS power, AirstrikePowerASInfo info)
 		{
+			this.power = power;
 			this.info = info;
 			this.world = world;
 			this.owner = p;
@@ -49,7 +51,7 @@ namespace OpenRA.Mods.AS.Effects
 					info.BeaconPaletteIsPlayerPalette,
 					info.BeaconPalette,
 					info.BeaconImage,
-					info.BeaconPoster,
+					info.BeaconPosters.First(bp => bp.Key == power.GetLevel()).Value,
 					info.BeaconPosterPalette,
 					info.BeaconSequence,
 					info.ArrowSequence,

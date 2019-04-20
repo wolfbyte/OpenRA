@@ -76,7 +76,7 @@ namespace OpenRA.Mods.Common.Widgets
 				return;
 
 			var powers = player.PlayerActor.Trait<SupportPowerManager>().Powers
-				.Where(x => !x.Value.Disabled).Select((a, i) => new { a, i });
+				.Where(x => !x.Value.Disabled && x.Value.GetLevel() != 0).Select((a, i) => new { a, i });
 			foreach (var power in powers)
 			{
 				if (!clocks.ContainsKey(power.a.Key))
@@ -87,10 +87,11 @@ namespace OpenRA.Mods.Common.Widgets
 			foreach (var power in powers)
 			{
 				var item = power.a.Value;
-				if (item == null || item.Info == null || item.Info.Icon == null)
+				if (item == null || item.Info == null || item.Info.Icons == null)
 					continue;
 
-				icon.Play(item.Info.Icon);
+				var level = item.GetLevel();
+				icon.Play(item.Info.Icons.First(i => i.Key == level).Value);
 				var location = new float2(RenderBounds.Location) + new float2(power.i * (IconWidth + IconSpacing), 0);
 				WidgetUtils.DrawSHPCentered(icon.Image, location + 0.5f * iconSize, worldRenderer.Palette(item.Info.IconPalette), 0.5f);
 

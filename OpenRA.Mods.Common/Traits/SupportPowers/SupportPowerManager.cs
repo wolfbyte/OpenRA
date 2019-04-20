@@ -24,7 +24,7 @@ namespace OpenRA.Mods.Common.Traits
 		public object Create(ActorInitializer init) { return new SupportPowerManager(init); }
 	}
 
-	public class SupportPowerManager : ITick, IResolveOrder, ITechTreeElement
+	public class SupportPowerManager : ITick, IResolveOrder
 	{
 		public readonly Actor Self;
 		public readonly Dictionary<string, SupportPowerInstance> Powers = new Dictionary<string, SupportPowerInstance>();
@@ -66,12 +66,6 @@ namespace OpenRA.Mods.Common.Traits
 						RemainingTime = t.Info.StartFullyCharged ? 0 : t.Info.ChargeInterval,
 						TotalTime = t.Info.ChargeInterval,
 					});
-
-					if (t.Info.Prerequisites.Any())
-					{
-						TechTree.Add(key, t.Info.Prerequisites, 0, this);
-						TechTree.Update();
-					}
 				}
 
 				Powers[key].Instances.Add(t);
@@ -91,8 +85,6 @@ namespace OpenRA.Mods.Common.Traits
 				if (Powers[key].Instances.Count == 0 && !Powers[key].Disabled)
 				{
 					Powers.Remove(key);
-					TechTree.Remove(key);
-					TechTree.Update();
 				}
 			}
 		}
@@ -128,28 +120,6 @@ namespace OpenRA.Mods.Common.Traits
 				.Select(t => Powers[MakeKey(t)])
 				.Where(p => p.Instances.Any(i => !i.IsTraitDisabled && i.Self == a));
 		}
-
-		public void PrerequisitesAvailable(string key)
-		{
-			SupportPowerInstance sp;
-			if (!Powers.TryGetValue(key, out sp))
-				return;
-
-			sp.PrerequisitesAvailable(true);
-		}
-
-		public void PrerequisitesUnavailable(string key)
-		{
-			SupportPowerInstance sp;
-			if (!Powers.TryGetValue(key, out sp))
-				return;
-
-			sp.PrerequisitesAvailable(false);
-			sp.RemainingTime = sp.TotalTime;
-		}
-
-		public void PrerequisitesItemHidden(string key) { }
-		public void PrerequisitesItemVisible(string key) { }
 	}
 
 	public class SupportPowerInstance
@@ -190,7 +160,7 @@ namespace OpenRA.Mods.Common.Traits
 			if (!instancesEnabled)
 				RemainingTime = TotalTime;
 
-			Active = !Disabled && Instances.Any(i => !i.IsTraitPaused);
+			Active = !Disabled && Instances.Any(i => !i.IsTraitPaused) && GetLevel() != 0;
 			if (!Active)
 				return;
 
@@ -282,6 +252,14 @@ namespace OpenRA.Mods.Common.Traits
 			}
 
 			return true;
+		}
+
+		public int GetLevel()
+		{
+			var availables = Info.Prerequisites.Where(p => manager.TechTree.HasPrerequisites(p.Value));
+			var level = availables.Any() ? availables.Max(p => p.Key) : 0;
+
+			return manager.DevMode.AllTech ? Info.Prerequisites.Max(p => p.Key) : level;
 		}
 	}
 

@@ -21,9 +21,12 @@ namespace OpenRA.Mods.Common.Traits
 {
 	public class AirstrikePowerInfo : SupportPowerInfo
 	{
-		[ActorReference(typeof(AircraftInfo))]
-		public readonly string UnitType = "badr.bomber";
-		public readonly int SquadSize = 1;
+		[FieldLoader.Require]
+		public readonly Dictionary<int, string> UnitTypes = new Dictionary<int, string>();
+
+		[FieldLoader.Require]
+		public readonly Dictionary<int, int> SquadSizes = new Dictionary<int, int>();
+
 		public readonly WVec SquadOffset = new WVec(-1536, 1536, 0);
 
 		public readonly int QuantizedFacings = 32;
@@ -78,7 +81,7 @@ namespace OpenRA.Mods.Common.Traits
 			if (randomize)
 				attackFacing = 256 * self.World.SharedRandom.Next(info.QuantizedFacings) / info.QuantizedFacings;
 
-			var altitude = self.World.Map.Rules.Actors[info.UnitType].TraitInfo<AircraftInfo>().CruiseAltitude.Length;
+			var altitude = self.World.Map.Rules.Actors[info.UnitTypes.First(ut => ut.Key == GetLevel()).Value].TraitInfo<AircraftInfo>().CruiseAltitude.Length;
 			var attackRotation = WRot.FromFacing(attackFacing);
 			var delta = new WVec(0, -1024, 0).Rotate(attackRotation);
 			target = target + new WVec(0, 0, altitude);
@@ -137,10 +140,11 @@ namespace OpenRA.Mods.Common.Traits
 				PlayLaunchSounds();
 
 				Actor distanceTestActor = null;
-				for (var i = -info.SquadSize / 2; i <= info.SquadSize / 2; i++)
+				var squadSize = info.SquadSizes.First(ss => ss.Key == GetLevel()).Value;
+				for (var i = -squadSize / 2; i <= squadSize / 2; i++)
 				{
 					// Even-sized squads skip the lead plane
-					if (i == 0 && (info.SquadSize & 1) == 0)
+					if (i == 0 && (squadSize & 1) == 0)
 						continue;
 
 					// Includes the 90 degree rotation between body and world coordinates
@@ -148,7 +152,7 @@ namespace OpenRA.Mods.Common.Traits
 					var spawnOffset = new WVec(i * so.Y, -Math.Abs(i) * so.X, 0).Rotate(attackRotation);
 					var targetOffset = new WVec(i * so.Y, 0, 0).Rotate(attackRotation);
 
-					var a = w.CreateActor(info.UnitType, new TypeDictionary
+					var a = w.CreateActor(info.UnitTypes.First(ut => ut.Key == GetLevel()).Value, new TypeDictionary
 					{
 						new CenterPositionInit(startEdge + spawnOffset),
 						new OwnerInit(self.Owner),
@@ -178,7 +182,7 @@ namespace OpenRA.Mods.Common.Traits
 						Info.BeaconPaletteIsPlayerPalette,
 						Info.BeaconPalette,
 						Info.BeaconImage,
-						Info.BeaconPoster,
+						Info.BeaconPosters.First(bp => bp.Key == GetLevel()).Value,
 						Info.BeaconPosterPalette,
 						Info.BeaconSequence,
 						Info.ArrowSequence,

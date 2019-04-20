@@ -23,10 +23,10 @@ namespace OpenRA.Mods.Cnc.Traits
 	class ChronoshiftPowerInfo : SupportPowerInfo
 	{
 		[Desc("Target actor selection radius in cells.")]
-		public readonly int Range = 1;
+		public readonly Dictionary<int, int> Ranges = new Dictionary<int, int>();
 
 		[Desc("Ticks until returning after teleportation.")]
-		public readonly int Duration = 750;
+		public readonly Dictionary<int, int> Durations = new Dictionary<int, int>();
 
 		[PaletteReference] public readonly string TargetOverlayPalette = TileSet.TerrainPaletteInternalName;
 
@@ -77,13 +77,13 @@ namespace OpenRA.Mods.Cnc.Traits
 				var targetCell = target.Location + targetDelta;
 
 				if (self.Owner.Shroud.IsExplored(targetCell) && cs.CanChronoshiftTo(target, targetCell))
-					cs.Teleport(target, targetCell, info.Duration, info.KillCargo, self);
+					cs.Teleport(target, targetCell, info.Durations.First(d => d.Key == GetLevel()).Value, info.KillCargo, self);
 			}
 		}
 
 		public IEnumerable<Actor> UnitsInRange(CPos xy)
 		{
-			var range = ((ChronoshiftPowerInfo)Info).Range;
+			var range = ((ChronoshiftPowerInfo)Info).Ranges.First(r => r.Key == GetLevel()).Value;
 			var tiles = Self.World.Map.FindTilesInCircle(xy, range);
 			var units = new HashSet<Actor>();
 			foreach (var t in tiles)
@@ -97,7 +97,7 @@ namespace OpenRA.Mods.Cnc.Traits
 			if (!Self.Owner.Shroud.IsExplored(xy))
 				return false;
 
-			var range = ((ChronoshiftPowerInfo)Info).Range;
+			var range = ((ChronoshiftPowerInfo)Info).Ranges.First(r => r.Key == GetLevel()).Value;
 			var sourceTiles = Self.World.Map.FindTilesInCircle(xy, range);
 			var destTiles = Self.World.Map.FindTilesInCircle(sourceLocation, range);
 
@@ -140,7 +140,7 @@ namespace OpenRA.Mods.Cnc.Traits
 				this.power = power;
 
 				var info = (ChronoshiftPowerInfo)power.Info;
-				range = info.Range;
+				range = info.Ranges.First(r => r.Key == power.GetLevel()).Value;
 				tile = world.Map.Rules.Sequences.GetSequence(info.OverlaySpriteGroup, info.SourceTileSequence).GetSprite(0);
 			}
 
@@ -207,7 +207,7 @@ namespace OpenRA.Mods.Cnc.Traits
 				this.sourceLocation = sourceLocation;
 
 				var info = (ChronoshiftPowerInfo)power.Info;
-				range = info.Range;
+				range = info.Ranges.First(r => r.Key == power.GetLevel()).Value;
 
 				var tileset = world.Map.Tileset.ToLowerInvariant();
 				validTile = world.Map.Rules.Sequences.GetSequence(info.OverlaySpriteGroup, info.ValidTileSequencePrefix + tileset).GetSprite(0);

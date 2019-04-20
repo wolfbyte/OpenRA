@@ -148,7 +148,7 @@ namespace OpenRA.Mods.AS.Traits
 					FireArmamentPowerInfo.BeaconPaletteIsPlayerPalette,
 					FireArmamentPowerInfo.BeaconPalette,
 					FireArmamentPowerInfo.BeaconImage,
-					FireArmamentPowerInfo.BeaconPoster,
+					FireArmamentPowerInfo.BeaconPosters.First(bp => bp.Key == GetLevel()).Value,
 					FireArmamentPowerInfo.BeaconPosterPalette,
 					FireArmamentPowerInfo.BeaconSequence,
 					FireArmamentPowerInfo.ArrowSequence,

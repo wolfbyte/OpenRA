@@ -10,6 +10,8 @@
 #endregion
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using OpenRA.Mods.Common.Traits;
 using OpenRA.Primitives;
 using OpenRA.Traits;
@@ -65,10 +67,11 @@ namespace OpenRA.Mods.Common.Widgets.Logic
 					? Color.White : Color.Red;
 				costLabel.IsVisible = () => cost != 0;
 
-				nameLabel.Text = sp.Info.Description;
+				var level = sp.GetLevel();
+				nameLabel.Text = sp.Info.Descriptions.First(ld => ld.Key == level).Value;
 				var nameSize = nameFont.Measure(nameLabel.Text);
 
-				descLabel.Text = sp.Info.LongDesc.Replace("\\n", "\n");
+				descLabel.Text = sp.Info.LongDescs.First(ld => ld.Key == level).Value.Replace("\\n", "\n");
 				var descSize = descFont.Measure(descLabel.Text);
 
 				var remaining = WidgetUtils.FormatTime(sp.RemainingTime, world.Timestep);
