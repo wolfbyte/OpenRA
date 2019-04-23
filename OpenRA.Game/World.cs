@@ -98,6 +98,16 @@ namespace OpenRA
 			get { return OrderManager.Connection is ReplayConnection; }
 		}
 
+		public bool IsLoadingGameSave
+		{
+			get { return OrderManager.NetFrameNumber <= OrderManager.GameSaveLastFrame; }
+		}
+
+		public int GameSaveLoadingPercentage
+		{
+			get { return OrderManager.NetFrameNumber * 100 / OrderManager.GameSaveLastFrame; }
+		}
+
 		void SetLocalPlayer(Player localPlayer)
 		{
 			if (localPlayer == null)
@@ -138,6 +148,9 @@ namespace OpenRA
 			set
 			{
 				Sync.AssertUnsynced("The current order generator may not be changed from synced code");
+				if (orderGenerator != null)
+					orderGenerator.Deactivate();
+
 				orderGenerator = value;
 			}
 		}
@@ -161,6 +174,8 @@ namespace OpenRA
 		}
 
 		public bool RulesContainTemporaryBlocker { get; private set; }
+
+		bool wasLoadingGameSave;
 
 		internal World(ModData modData, Map map, OrderManager orderManager, WorldType type)
 		{
@@ -230,19 +245,32 @@ namespace OpenRA
 
 		public void LoadComplete(WorldRenderer wr)
 		{
+			if (IsLoadingGameSave)
+			{
+				wasLoadingGameSave = true;
+				Game.Sound.DisableAllSounds = true;
+				foreach (var nsr in WorldActor.TraitsImplementing<INotifyGameLoading>())
+					nsr.GameLoading(this);
+			}
+
 			// ScreenMap must be initialized before anything else
 			using (new PerfTimer("ScreenMap.WorldLoaded"))
 				ScreenMap.WorldLoaded(this, wr);
 
-			foreach (var wlh in WorldActor.TraitsImplementing<IWorldLoaded>())
+			foreach (var iwl in WorldActor.TraitsImplementing<IWorldLoaded>())
 			{
 				// These have already been initialized
-				if (wlh == ScreenMap)
+				if (iwl == ScreenMap)
 					continue;
 
-				using (new PerfTimer(wlh.GetType().Name + ".WorldLoaded"))
-					wlh.WorldLoaded(this, wr);
+				using (new PerfTimer(iwl.GetType().Name + ".WorldLoaded"))
+					iwl.WorldLoaded(this, wr);
 			}
+
+			foreach (var p in Players)
+				foreach (var iwl in p.PlayerActor.TraitsImplementing<IWorldLoaded>())
+					using (new PerfTimer(iwl.GetType().Name + ".WorldLoaded"))
+						iwl.WorldLoaded(this, wr);
 
 			gameInfo.StartTimeUtc = DateTime.UtcNow;
 			foreach (var player in Players)
@@ -339,6 +367,12 @@ namespace OpenRA
 
 		public int WorldTick { get; private set; }
 
+		Dictionary<int, MiniYaml> gameSaveTraitData = new Dictionary<int, MiniYaml>();
+		internal void AddGameSaveTraitData(int traitIndex, MiniYaml yaml)
+		{
+			gameSaveTraitData[traitIndex] = yaml;
+		}
+
 		public void SetPauseState(bool paused)
 		{
 			if (PauseStateLocked)
@@ -355,6 +389,29 @@ namespace OpenRA
 
 		public void Tick()
 		{
+			if (wasLoadingGameSave && !IsLoadingGameSave)
+			{
+				foreach (var kv in gameSaveTraitData)
+				{
+					var tp = TraitDict.ActorsWithTrait<IGameSaveTraitData>()
+						.Skip(kv.Key)
+						.FirstOrDefault();
+
+					if (tp.Actor == null)
+						break;
+
+					tp.Trait.ResolveTraitData(tp.Actor, kv.Value.Nodes);
+				}
+
+				gameSaveTraitData.Clear();
+
+				Game.Sound.DisableAllSounds = false;
+				foreach (var nsr in WorldActor.TraitsImplementing<INotifyGameLoaded>())
+					nsr.GameLoaded(this);
+
+				wasLoadingGameSave = false;
+			}
+
 			if (!Paused)
 			{
 				WorldTick++;
@@ -455,16 +512,50 @@ namespace OpenRA
 			}
 		}
 
+		public void RequestGameSave(string filename)
+		{
+			// Allow traits to save arbitrary data that will be passed back via IGameSaveTraitData.ResolveTraitData
+			// at the end of the save restoration
+			// TODO: This will need to be generalized to a request / response pair for multiplayer game saves
+			var i = 0;
+			foreach (var tp in TraitDict.ActorsWithTrait<IGameSaveTraitData>())
+			{
+				var data = tp.Trait.IssueTraitData(tp.Actor);
+				if (data != null)
+				{
+					var yaml = new List<MiniYamlNode>() { new MiniYamlNode(i.ToString(), new MiniYaml("", data)) };
+					IssueOrder(new Order("GameSaveTraitData", null, false)
+					{
+						IsImmediate = true,
+						TargetString = yaml.WriteToString()
+					});
+				}
+
+				i++;
+			}
+
+			IssueOrder(new Order("CreateGameSave", null, false)
+			{
+				IsImmediate = true,
+				TargetString = filename
+			});
+		}
+
 		public bool Disposing;
 
 		public void Dispose()
 		{
 			Disposing = true;
 
+			if (OrderGenerator != null)
+				OrderGenerator.Deactivate();
+
 			frameEndActions.Clear();
 
 			Game.Sound.StopAudio();
 			Game.Sound.StopVideo();
+			if (IsLoadingGameSave)
+				Game.Sound.DisableAllSounds = false;
 
 			ModelCache.Dispose();
 

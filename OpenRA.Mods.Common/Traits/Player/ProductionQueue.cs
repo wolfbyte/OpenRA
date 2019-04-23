@@ -124,14 +124,11 @@ namespace OpenRA.Mods.Common.Traits
 		{
 			self = init.Self;
 			Info = info;
-			playerResources = playerActor.Trait<PlayerResources>();
-			developerMode = playerActor.Trait<DeveloperMode>();
 
 			Faction = init.Contains<FactionInit>() ? init.Get<FactionInit, string>() : self.Owner.Faction.InternalName;
 			IsValidFaction = !info.Factions.Any() || info.Factions.Contains(Faction);
 			Enabled = IsValidFaction;
 
-			CacheProducibles(playerActor);
 			allProducibles = Producible.Where(a => a.Value.Buildable || a.Value.Visible).Select(a => a.Key);
 			buildableProducibles = Producible.Where(a => a.Value.Buildable).Select(a => a.Key);
 		}
@@ -143,9 +140,14 @@ namespace OpenRA.Mods.Common.Traits
 			// so we must query other player traits from self, knowing that
 			// it refers to the same actor as self.Owner.PlayerActor
 			var playerActor = self.Info.Name == "player" ? self : self.Owner.PlayerActor;
+
 			playerPower = playerActor.TraitOrDefault<PowerManager>();
-			productionTraits = self.TraitsImplementing<Production>().Where(p => p.Info.Produces.Contains(Info.Type)).ToArray();
+			playerResources = playerActor.Trait<PlayerResources>();
+			developerMode = playerActor.Trait<DeveloperMode>();
 			techTree = playerActor.Trait<TechTree>();
+
+			productionTraits = self.TraitsImplementing<Production>().Where(p => p.Info.Produces.Contains(Info.Type)).ToArray();
+			CacheProducibles(playerActor);
 		}
 
 		protected void ClearQueue()
@@ -174,7 +176,7 @@ namespace OpenRA.Mods.Common.Traits
 			// Regenerate the producibles and tech tree state
 			oldOwner.PlayerActor.Trait<TechTree>().Remove(this);
 			CacheProducibles(newOwner.PlayerActor);
-			newOwner.PlayerActor.Trait<TechTree>().Update();
+			techTree.Update();
 		}
 
 		void INotifyKilled.Killed(Actor killed, AttackInfo e) { if (killed == self) { ClearQueue(); Enabled = false; } }
@@ -191,14 +193,12 @@ namespace OpenRA.Mods.Common.Traits
 			if (!Enabled)
 				return;
 
-			var ttc = playerActor.Trait<TechTree>();
-
 			foreach (var a in AllBuildables(Info.Type))
 			{
 				var bi = a.TraitInfo<BuildableInfo>();
 
 				Producible.Add(a, new ProductionState());
-				ttc.Add(a.Name, bi.Prerequisites, bi.BuildLimit, this);
+				techTree.Add(a.Name, bi.Prerequisites, bi.BuildLimit, this);
 			}
 		}
 
@@ -439,30 +439,24 @@ namespace OpenRA.Mods.Common.Traits
 			if (time == -1)
 				time = GetProductionCost(unit);
 
-			var iptmis = unit.TraitInfos<IProductionTimeModifierInfo>().Select(t => t.GetProductionTimeModifier(techTree, Info.Type));
-			var modifiers = iptmis.Select(t => t.First);
-			time = Util.ApplyPercentageModifiers(time, modifiers);
-			foreach (var iptmi in iptmis)
-				time = time + iptmi.Second;
+			var modifiers = unit.TraitInfos<IProductionTimeModifierInfo>()
+				.Select(t => t.GetProductionTimeModifier(techTree, Info.Type))
+				.Append(bi.BuildDurationModifier)
+				.Append(Info.BuildDurationModifier);
 
-			time = time * bi.BuildDurationModifier * Info.BuildDurationModifier / 10000;
-			return time;
+			return Util.ApplyPercentageModifiers(time, modifiers);
 		}
 
 		public virtual int GetProductionCost(ActorInfo unit)
 		{
 			var valued = unit.TraitInfoOrDefault<ValuedInfo>();
-
 			if (valued == null)
 				return 0;
 
-			var ipcmis = unit.TraitInfos<IProductionCostModifierInfo>().Select(t => t.GetProductionCostModifier(techTree, Info.Type));
-			var modifiers = ipcmis.Select(t => t.First);
-			var cost = Util.ApplyPercentageModifiers(valued.Cost, modifiers);
-			foreach (var ipcmi in ipcmis)
-				cost = cost + ipcmi.Second;
+			var modifiers = unit.TraitInfos<IProductionCostModifierInfo>()
+				.Select(t => t.GetProductionCostModifier(techTree, Info.Type));
 
-			return cost;
+			return Util.ApplyPercentageModifiers(valued.Cost, modifiers);
 		}
 
 		protected void PauseProduction(string itemName, bool paused)

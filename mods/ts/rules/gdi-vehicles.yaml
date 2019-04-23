@@ -348,12 +348,14 @@ JUGG:
 		MoveSequence: walk
 		ValidMovementTypes: Horizontal, Turn
 	GrantConditionOnDeploy:
+		PauseOnCondition: empdisable || being-captured
 		DeployedCondition: deployed
 		UndeployedCondition: undeployed
 		Facing: 96
 		AllowedTerrainTypes: Clear, Road, DirtRoad, Rough
 		DeploySounds: place2.aud
 		UndeploySounds: clicky1.aud
+		Voice: Move
 	GrantCondition@PREVIEWWORKAROUND:
 		Condition: real-actor
 	QuantizeFacingsFromSequence:

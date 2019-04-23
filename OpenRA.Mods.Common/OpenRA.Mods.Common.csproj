@@ -119,6 +119,7 @@
     <Compile Include="Activities\WaitForTransport.cs" />
     <Compile Include="ActorExts.cs" />
     <Compile Include="AIUtils.cs" />
+    <Compile Include="Traits\EngineerRepairable.cs" />
     <Compile Include="Orders\OrderGenerator.cs" />
     <Compile Include="TargetExtensions.cs" />
     <Compile Include="Traits\BotModules\Squads\AttackOrFleeFuzzy.cs" />
@@ -335,6 +336,8 @@
     <Compile Include="Traits\Conditions\GrantRandomCondition.cs" />
     <Compile Include="Traits\Contrail.cs" />
     <Compile Include="Traits\SupportPowers\SelectDirectionalTarget.cs" />
+    <Compile Include="Traits\Multipliers\ProductionCostMultiplier.cs" />
+    <Compile Include="Traits\Multipliers\ProductionTimeMultiplier.cs" />
     <Compile Include="Traits\TemporaryOwnerManager.cs" />
     <Compile Include="Traits\TooltipDescription.cs" />
     <Compile Include="Traits\Health.cs" />
@@ -572,6 +575,7 @@
     <Compile Include="Traits\World\JumpjetLocomotor.cs" />
     <Compile Include="Traits\World\PaletteFromEmbeddedSpritePalette.cs" />
     <Compile Include="Traits\World\ResourceType.cs" />
+    <Compile Include="Traits\World\GameSaveViewportManager.cs" />
     <Compile Include="Traits\World\SubterraneanLocomotor.cs" />
     <Compile Include="Traits\World\LoadWidgetAtGameStart.cs" />
     <Compile Include="Traits\World\MPStartLocations.cs" />
@@ -639,7 +643,9 @@
     <Compile Include="UtilityCommands\PngSheetImportMetadataCommand.cs" />
     <Compile Include="Widgets\Logic\Editor\ActorEditLogic.cs" />
     <Compile Include="Widgets\ExponentialSliderWidget.cs" />
+    <Compile Include="Widgets\Logic\Ingame\GameSaveLoadingLogic.cs" />
     <Compile Include="Widgets\Logic\MusicHotkeyLogic.cs" />
+    <Compile Include="Widgets\Logic\GameSaveBrowserLogic.cs" />
     <Compile Include="WorldExtensions.cs" />
     <Compile Include="UtilityCommands\GetMapHashCommand.cs" />
     <Compile Include="UtilityCommands\Glob.cs" />

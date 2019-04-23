@@ -324,10 +324,10 @@ namespace OpenRA.Mods.Common.Traits
 	}
 
 	[RequireExplicitImplementation]
-	public interface IProductionCostModifierInfo : ITraitInfo { Pair<int, int> GetProductionCostModifier(TechTree techTree, string queue); }
+	public interface IProductionCostModifierInfo : ITraitInfo { int GetProductionCostModifier(TechTree techTree, string queue); }
 
 	[RequireExplicitImplementation]
-	public interface IProductionTimeModifierInfo : ITraitInfo { Pair<int, int> GetProductionTimeModifier(TechTree techTree, string queue); }
+	public interface IProductionTimeModifierInfo : ITraitInfo { int GetProductionTimeModifier(TechTree techTree, string queue); }
 
 	[RequireExplicitImplementation]
 	public interface ICashTricklerModifier { int GetCashTricklerModifier(); }
@@ -436,11 +436,16 @@ namespace OpenRA.Mods.Common.Traits
 	[RequireExplicitImplementation]
 	public interface INotifyObjectivesUpdated
 	{
-		void OnPlayerWon(Player winner);
-		void OnPlayerLost(Player loser);
 		void OnObjectiveAdded(Player player, int objectiveID);
 		void OnObjectiveCompleted(Player player, int objectiveID);
 		void OnObjectiveFailed(Player player, int objectiveID);
+	}
+
+	[RequireExplicitImplementation]
+	public interface INotifyWinStateChanged
+	{
+		void OnPlayerWon(Player winner);
+		void OnPlayerLost(Player loser);
 	}
 
 	public interface INotifyCashTransfer

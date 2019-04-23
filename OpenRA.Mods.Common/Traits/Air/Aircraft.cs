@@ -52,6 +52,12 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Can the actor be ordered to move in to shroud?")]
 		public readonly bool MoveIntoShroud = true;
 
+		[Desc("e.g. crate, wall, infantry")]
+		public readonly BitSet<CrushClass> Crushes = default(BitSet<CrushClass>);
+
+		[Desc("Types of damage that are caused while crushing. Leave empty for no damage types.")]
+		public readonly BitSet<DamageType> CrushDamageTypes = default(BitSet<DamageType>);
+
 		[VoiceReference] public readonly string Voice = "Action";
 
 		[GrantedConditionReference]
@@ -185,6 +191,7 @@ namespace OpenRA.Mods.Common.Traits
 		public Actor ReservedActor { get; private set; }
 		public bool MayYieldReservation { get; private set; }
 		public bool ForceLanding { get; private set; }
+		CPos? landingCell;
 
 		bool airborne;
 		bool cruising;
@@ -493,7 +500,18 @@ namespace OpenRA.Mods.Common.Traits
 			get { return Util.ApplyPercentageModifiers(Info.Speed, speedModifiers); }
 		}
 
-		public Pair<CPos, SubCell>[] OccupiedCells() { return NoCells; }
+		public Pair<CPos, SubCell>[] OccupiedCells()
+		{
+			if (!self.IsAtGroundLevel())
+			{
+				if (landingCell.HasValue)
+					return new[] { Pair.New(landingCell.Value, SubCell.FullCell) };
+
+				return NoCells;
+			}
+
+			return new[] { Pair.New(TopLeft, SubCell.FullCell) };
+		}
 
 		public WVec FlyStep(int facing)
 		{
@@ -506,13 +524,18 @@ namespace OpenRA.Mods.Common.Traits
 			return speed * dir / 1024;
 		}
 
-		public bool CanLand(CPos cell)
+		public bool CanLand(CPos cell, Actor ignoreActor = null)
 		{
 			if (!self.World.Map.Contains(cell))
 				return false;
 
-			if (self.World.ActorMap.AnyActorsAt(cell))
-				return false;
+			foreach (var otherActor in self.World.ActorMap.GetActorsAt(cell))
+				if (IsBlockedBy(self, otherActor, ignoreActor))
+					return false;
+
+			foreach (var otherActor in self.World.ActorMap.GetActorsAt(cell))
+				if (AircraftCanEnter(otherActor))
+					return true;
 
 			var type = self.World.Map.GetTerrainInfo(cell).Type;
 			return Info.LandableTerrainTypes.Contains(type);
@@ -526,6 +549,35 @@ namespace OpenRA.Mods.Common.Traits
 		public bool CanRepairAt(Actor host)
 		{
 			return repairable != null && repairable.Info.RepairActors.Contains(host.Info.Name) && self.GetDamageState() != DamageState.Undamaged;
+		}
+
+		bool IsBlockedBy(Actor self, Actor otherActor, Actor ignoreActor)
+		{
+			// We are not blocked by the actor we are ignoring.
+			if (otherActor == self || otherActor == ignoreActor)
+				return false;
+
+			// PERF: Only perform ITemporaryBlocker trait look-up if mod/map rules contain any actors that are temporary blockers
+			if (self.World.RulesContainTemporaryBlocker)
+			{
+				// If there is a temporary blocker in our path, but we can remove it, we are not blocked.
+				var temporaryBlocker = otherActor.TraitOrDefault<ITemporaryBlocker>();
+				if (temporaryBlocker != null && temporaryBlocker.CanRemoveBlockage(otherActor, self))
+					return false;
+			}
+
+			// If we cannot crush the other actor in our way, we are blocked.
+			if (Info.Crushes.IsEmpty)
+				return true;
+
+			// If the other actor in our way cannot be crushed, we are blocked.
+			// PERF: Avoid LINQ.
+			var crushables = otherActor.TraitsImplementing<ICrushable>();
+			foreach (var crushable in crushables)
+				if (crushable.CrushableBy(otherActor, self, Info.Crushes))
+					return false;
+
+			return true;
 		}
 
 		public virtual IEnumerable<Activity> GetResupplyActivities(Actor a)
@@ -615,16 +667,74 @@ namespace OpenRA.Mods.Common.Traits
 			self.World.UpdateMaps(self, this);
 
 			var altitude = self.World.Map.DistanceAboveTerrain(CenterPosition);
+
 			var isAirborne = altitude.Length >= Info.MinAirborneAltitude;
 			if (isAirborne && !airborne)
 				OnAirborneAltitudeReached();
 			else if (!isAirborne && airborne)
 				OnAirborneAltitudeLeft();
+
 			var isCruising = altitude == Info.CruiseAltitude;
 			if (isCruising && !cruising)
 				OnCruisingAltitudeReached();
 			else if (!isCruising && cruising)
 				OnCruisingAltitudeLeft();
+
+			FinishedMoving(self);
+		}
+
+		public void FinishedMoving(Actor self)
+		{
+			// Only make actor crush if it is on the ground
+			if (!self.IsAtGroundLevel())
+				return;
+
+			var actors = self.World.ActorMap.GetActorsAt(TopLeft).Where(a => a != self).ToList();
+			if (!AnyCrushables(actors))
+				return;
+
+			var notifiers = actors.SelectMany(a => a.TraitsImplementing<INotifyCrushed>().Select(t => new TraitPair<INotifyCrushed>(a, t)));
+			foreach (var notifyCrushed in notifiers)
+				notifyCrushed.Trait.OnCrush(notifyCrushed.Actor, self, Info.Crushes);
+		}
+
+		bool AnyCrushables(List<Actor> actors)
+		{
+			var crushables = actors.SelectMany(a => a.TraitsImplementing<ICrushable>().Select(t => new TraitPair<ICrushable>(a, t))).ToList();
+			if (crushables.Count == 0)
+				return false;
+
+			foreach (var crushes in crushables)
+				if (crushes.Trait.CrushableBy(crushes.Actor, self, Info.Crushes))
+					return true;
+
+			return false;
+		}
+
+		public void EnteringCell(Actor self)
+		{
+			var actors = self.World.ActorMap.GetActorsAt(TopLeft).Where(a => a != self).ToList();
+			if (!AnyCrushables(actors))
+				return;
+
+			var notifiers = actors.SelectMany(a => a.TraitsImplementing<INotifyCrushed>().Select(t => new TraitPair<INotifyCrushed>(a, t)));
+			foreach (var notifyCrushed in notifiers)
+				notifyCrushed.Trait.WarnCrush(notifyCrushed.Actor, self, Info.Crushes);
+		}
+
+		public void AddInfluence(CPos landingCell)
+		{
+			this.landingCell = landingCell;
+			if (self.IsInWorld)
+				self.World.ActorMap.AddInfluence(self, this);
+		}
+
+		public void RemoveInfluence()
+		{
+			if (self.IsInWorld)
+				self.World.ActorMap.RemoveInfluence(self, this);
+
+			landingCell = null;
 		}
 
 		#endregion
@@ -701,7 +811,7 @@ namespace OpenRA.Mods.Common.Traits
 		public Activity MoveIntoTarget(Actor self, Target target)
 		{
 			if (!Info.VTOL)
-				return new Land(self, target);
+				return new Land(self, target, false);
 
 			return new HeliLand(self, false);
 		}
@@ -801,6 +911,7 @@ namespace OpenRA.Mods.Common.Traits
 					return Info.Voice;
 				case "Enter":
 				case "Stop":
+				case "Scatter":
 					return Info.Voice;
 				case "ReturnToBase":
 					return rearmable != null && rearmable.Info.RearmActors.Any() ? Info.Voice : null;
@@ -870,9 +981,32 @@ namespace OpenRA.Mods.Common.Traits
 				// on a resupplier. For aircraft without it, it makes more sense to land than to idle above a free resupplier, though.
 				self.QueueActivity(order.Queued, new ReturnToBase(self, Info.AbortOnResupply, null, !Info.TakeOffOnResupply));
 			}
+			else if (order.OrderString == "Scatter")
+				Nudge(self);
 		}
 
 		#endregion
+
+		void Nudge(Actor self)
+		{
+			// Disable nudging if the aircraft is outside the map
+			if (!self.World.Map.Contains(self.Location))
+				return;
+
+			var offset = new WVec(0, -self.World.SharedRandom.Next(512, 2048), 0)
+				.Rotate(WRot.FromFacing(self.World.SharedRandom.Next(256)));
+			var target = Target.FromPos(self.CenterPosition + offset);
+
+			self.CancelActivity();
+			self.SetTargetLine(target, Color.Green, false);
+
+			if (!Info.CanHover)
+				self.QueueActivity(new Fly(self, target));
+			else
+				self.QueueActivity(new HeliFlyAndLandWhenIdle(self, target, Info));
+
+			UnReserve();
+		}
 
 		#region Airborne conditions
 

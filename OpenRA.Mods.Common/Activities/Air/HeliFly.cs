@@ -98,6 +98,10 @@ namespace OpenRA.Mods.Common.Activities
 				soundPlayed = true;
 			}
 
+			// We are taking off, so remove influence in ground cells.
+			if (self.IsAtGroundLevel())
+				aircraft.RemoveInfluence();
+
 			if (AdjustAltitude(self, aircraft, aircraft.Info.CruiseAltitude))
 				return this;
 
