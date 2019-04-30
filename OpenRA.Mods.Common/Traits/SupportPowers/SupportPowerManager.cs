@@ -24,7 +24,7 @@ namespace OpenRA.Mods.Common.Traits
 		public object Create(ActorInitializer init) { return new SupportPowerManager(init); }
 	}
 
-	public class SupportPowerManager : ITick, IResolveOrder
+	public class SupportPowerManager : ITick, IResolveOrder, ITechTreeElement
 	{
 		public readonly Actor Self;
 		public readonly Dictionary<string, SupportPowerInstance> Powers = new Dictionary<string, SupportPowerInstance>();
@@ -66,6 +66,13 @@ namespace OpenRA.Mods.Common.Traits
 						RemainingTime = t.Info.StartFullyCharged ? 0 : t.Info.ChargeInterval,
 						TotalTime = t.Info.ChargeInterval,
 					});
+
+					foreach (var prerequisite in t.Info.Prerequisites)
+					{
+						var techKey = key + prerequisite.Key;
+						TechTree.Add(techKey, prerequisite.Value, 0, this);
+						TechTree.Update();
+					}
 				}
 
 				Powers[key].Instances.Add(t);
@@ -120,6 +127,28 @@ namespace OpenRA.Mods.Common.Traits
 				.Select(t => Powers[MakeKey(t)])
 				.Where(p => p.Instances.Any(i => !i.IsTraitDisabled && i.Self == a));
 		}
+
+		public void PrerequisitesAvailable(string key)
+		{
+			SupportPowerInstance sp;
+			if (!Powers.TryGetValue(key, out sp))
+				return;
+
+			sp.CheckPrerequisites(false);
+		}
+
+		public void PrerequisitesUnavailable(string key)
+		{
+			SupportPowerInstance sp;
+			if (!Powers.TryGetValue(key, out sp))
+				return;
+
+			sp.CheckPrerequisites(false);
+			sp.RemainingTime = sp.TotalTime;
+		}
+
+		public void PrerequisitesItemHidden(string key) { }
+		public void PrerequisitesItemVisible(string key) { }
 	}
 
 	public class SupportPowerInstance
@@ -147,9 +176,12 @@ namespace OpenRA.Mods.Common.Traits
 			Key = key;
 		}
 
-		public void PrerequisitesAvailable(bool available)
+		public void CheckPrerequisites(bool disable)
 		{
-			prereqsAvailable = available;
+			if (disable)
+				prereqsAvailable = false;
+			else
+				prereqsAvailable = GetLevel() != 0;
 		}
 
 		bool notifiedCharging;
@@ -160,7 +192,7 @@ namespace OpenRA.Mods.Common.Traits
 			if (!instancesEnabled)
 				RemainingTime = TotalTime;
 
-			Active = !Disabled && Instances.Any(i => !i.IsTraitPaused) && GetLevel() != 0;
+			Active = !Disabled && Instances.Any(i => !i.IsTraitPaused);
 			if (!Active)
 				return;
 
@@ -229,7 +261,7 @@ namespace OpenRA.Mods.Common.Traits
 
 			if (Info.OneShot)
 			{
-				PrerequisitesAvailable(false);
+				CheckPrerequisites(true);
 				oneShotFired = true;
 			}
 		}
