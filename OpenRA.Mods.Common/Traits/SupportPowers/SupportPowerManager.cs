@@ -92,6 +92,13 @@ namespace OpenRA.Mods.Common.Traits
 				if (Powers[key].Instances.Count == 0 && !Powers[key].Disabled)
 				{
 					Powers.Remove(key);
+
+					foreach (var prerequisite in t.Info.Prerequisites)
+					{
+						var techKey = key + prerequisite.Key;
+						TechTree.Remove(techKey);
+						TechTree.Update();
+					}
 				}
 			}
 		}
