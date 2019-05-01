@@ -71,8 +71,8 @@ namespace OpenRA.Mods.Common.Traits
 					{
 						var techKey = key + prerequisite.Key;
 						TechTree.Add(techKey, prerequisite.Value, 0, this);
-						TechTree.Update();
 					}
+					TechTree.Update();
 				}
 
 				Powers[key].Instances.Add(t);
@@ -97,8 +97,8 @@ namespace OpenRA.Mods.Common.Traits
 					{
 						var techKey = key + prerequisite.Key;
 						TechTree.Remove(techKey);
-						TechTree.Update();
 					}
+					TechTree.Update();
 				}
 			}
 		}
@@ -135,27 +135,27 @@ namespace OpenRA.Mods.Common.Traits
 				.Where(p => p.Instances.Any(i => !i.IsTraitDisabled && i.Self == a));
 		}
 
-		public void PrerequisitesAvailable(string key)
+		void ITechTreeElement.PrerequisitesAvailable(string key)
 		{
 			SupportPowerInstance sp;
-			if (!Powers.TryGetValue(key, out sp))
+			if (!Powers.TryGetValue(key.Remove(key.Length - 1), out sp))
 				return;
 
 			sp.CheckPrerequisites(false);
 		}
 
-		public void PrerequisitesUnavailable(string key)
+		void ITechTreeElement.PrerequisitesUnavailable(string key)
 		{
 			SupportPowerInstance sp;
-			if (!Powers.TryGetValue(key, out sp))
+			if (!Powers.TryGetValue(key.Remove(key.Length - 1), out sp))
 				return;
 
 			sp.CheckPrerequisites(false);
 			sp.RemainingTime = sp.TotalTime;
 		}
 
-		public void PrerequisitesItemHidden(string key) { }
-		public void PrerequisitesItemVisible(string key) { }
+		void ITechTreeElement.PrerequisitesItemHidden(string key) { }
+		void ITechTreeElement.PrerequisitesItemVisible(string key) { }
 	}
 
 	public class SupportPowerInstance
@@ -295,6 +295,9 @@ namespace OpenRA.Mods.Common.Traits
 
 		public int GetLevel()
 		{
+			if (Info == null)
+				return 0;
+
 			var availables = Info.Prerequisites.Where(p => manager.TechTree.HasPrerequisites(p.Value));
 			var level = availables.Any() ? availables.Max(p => p.Key) : 0;
 
