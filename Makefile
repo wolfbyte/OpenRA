@@ -131,7 +131,7 @@ mod_common_SRCS := $(shell find OpenRA.Mods.Common/ -iname '*.cs')
 mod_common_TARGET = mods/common/OpenRA.Mods.Common.dll
 mod_common_KIND = library
 mod_common_DEPS = $(game_TARGET)
-mod_common_LIBS = $(COMMON_LIBS) $(STD_MOD_LIBS) thirdparty/download/StyleCop.dll thirdparty/download/StyleCop.CSharp.dll thirdparty/download/StyleCop.CSharp.Rules.dll
+mod_common_LIBS = $(COMMON_LIBS) $(STD_MOD_LIBS)
 PROGRAMS += mod_common
 mod_common: $(mod_common_TARGET)
 
@@ -183,7 +183,7 @@ check-scripts:
 	@luac -p $(shell find mods/*/maps/* -iname '*.lua')
 	@luac -p $(shell find lua/* -iname '*.lua')
 
-check: utility mods
+check: utility stylecheck mods
 	@echo
 	@echo "Checking runtime assemblies..."
 	@mono --debug OpenRA.Utility.exe all --check-runtime-assemblies $(WHITELISTED_OPENRA_ASSEMBLIES) $(WHITELISTED_THIRDPARTY_ASSEMBLIES) $(WHITELISTED_CORE_ASSEMBLIES)
@@ -192,31 +192,31 @@ check: utility mods
 	@mono --debug OpenRA.Utility.exe all --check-explicit-interfaces
 	@echo
 	@echo "Checking for code style violations in OpenRA.Game..."
-	@mono --debug OpenRA.Utility.exe ra --check-code-style OpenRA.Game
+	@mono --debug OpenRA.StyleCheck.exe OpenRA.Game
 	@echo
 	@echo "Checking for code style violations in OpenRA.Platforms.Default..."
-	@mono --debug OpenRA.Utility.exe ra --check-code-style OpenRA.Platforms.Default
+	@mono --debug OpenRA.StyleCheck.exe OpenRA.Platforms.Default
 	@echo
 	@echo "Checking for code style violations in OpenRA.Mods.Common..."
-	@mono --debug OpenRA.Utility.exe ra --check-code-style OpenRA.Mods.Common
+	@mono --debug OpenRA.StyleCheck.exe OpenRA.Mods.Common
 	@echo
 	@echo "Checking for code style violations in OpenRA.Mods.Cnc..."
-	@mono --debug OpenRA.Utility.exe ra --check-code-style OpenRA.Mods.Cnc
+	@mono --debug OpenRA.StyleCheck.exe OpenRA.Mods.Cnc
 	@echo
 	@echo "Checking for code style violations in OpenRA.Mods.D2k..."
-	@mono --debug OpenRA.Utility.exe ra --check-code-style OpenRA.Mods.D2k
+	@mono --debug OpenRA.StyleCheck.exe OpenRA.Mods.D2k
 	@echo
 	@echo "Checking for code style violations in OpenRA.Mods.AS..."
 	@mono --debug OpenRA.Utility.exe ra --check-code-style OpenRA.Mods.AS
 	@echo
 	@echo "Checking for code style violations in OpenRA.Utility..."
-	@mono --debug OpenRA.Utility.exe ra --check-code-style OpenRA.Utility
+	@mono --debug OpenRA.StyleCheck.exe OpenRA.Utility
 	@echo
 	@echo "Checking for code style violations in OpenRA.Test..."
-	@mono --debug OpenRA.Utility.exe ra --check-code-style OpenRA.Test
+	@mono --debug OpenRA.StyleCheck.exe OpenRA.Test
 	@echo
 	@echo "Checking for code style violations in OpenRA.Server..."
-	@mono --debug OpenRA.Utility.exe ra --check-code-style OpenRA.Server
+	@mono --debug OpenRA.StyleCheck.exe OpenRA.Server
 
 NUNIT_CONSOLE := $(shell test -f thirdparty/download/nunit3-console.exe && echo mono thirdparty/download/nunit3-console.exe || \
 	which nunit3-console 2>/dev/null || which nunit2-console 2>/dev/null || which nunit-console 2>/dev/null)
@@ -262,6 +262,13 @@ utility_LIBS = $(COMMON_LIBS) $(utility_DEPS) thirdparty/download/ICSharpCode.Sh
 PROGRAMS += utility
 utility: $(utility_TARGET)
 
+stylecheck_SRCS := $(shell find OpenRA.StyleCheck/ -iname '*.cs')
+stylecheck_TARGET = OpenRA.StyleCheck.exe
+stylecheck_KIND = exe
+stylecheck_LIBS = thirdparty/download/StyleCop.dll thirdparty/download/StyleCop.CSharp.dll thirdparty/download/StyleCop.CSharp.Rules.dll
+PROGRAMS += stylecheck
+stylecheck: $(stylecheck_TARGET)
+
 # Dedicated server
 server_SRCS := $(shell find OpenRA.Server/ -iname '*.cs')
 server_TARGET = OpenRA.Server.exe
@@ -305,7 +312,7 @@ core: game platforms mods utility server
 
 mods: mod_common mod_cnc mod_d2k setupasfolder mod_as
 
-all: dependencies core
+all: dependencies core stylecheck
 
 setupasfolder:
 	@mkdir -p ./mods/as
