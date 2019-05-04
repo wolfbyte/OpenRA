@@ -66,7 +66,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Activities\Air\AllowYieldingReservation.cs" />
     <Compile Include="Activities\Air\FallToEarth.cs" />
     <Compile Include="Activities\Air\Fly.cs" />
     <Compile Include="Activities\Air\FlyAttack.cs" />
@@ -76,10 +75,8 @@
     <Compile Include="Activities\Air\FlyTimed.cs" />
     <Compile Include="Activities\Air\HeliAttack.cs" />
     <Compile Include="Activities\Air\HeliFly.cs" />
-    <Compile Include="Activities\Air\HeliFlyCircle.cs" />
     <Compile Include="Activities\Air\HeliLand.cs" />
     <Compile Include="Activities\Air\Land.cs" />
-    <Compile Include="Activities\Air\ResupplyAircraft.cs" />
     <Compile Include="Activities\Air\ReturnToBase.cs" />
     <Compile Include="Activities\Air\TakeOff.cs" />
     <Compile Include="Activities\Attack.cs" />
@@ -103,9 +100,8 @@
     <Compile Include="Activities\Move\MoveWithinRange.cs" />
     <Compile Include="Activities\Move\VisualMoveIntoTarget.cs" />
     <Compile Include="Activities\Parachute.cs" />
-    <Compile Include="Activities\Rearm.cs" />
     <Compile Include="Activities\RemoveSelf.cs" />
-    <Compile Include="Activities\Repair.cs" />
+    <Compile Include="Activities\Resupply.cs" />
     <Compile Include="Activities\RepairBridge.cs" />
     <Compile Include="Activities\RepairBuilding.cs" />
     <Compile Include="Activities\Sell.cs" />
@@ -638,6 +634,7 @@
     <Compile Include="UtilityCommands\ExtractZeroBraneStudioLuaAPI.cs" />
     <Compile Include="UtilityCommands\ExtractTraitDocsCommand.cs" />
     <Compile Include="UtilityCommands\ExtractWeaponDocsCommand.cs" />
+    <Compile Include="UtilityCommands\RefreshMapCommand.cs" />
     <Compile Include="Warheads\ChangeOwnerWarhead.cs" />
     <Compile Include="UtilityCommands\PngSheetExportMetadataCommand.cs" />
     <Compile Include="UtilityCommands\PngSheetImportMetadataCommand.cs" />
