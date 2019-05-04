@@ -58,7 +58,8 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				var key = MakeKey(t);
 
-				if (!Powers.ContainsKey(key))
+				var hasKey = Powers.ContainsKey(key);
+				if (!hasKey)
 				{
 					Powers.Add(key, new SupportPowerInstance(key, this)
 					{
@@ -66,7 +67,12 @@ namespace OpenRA.Mods.Common.Traits
 						RemainingTime = t.Info.StartFullyCharged ? 0 : t.Info.ChargeInterval,
 						TotalTime = t.Info.ChargeInterval,
 					});
+				}
 
+				Powers[key].Instances.Add(t);
+
+				if (!hasKey)
+				{
 					foreach (var prerequisite in t.Info.Prerequisites)
 					{
 						var techKey = key + prerequisite.Key;
@@ -74,8 +80,6 @@ namespace OpenRA.Mods.Common.Traits
 					}
 					TechTree.Update();
 				}
-
-				Powers[key].Instances.Add(t);
 			}
 		}
 
