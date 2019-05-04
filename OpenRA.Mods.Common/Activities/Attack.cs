@@ -154,10 +154,6 @@ namespace OpenRA.Mods.Common.Activities
 				if (move == null)
 					return AttackStatus.UnableToAttack;
 
-				// TO-DO: Come up with a better fix.
-				if (move is Aircraft)
-					return AttackStatus.UnableToAttack;
-
 				var rs = revealsShroud
 					.Where(Exts.IsTraitEnabled)
 					.MaxByOrDefault(s => s.Range);
