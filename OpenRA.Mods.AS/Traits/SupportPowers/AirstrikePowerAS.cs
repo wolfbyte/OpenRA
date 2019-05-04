@@ -126,7 +126,7 @@ namespace OpenRA.Mods.AS.Traits
 						else
 						{
 							a.QueueActivity(new HeliFly(a, Target.FromPos(target + spawnOffset)));
-							a.QueueActivity(new AttackMoveActivity(a, () => new HeliFlyCircleTimed(a, info.GuardDuration)));
+							a.QueueActivity(new AttackMoveActivity(a, () => new FlyCircle(a, info.GuardDuration)));
 						}
 
 						var finishPos = target + (self.World.Map.DistanceToEdge(target, delta) + info.Cordon).Length * delta / 1024;

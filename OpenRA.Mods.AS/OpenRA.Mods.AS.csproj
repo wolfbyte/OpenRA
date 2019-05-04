@@ -75,7 +75,6 @@
     <Compile Include="Activities\ChronoResourceTeleport.cs" />
     <Compile Include="Activities\EnterTeleportNetwork.cs" />
     <Compile Include="Activities\FallDown.cs" />
-    <Compile Include="Activities\HeliFlyCircleTimed.cs" />
     <Compile Include="Activities\LeapAS.cs" />
     <Compile Include="Commands\TauntCommands.cs" />
     <Compile Include="Duplicates\Projectiles\BulletAS.cs" />
