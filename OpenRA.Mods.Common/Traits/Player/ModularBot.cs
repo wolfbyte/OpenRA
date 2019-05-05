@@ -72,6 +72,8 @@ namespace OpenRA.Mods.Common.Traits
 			player = p;
 			tickModules = p.PlayerActor.TraitsImplementing<IBotTick>().ToArray();
 			attackResponseModules = p.PlayerActor.TraitsImplementing<IBotRespondToAttack>().ToArray();
+			foreach (var ibe in p.PlayerActor.TraitsImplementing<IBotEnabled>())
+				ibe.BotEnabled(this);
 		}
 
 		void IBot.QueueOrder(Order order)
@@ -81,7 +83,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		void ITick.Tick(Actor self)
 		{
-			if (!IsEnabled)
+			if (!IsEnabled || self.World.IsLoadingGameSave)
 				return;
 
 			using (new PerfSample("bot_tick"))
@@ -101,7 +103,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		void INotifyDamage.Damaged(Actor self, AttackInfo e)
 		{
-			if (!IsEnabled)
+			if (!IsEnabled || self.World.IsLoadingGameSave)
 				return;
 
 			using (new PerfSample("bot_attack_response"))

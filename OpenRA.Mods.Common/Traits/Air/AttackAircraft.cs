@@ -15,7 +15,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
 {
-	public class AttackAircraftInfo : AttackFrontalInfo, Requires<AircraftInfo>
+	public class AttackAircraftInfo : AttackFollowInfo, Requires<AircraftInfo>
 	{
 		[Desc("Delay, in game ticks, before non-hovering aircraft turns to attack.")]
 		public readonly int AttackTurnDelay = 50;
@@ -23,15 +23,15 @@ namespace OpenRA.Mods.Common.Traits
 		public override object Create(ActorInitializer init) { return new AttackAircraft(init.Self, this); }
 	}
 
-	public class AttackAircraft : AttackFrontal
+	public class AttackAircraft : AttackFollow
 	{
-		public readonly AttackAircraftInfo AttackAircraftInfo;
+		public new readonly AttackAircraftInfo Info;
 		readonly AircraftInfo aircraftInfo;
 
 		public AttackAircraft(Actor self, AttackAircraftInfo info)
 			: base(self, info)
 		{
-			AttackAircraftInfo = info;
+			Info = info;
 			aircraftInfo = self.Info.TraitInfo<AircraftInfo>();
 		}
 
@@ -46,9 +46,14 @@ namespace OpenRA.Mods.Common.Traits
 		protected override bool CanAttack(Actor self, Target target)
 		{
 			// Don't fire while landed or when outside the map.
-			return base.CanAttack(self, target)
-				&& self.World.Map.DistanceAboveTerrain(self.CenterPosition).Length >= aircraftInfo.MinAirborneAltitude
-				&& self.World.Map.Contains(self.Location);
+			if (self.World.Map.DistanceAboveTerrain(self.CenterPosition).Length < aircraftInfo.MinAirborneAltitude
+				|| !self.World.Map.Contains(self.Location))
+				return false;
+
+			if (!base.CanAttack(self, target))
+				return false;
+
+			return TargetInFiringArc(self, target, base.Info.FacingTolerance);
 		}
 	}
 }
