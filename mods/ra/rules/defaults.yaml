@@ -684,6 +684,10 @@
 		RepairingNotification: Repairing
 	EngineerRepairable:
 	AcceptsDeliveredCash:
+		RequiresCondition: wfac
+	GrantConditionOnPrerequisite@WFAC:
+		Condition: wfac
+		Prerequisites: weap
 	WithMakeAnimation:
 		Condition: build-incomplete
 	CaptureManager:
@@ -725,6 +729,7 @@
 		RequiredForShortGame: false
 	-GivesBuildableArea:
 	-AcceptsDeliveredCash:
+	-GrantConditionOnPrerequisite@WFAC:
 	DrawLineToTarget:
 	RenderRangeCircle:
 	Explodes:
