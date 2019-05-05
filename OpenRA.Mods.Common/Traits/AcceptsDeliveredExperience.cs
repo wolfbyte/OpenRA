@@ -15,7 +15,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("Tag trait for actors with `DeliversExperience`.")]
-	public class AcceptsDeliveredExperienceInfo : ITraitInfo, Requires<GainsExperienceInfo>
+	public class AcceptsDeliveredExperienceInfo : ConditionalTraitInfo, Requires<GainsExperienceInfo>
 	{
 		[Desc("Accepted `DeliversExperience` types. Leave empty to accept all types.")]
 		public readonly HashSet<string> ValidTypes = new HashSet<string>();
@@ -23,11 +23,12 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Stance the delivering actor needs to enter.")]
 		public readonly Stance ValidStances = Stance.Ally;
 
-		public object Create(ActorInitializer init) { return new AcceptsDeliveredExperience(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new AcceptsDeliveredExperience(init.Self, this); }
 	}
 
-	public class AcceptsDeliveredExperience
+	public class AcceptsDeliveredExperience : ConditionalTrait<AcceptsDeliveredExperienceInfo>
 	{
-		public AcceptsDeliveredExperience(Actor self, AcceptsDeliveredExperienceInfo info) { }
+		public AcceptsDeliveredExperience(Actor self, AcceptsDeliveredExperienceInfo info)
+			: base(info) { }
 	}
 }

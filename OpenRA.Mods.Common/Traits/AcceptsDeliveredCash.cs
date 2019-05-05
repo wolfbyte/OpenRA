@@ -15,7 +15,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("Tag trait for actors with `DeliversCash`.")]
-	public class AcceptsDeliveredCashInfo : ITraitInfo
+	public class AcceptsDeliveredCashInfo : ConditionalTraitInfo
 	{
 		[Desc("Accepted `DeliversCash` types. Leave empty to accept all types.")]
 		public readonly HashSet<string> ValidTypes = new HashSet<string>();
@@ -26,22 +26,18 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Play a randomly selected sound from this list when accepting cash.")]
 		public readonly string[] Sounds = { };
 
-		public object Create(ActorInitializer init) { return new AcceptsDeliveredCash(init.Self, this); }
+		public override object Create(ActorInitializer init) { return new AcceptsDeliveredCash(init.Self, this); }
 	}
 
-	public class AcceptsDeliveredCash : INotifyCashTransfer
+	public class AcceptsDeliveredCash : ConditionalTrait<AcceptsDeliveredCashInfo>, INotifyCashTransfer
 	{
-		AcceptsDeliveredCashInfo info;
-
 		public AcceptsDeliveredCash(Actor self, AcceptsDeliveredCashInfo info)
-		{
-			this.info = info;
-		}
+			: base(info) { }
 
 		void INotifyCashTransfer.OnAcceptingCash(Actor self, Actor donor)
 		{
-			if (info.Sounds.Length > 0)
-				Game.Sound.Play(SoundType.World, info.Sounds, self.World, self.CenterPosition);
+			if (Info.Sounds.Length > 0)
+				Game.Sound.Play(SoundType.World, Info.Sounds, self.World, self.CenterPosition);
 		}
 
 		void INotifyCashTransfer.OnDeliveringCash(Actor self, Actor acceptor) { }

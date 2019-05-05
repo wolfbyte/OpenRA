@@ -18,7 +18,7 @@ using OpenRA.Traits;
 namespace OpenRA.Mods.Common.Traits
 {
 	[Desc("Donate money to actors with the `AcceptsDeliveredCash` trait.")]
-	class DeliversCashInfo : ITraitInfo
+	class DeliversCashInfo : ConditionalTraitInfo
 	{
 		[Desc("The amount of cash the owner receives.")]
 		public readonly int Payload = 500;
@@ -34,21 +34,23 @@ namespace OpenRA.Mods.Common.Traits
 
 		[VoiceReference] public readonly string Voice = "Action";
 
-		public object Create(ActorInitializer init) { return new DeliversCash(this); }
+		public override object Create(ActorInitializer init) { return new DeliversCash(this); }
 	}
 
-	class DeliversCash : IIssueOrder, IResolveOrder, IOrderVoice, INotifyCashTransfer
+	class DeliversCash : ConditionalTrait<DeliversCashInfo>, IIssueOrder, IResolveOrder, IOrderVoice, INotifyCashTransfer
 	{
-		readonly DeliversCashInfo info;
-
 		public DeliversCash(DeliversCashInfo info)
-		{
-			this.info = info;
-		}
+			: base(info) { }
 
 		public IEnumerable<IOrderTargeter> Orders
 		{
-			get { yield return new DeliversCashOrderTargeter(); }
+			get
+			{
+				if (IsTraitDisabled)
+					yield break;
+
+				yield return new DeliversCashOrderTargeter(Info);
+			}
 		}
 
 		public Order IssueOrder(Actor self, IOrderTargeter order, Target target, bool queued)
@@ -61,7 +63,7 @@ namespace OpenRA.Mods.Common.Traits
 
 		public string VoicePhraseForOrder(Actor self, Order order)
 		{
-			return info.Voice;
+			return Info.Voice;
 		}
 
 		public void ResolveOrder(Actor self, Order order)
@@ -73,40 +75,55 @@ namespace OpenRA.Mods.Common.Traits
 				self.CancelActivity();
 
 			self.SetTargetLine(order.Target, Color.Yellow);
-			self.QueueActivity(new DonateCash(self, order.Target, info.Payload, info.PlayerExperience));
+			self.QueueActivity(new DonateCash(self, order.Target, Info.Payload, Info.PlayerExperience));
 		}
 
 		void INotifyCashTransfer.OnAcceptingCash(Actor self, Actor donor) { }
 
 		void INotifyCashTransfer.OnDeliveringCash(Actor self, Actor acceptor)
 		{
-			if (info.Sounds.Length > 0)
-				Game.Sound.Play(SoundType.World, info.Sounds, self.World, self.CenterPosition);
+			if (Info.Sounds.Length > 0)
+				Game.Sound.Play(SoundType.World, Info.Sounds, self.World, self.CenterPosition);
 		}
 
 		public class DeliversCashOrderTargeter : UnitOrderTargeter
 		{
-			public DeliversCashOrderTargeter()
-				: base("DeliverCash", 5, "enter", false, true) { }
+			DeliversCashInfo info;
+
+			public DeliversCashOrderTargeter(DeliversCashInfo info)
+				: base("DeliverCash", 5, "enter", false, true)
+			{
+				this.info = info;
+			}
 
 			public override bool CanTargetActor(Actor self, Actor target, TargetModifiers modifiers, ref string cursor)
 			{
-				var type = self.Info.TraitInfo<DeliversCashInfo>().Type;
-				var targetInfo = target.Info.TraitInfoOrDefault<AcceptsDeliveredCashInfo>();
-				return targetInfo != null
-					&& targetInfo.ValidStances.HasStance(target.Owner.Stances[self.Owner])
-					&& (targetInfo.ValidTypes.Count == 0
-						|| (!string.IsNullOrEmpty(type) && targetInfo.ValidTypes.Contains(type)));
+				var adc = target.TraitOrDefault<AcceptsDeliveredCash>();
+				if (adc == null)
+					return false;
+
+				if (adc.IsTraitDisabled)
+					return false;
+
+				var type = info.Type;
+				return adc.Info.ValidStances.HasStance(target.Owner.Stances[self.Owner])
+					&& (adc.Info.ValidTypes.Count == 0
+						|| (!string.IsNullOrEmpty(type) && adc.Info.ValidTypes.Contains(type)));
 			}
 
 			public override bool CanTargetFrozenActor(Actor self, FrozenActor target, TargetModifiers modifiers, ref string cursor)
 			{
-				var type = self.Info.TraitInfo<DeliversCashInfo>().Type;
-				var targetInfo = target.Info.TraitInfoOrDefault<AcceptsDeliveredCashInfo>();
-				return targetInfo != null
-					&& targetInfo.ValidStances.HasStance(target.Owner.Stances[self.Owner])
-					&& (targetInfo.ValidTypes.Count == 0
-						|| (!string.IsNullOrEmpty(type) && targetInfo.ValidTypes.Contains(type)));
+				var adc = target.Info.TraitInfoOrDefault<AcceptsDeliveredCashInfo>();
+				if (adc == null)
+					return false;
+
+				// TODO: FrozenActors don't yet have a way of caching conditions, so we can't filter disabled traits
+				// This therefore assumes that all AcceptsDeliveredCash traits are enabled, which is probably wrong.
+				// Actors with FrozenUnderFog should therefore not disable the AcceptsDeliveredCash trait.
+				var type = info.Type;
+				return adc.ValidStances.HasStance(target.Owner.Stances[self.Owner])
+					&& (adc.ValidTypes.Count == 0
+						|| (!string.IsNullOrEmpty(type) && adc.ValidTypes.Contains(type)));
 			}
 		}
 	}
