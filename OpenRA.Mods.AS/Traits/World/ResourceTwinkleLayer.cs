@@ -1,0 +1,88 @@
+﻿#region Copyright & License Information
+/*
+ * Copyright 2015- OpenRA.Mods.AS Developers (see AUTHORS)
+ * This file is a part of a third-party plugin for OpenRA, which is
+ * free software. It is made available to you under the terms of the
+ * GNU General Public License as published by the Free Software
+ * Foundation. For more information, see COPYING.
+ */
+#endregion
+
+using System.Collections.Generic;
+using System.Linq;
+using OpenRA.Mods.Common;
+using OpenRA.Mods.Common.Effects;
+using OpenRA.Mods.Common.Traits;
+using OpenRA.Primitives;
+using OpenRA.Traits;
+
+namespace OpenRA.Mods.AS.Traits
+{
+	[Desc("Allows to play twinkle animations on resources.", "Attach this to the world actor.")]
+	public class ResourceTwinkleLayerInfo : ITraitInfo
+	{
+		[FieldLoader.Require, Desc("Resource types to twinkle.")]
+		public readonly HashSet<string> Types = null;
+
+		[Desc("The percentage of resource cells to play the twinkle animation on.", "Use two values to randomize between them.")]
+		public readonly int[] Ratio = { 5 };
+
+		[Desc("Tick interval between two twinkle animation spawning.", "Use two values to randomize between them.")]
+		public readonly int[] Interval = { 50 };
+
+		[Desc("Twinkle animation image.")]
+		public readonly string Image = null;
+		[SequenceReference("Image"), Desc("Twinkle animation sequence.")] public readonly string Sequence = "idle";
+		[PaletteReference, Desc("Twinkle animation palette.")] public readonly string Palette = null;
+
+		public object Create(ActorInitializer init) { return new ResourceTwinkleLayer(init.Self, this); }
+	}
+
+	class ResourceTwinkleLayer : ITick, IResourceLogicLayer
+	{
+		readonly ResourceTwinkleLayerInfo info;
+
+		readonly World world;
+		readonly CellLayer<Pair<CPos, int>> cells;
+
+		int ticks;
+
+		public ResourceTwinkleLayer(Actor self, ResourceTwinkleLayerInfo info)
+		{
+			world = self.World;
+			this.info = info;
+			cells = new CellLayer<Pair<CPos, int>>(world.Map);
+
+			ticks = info.Interval.Length == 2
+				? world.SharedRandom.Next(info.Interval[0], info.Interval[1])
+				: info.Interval[0];
+		}
+
+		void ITick.Tick(Actor self)
+		{
+			if (--ticks > 0)
+				return;
+
+			var twinkleable = cells.Where(x => x.Second != 0).Shuffle(world.SharedRandom);
+			var ratio = info.Ratio.Length == 2
+					? world.SharedRandom.Next(info.Ratio[0], info.Ratio[1])
+					: info.Ratio[0];
+
+			var twinkamount = twinkleable.Count() * ratio / 100;
+			var twinkpositions = twinkleable.Take(twinkamount).Select(x => world.Map.CenterOfCell(x.First));
+
+			foreach (var pos in twinkpositions)
+				world.AddFrameEndTask(w => w.Add(new SpriteEffect(pos, w, info.Image, info.Sequence, info.Palette)));
+
+			ticks = info.Interval.Length == 2
+				? world.SharedRandom.Next(info.Interval[0], info.Interval[1])
+				: info.Interval[0];
+		}
+
+		void IResourceLogicLayer.UpdatePosition(CPos cell, ResourceType type, int density)
+		{
+			if (info.Types.Contains(type.Info.Type))
+				cells[cell] = new Pair<CPos, int>(cell, density);
+		}
+	}
+}

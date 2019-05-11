@@ -18,4 +18,10 @@ namespace OpenRA.Mods.Common.Traits
 	{
 		void RefineAmount(int amount);
 	}
+
+	[RequireExplicitImplementation]
+	public interface IResourceLogicLayer
+	{
+		void UpdatePosition(CPos cell, ResourceType type, int density);
+	}
 }

@@ -24,7 +24,7 @@ namespace OpenRA.Mods.Common.Traits
 		public virtual object Create(ActorInitializer init) { return new ResourceLayer(init.Self); }
 	}
 
-	public class ResourceLayer : IRenderOverlay, IWorldLoaded, ITickRender, INotifyActorDisposing
+	public class ResourceLayer : IRenderOverlay, IWorldLoaded, ITickRender, INotifyActorDisposing, INotifyCreated
 	{
 		static readonly CellContents EmptyCell = new CellContents();
 
@@ -38,6 +38,8 @@ namespace OpenRA.Mods.Common.Traits
 
 		public bool IsResourceLayerEmpty { get { return resCells < 1; } }
 
+		IResourceLogicLayer[] resourceLogicLayers;
+
 		bool disposed;
 		int resCells;
 
@@ -50,6 +52,11 @@ namespace OpenRA.Mods.Common.Traits
 			RenderContent = new CellLayer<CellContents>(world.Map);
 
 			RenderContent.CellEntryChanged += UpdateSpriteLayers;
+		}
+
+		void INotifyCreated.Created(Actor self)
+		{
+			resourceLogicLayers = self.TraitsImplementing<IResourceLogicLayer>().ToArray();
 		}
 
 		void UpdateSpriteLayers(CPos cell)
@@ -141,6 +148,9 @@ namespace OpenRA.Mods.Common.Traits
 					// because the shroud may not be enabled.
 					RenderContent[cell] = Content[cell] = temp;
 					UpdateRenderedSprite(cell);
+
+					foreach (var rl in resourceLogicLayers)
+						rl.UpdatePosition(cell, type, temp.Density);
 				}
 			}
 		}
@@ -242,6 +252,9 @@ namespace OpenRA.Mods.Common.Traits
 			Content[p] = cell;
 
 			dirty.Add(p);
+
+			foreach (var rl in resourceLogicLayers)
+				rl.UpdatePosition(p, t, cell.Density);
 		}
 
 		public bool IsFull(CPos cell)
@@ -260,11 +273,22 @@ namespace OpenRA.Mods.Common.Traits
 				Content[cell] = EmptyCell;
 				world.Map.CustomTerrain[cell] = byte.MaxValue;
 				--resCells;
+
+				foreach (var rl in resourceLogicLayers)
+					rl.UpdatePosition(cell, c.Type, 0);
 			}
 			else
+			{
 				Content[cell] = c;
 
+				foreach (var rl in resourceLogicLayers)
+					rl.UpdatePosition(cell, c.Type, c.Density);
+			}
+
 			dirty.Add(cell);
+
+			foreach (var rl in resourceLogicLayers)
+				rl.UpdatePosition(cell, c.Type, c.Density);
 
 			return c.Type;
 		}
@@ -276,6 +300,9 @@ namespace OpenRA.Mods.Common.Traits
 				return;
 
 			--resCells;
+
+			foreach (var rl in resourceLogicLayers)
+				rl.UpdatePosition(cell, Content[cell].Type, 0);
 
 			// Clear cell
 			Content[cell] = EmptyCell;
