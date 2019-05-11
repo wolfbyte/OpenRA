@@ -15,7 +15,7 @@ using OpenRA.Traits;
 
 namespace OpenRA.Mods.AS.Warheads
 {
-	public class FireClusterWarhead : WarheadAS, IRulesetLoaded<WeaponInfo>
+	public class FireClusterASWarhead : WarheadAS, IRulesetLoaded<WeaponInfo>
 	{
 		[WeaponReference, FieldLoader.Require]
 		[Desc("Has to be defined in weapons.yaml as well.")]

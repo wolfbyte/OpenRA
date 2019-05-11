@@ -148,7 +148,7 @@
     <Compile Include="Traits\Warheads\CaptureActorWarhead.cs" />
     <Compile Include="Traits\Warheads\CreateTintedCellsWarhead.cs" />
     <Compile Include="Traits\Warheads\DetachDelayedWeaponWarhead.cs" />
-    <Compile Include="Traits\Warheads\FireClusterWarhead.cs" />
+    <Compile Include="Traits\Warheads\FireClusterASWarhead.cs" />
     <Compile Include="Traits\Warheads\FireFragmentWarhead.cs" />
     <Compile Include="Traits\Warheads\FireRadiusWarhead.cs" />
     <Compile Include="Traits\Warheads\FireReverseRadiusWarhead.cs" />
