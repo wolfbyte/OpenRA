@@ -22,6 +22,9 @@ namespace OpenRA.Mods.AS.Warheads
 		[Desc("Has to be defined in weapons.yaml as well.")]
 		public readonly string Weapon = null;
 
+		[Desc("Number of weapons fired at random 'x' cells. Negative values will result in a number equal to 'x' footprint cells fired.")]
+		public readonly int RandomClusterCount = -1;
+
 		[FieldLoader.Require]
 		[Desc("Size of the cluster footprint")]
 		public readonly CVec Dimensions = CVec.Zero;
@@ -50,57 +53,65 @@ namespace OpenRA.Mods.AS.Warheads
 			if (!IsValidImpact(target.CenterPosition, firedBy))
 				return;
 
-			var targetCells = CellsMatching(targetCell);
+			var targetCells = CellsMatching(targetCell, false);
 
-			foreach (var cell in targetCells)
+			foreach (var c in targetCells)
+				FireProjectileAtCell(map, firedBy, target, c, damageModifiers);
+
+			if (RandomClusterCount != 0)
 			{
-				var tc = Target.FromCell(firedBy.World, cell);
-
-				if (!weapon.IsValidAgainst(tc, firedBy.World, firedBy))
-					continue;
-
-				var args = new ProjectileArgs
-				{
-					Weapon = weapon,
-					Facing = (map.CenterOfCell(cell) - target.CenterPosition).Yaw.Facing,
-
-					DamageModifiers = !firedBy.IsDead ? firedBy.TraitsImplementing<IFirepowerModifier>()
-						.Select(a => a.GetFirepowerModifier()).ToArray() : new int[0],
-
-					InaccuracyModifiers = !firedBy.IsDead ? firedBy.TraitsImplementing<IInaccuracyModifier>()
-						.Select(a => a.GetInaccuracyModifier()).ToArray() : new int[0],
-
-					RangeModifiers = !firedBy.IsDead ? firedBy.TraitsImplementing<IRangeModifier>()
-						.Select(a => a.GetRangeModifier()).ToArray() : new int[0],
-
-					Source = target.CenterPosition,
-					CurrentSource = () => target.CenterPosition,
-					SourceActor = firedBy,
-					PassiveTarget = map.CenterOfCell(cell),
-					GuidedTarget = tc
-				};
-
-				if (args.Weapon.Projectile != null)
-				{
-					var projectile = args.Weapon.Projectile.Create(args);
-					if (projectile != null)
-						firedBy.World.AddFrameEndTask(w => w.Add(projectile));
-
-					if (args.Weapon.Report != null && args.Weapon.Report.Any())
-						Game.Sound.Play(SoundType.World, args.Weapon.Report.Random(firedBy.World.SharedRandom), target.CenterPosition);
-				}
+				var randomTargetCells = CellsMatching(targetCell, true);
+				var clusterCount = RandomClusterCount < 0 ? randomTargetCells.Count() : RandomClusterCount;
+				if (randomTargetCells.Any())
+					for (var i = 0; i < clusterCount; i++)
+						FireProjectileAtCell(map, firedBy, target, randomTargetCells.Random(firedBy.World.SharedRandom), damageModifiers);
 			}
 		}
 
-		IEnumerable<CPos> CellsMatching(CPos location)
+		void FireProjectileAtCell(Map map, Actor firedBy, Target target, CPos targetCell, IEnumerable<int> damageModifiers)
 		{
+			var tc = Target.FromCell(firedBy.World, targetCell);
+
+			if (!weapon.IsValidAgainst(tc, firedBy.World, firedBy))
+				return;
+
+			var args = new ProjectileArgs
+			{
+				Weapon = weapon,
+				Facing = (map.CenterOfCell(targetCell) - target.CenterPosition).Yaw.Facing,
+
+				DamageModifiers = damageModifiers.ToArray(),
+				InaccuracyModifiers = new int[0],
+				RangeModifiers = new int[0],
+
+				Source = target.CenterPosition,
+				CurrentSource = () => target.CenterPosition,
+				SourceActor = firedBy,
+				PassiveTarget = map.CenterOfCell(targetCell),
+				GuidedTarget = tc
+			};
+
+			if (args.Weapon.Projectile != null)
+			{
+				var projectile = args.Weapon.Projectile.Create(args);
+				if (projectile != null)
+					firedBy.World.AddFrameEndTask(w => w.Add(projectile));
+
+				if (args.Weapon.Report != null && args.Weapon.Report.Any())
+					Game.Sound.Play(SoundType.World, args.Weapon.Report, firedBy.World, target.CenterPosition);
+			}
+		}
+
+		IEnumerable<CPos> CellsMatching(CPos location, bool random)
+		{
+			var cellType = !random ? 'X' : 'x';
 			var index = 0;
 			var footprint = Footprint.Where(c => !char.IsWhiteSpace(c)).ToArray();
 			var x = location.X - (Dimensions.X - 1) / 2;
 			var y = location.Y - (Dimensions.Y - 1) / 2;
 			for (var j = 0; j < Dimensions.Y; j++)
 				for (var i = 0; i < Dimensions.X; i++)
-					if (footprint[index++] == 'x')
+					if (footprint[index++] == cellType)
 						yield return new CPos(x + i, y + j);
 		}
 	}
