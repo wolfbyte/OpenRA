@@ -13,7 +13,6 @@ using System.Linq;
 using OpenRA.Mods.Common;
 using OpenRA.Mods.Common.Effects;
 using OpenRA.Mods.Common.Traits;
-using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.AS.Traits
@@ -43,7 +42,7 @@ namespace OpenRA.Mods.AS.Traits
 		readonly ResourceTwinkleLayerInfo info;
 
 		readonly World world;
-		readonly CellLayer<Pair<CPos, int>> cells;
+		readonly HashSet<CPos> cells;
 
 		int ticks;
 
@@ -51,7 +50,7 @@ namespace OpenRA.Mods.AS.Traits
 		{
 			world = self.World;
 			this.info = info;
-			cells = new CellLayer<Pair<CPos, int>>(world.Map);
+			cells = new HashSet<CPos>();
 
 			ticks = info.Interval.Length == 2
 				? world.SharedRandom.Next(info.Interval[0], info.Interval[1])
@@ -63,13 +62,13 @@ namespace OpenRA.Mods.AS.Traits
 			if (--ticks > 0)
 				return;
 
-			var twinkleable = cells.Where(x => x.Second != 0).Shuffle(world.SharedRandom);
+			var twinkleable = cells.Shuffle(world.SharedRandom);
 			var ratio = info.Ratio.Length == 2
 					? world.SharedRandom.Next(info.Ratio[0], info.Ratio[1])
 					: info.Ratio[0];
 
 			var twinkamount = twinkleable.Count() * ratio / 100;
-			var twinkpositions = twinkleable.Take(twinkamount).Select(x => world.Map.CenterOfCell(x.First));
+			var twinkpositions = twinkleable.Take(twinkamount).Select(x => world.Map.CenterOfCell(x));
 
 			foreach (var pos in twinkpositions)
 				world.AddFrameEndTask(w => w.Add(new SpriteEffect(pos, w, info.Image, info.Sequence, info.Palette)));
@@ -82,7 +81,12 @@ namespace OpenRA.Mods.AS.Traits
 		void IResourceLogicLayer.UpdatePosition(CPos cell, ResourceType type, int density)
 		{
 			if (info.Types.Contains(type.Info.Type))
-				cells[cell] = new Pair<CPos, int>(cell, density);
+			{
+				if (density == 0)
+					cells.Remove(cell);
+				else
+					cells.Add(cell);
+			}
 		}
 	}
 }
