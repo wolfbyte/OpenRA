@@ -168,6 +168,7 @@
     <Compile Include="Traits\ProximityBounty.cs" />
     <Compile Include="Traits\ActorTag.cs" />
     <Compile Include="Scripting\Global\ActorTagGlobal.cs" />
+    <Compile Include="Traits\World\ResourceTwinkleLayer.cs" />
     <Compile Include="Traits\World\TintedCellsLayer.cs" />
     <Compile Include="Traits\World\WeaponStorm.cs" />
     <Compile Include="UtilityCommands\ExtractLegacyRulesValues.cs" />
