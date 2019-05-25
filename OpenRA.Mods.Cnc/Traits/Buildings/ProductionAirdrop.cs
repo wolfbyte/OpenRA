@@ -25,8 +25,9 @@ namespace OpenRA.Mods.Cnc.Traits
 		[NotificationReference("Speech")]
 		public readonly string ReadyAudio = "Reinforce";
 
+		[ActorReference(typeof(AircraftInfo))]
 		[Desc("Cargo aircraft used for delivery. Must have the `Aircraft` trait.")]
-		[ActorReference(typeof(AircraftInfo))] public readonly string ActorType = "c17";
+		public readonly string ActorType = "c17";
 
 		public override object Create(ActorInitializer init) { return new ProductionAirdrop(init, this); }
 	}
@@ -72,7 +73,7 @@ namespace OpenRA.Mods.Cnc.Traits
 				});
 
 				actor.QueueActivity(new Fly(actor, Target.FromPos(self.CenterPosition + new WVec(landDistance, 0, 0))));
-				actor.QueueActivity(new Land(actor, Target.FromActor(self), false));
+				actor.QueueActivity(new Land(actor, Target.FromActor(self)));
 				actor.QueueActivity(new CallFunc(() =>
 				{
 					if (!self.IsInWorld || self.IsDead)

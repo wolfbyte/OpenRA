@@ -138,10 +138,10 @@ ChromeLayout:
 	common|chrome/ingame-infoobjectives.yaml
 	common|chrome/ingame-infostats.yaml
 	ts|chrome/ingame-observer.yaml
-	ts|chrome/ingame-observerstats.yaml
 	ts|chrome/ingame-player.yaml
 	common|chrome/ingame-perf.yaml
 	ts|chrome/ingame-debug.yaml
+	common|chrome/ingame-debuginfo.yaml
 	common|chrome/ingame-infochat.yaml
 	common|chrome/mainmenu.yaml
 	ts|chrome/mainmenu-prerelease-notification.yaml

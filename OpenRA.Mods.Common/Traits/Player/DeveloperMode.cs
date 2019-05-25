@@ -76,13 +76,26 @@ namespace OpenRA.Mods.Common.Traits
 		readonly DeveloperModeInfo info;
 		public bool Enabled { get; private set; }
 
-		[Sync] bool fastCharge;
-		[Sync] bool allTech;
-		[Sync] bool fastBuild;
-		[Sync] bool disableShroud;
-		[Sync] bool pathDebug;
-		[Sync] bool unlimitedPower;
-		[Sync] bool buildAnywhere;
+		[Sync]
+		bool fastCharge;
+
+		[Sync]
+		bool allTech;
+
+		[Sync]
+		bool fastBuild;
+
+		[Sync]
+		bool disableShroud;
+
+		[Sync]
+		bool pathDebug;
+
+		[Sync]
+		bool unlimitedPower;
+
+		[Sync]
+		bool buildAnywhere;
 
 		public bool FastCharge { get { return Enabled && fastCharge; } }
 		public bool AllTech { get { return Enabled && allTech; } }
@@ -226,6 +239,15 @@ namespace OpenRA.Mods.Common.Traits
 				case "DevBuildAnywhere":
 				{
 					buildAnywhere ^= true;
+					break;
+				}
+
+				case "DevPlayerExperience":
+				{
+					var playerExperience = self.Owner.PlayerActor.TraitOrDefault<PlayerExperience>();
+					if (playerExperience != null)
+						playerExperience.GiveExperience((int)order.ExtraData);
+
 					break;
 				}
 

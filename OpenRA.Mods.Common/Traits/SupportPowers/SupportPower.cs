@@ -67,22 +67,35 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Defines to which players the timer is shown.")]
 		public readonly Stance DisplayTimerStances = Stance.None;
 
+		[PaletteReference]
 		[Desc("Palette used for the icon.")]
-		[PaletteReference] public readonly string IconPalette = "chrome";
+		public readonly string IconPalette = "chrome";
 
 		[Desc("Beacons are only supported on the Airstrike, Paratroopers, and Nuke powers")]
 		public readonly bool DisplayBeacon = false;
 
 		public readonly bool BeaconPaletteIsPlayerPalette = true;
-		[PaletteReference("BeaconPaletteIsPlayerPalette")] public readonly string BeaconPalette = "player";
+
+		[PaletteReference("BeaconPaletteIsPlayerPalette")]
+		public readonly string BeaconPalette = "player";
 
 		public readonly string BeaconImage = "beacon";
 		public readonly Dictionary<int, string> BeaconPosters = new Dictionary<int, string>();
-		[PaletteReference] public readonly string BeaconPosterPalette = "chrome";
-		[SequenceReference("BeaconImage")] public readonly string ClockSequence = null;
-		[SequenceReference("BeaconImage")] public readonly string BeaconSequence = null;
-		[SequenceReference("BeaconImage")] public readonly string ArrowSequence = null;
-		[SequenceReference("BeaconImage")] public readonly string CircleSequence = null;
+
+		[PaletteReference]
+		public readonly string BeaconPosterPalette = "chrome";
+
+		[SequenceReference("BeaconImage")]
+		public readonly string ClockSequence = null;
+
+		[SequenceReference("BeaconImage")]
+		public readonly string BeaconSequence = null;
+
+		[SequenceReference("BeaconImage")]
+		public readonly string ArrowSequence = null;
+
+		[SequenceReference("BeaconImage")]
+		public readonly string CircleSequence = null;
 
 		[Desc("Delay after launch, measured in ticks.")]
 		public readonly int BeaconDelay = 0;

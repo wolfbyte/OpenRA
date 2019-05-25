@@ -19,6 +19,7 @@ namespace OpenRA.Graphics
 {
 	public sealed class SpriteFont : IDisposable
 	{
+		public int TopOffset { get; private set; }
 		readonly int size;
 		readonly SheetBuilder builder;
 		readonly Func<string, float> lineWidth;
@@ -37,6 +38,7 @@ namespace OpenRA.Graphics
 			this.builder = builder;
 
 			font = Game.Renderer.CreateFont(data);
+			font.SetSize(size, deviceScale);
 
 			glyphs = new Cache<Pair<char, Color>, GlyphInfo>(CreateGlyph, Pair<char, Color>.EqualityComparer);
 
@@ -46,12 +48,18 @@ namespace OpenRA.Graphics
 
 			if (size <= 24)
 				PrecacheColor(Color.White, name);
+
+			TopOffset = size - font.Height;
 		}
 
 		public void SetScale(float scale)
 		{
 			deviceScale = scale;
+
+			font.SetSize(size, scale);
 			glyphs.Clear();
+
+			TopOffset = size - font.Height;
 		}
 
 		void PrecacheColor(Color c, string name)
@@ -83,7 +91,7 @@ namespace OpenRA.Graphics
 						new float2(
 							(int)Math.Round(p.X * deviceScale + g.Offset.X, 0) / deviceScale,
 							p.Y + g.Offset.Y / deviceScale),
-							g.Sprite.Size / deviceScale);
+						g.Sprite.Size / deviceScale);
 
 				p += new float2(g.Advance / deviceScale, 0);
 			}
@@ -131,7 +139,7 @@ namespace OpenRA.Graphics
 
 		GlyphInfo CreateGlyph(Pair<char, Color> c)
 		{
-			var glyph = font.CreateGlyph(c.First, this.size, deviceScale);
+			var glyph = font.CreateGlyph(c.First);
 
 			if (glyph.Data == null)
 			{

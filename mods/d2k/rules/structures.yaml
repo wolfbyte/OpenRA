@@ -1151,9 +1151,11 @@ palace:
 		BeginChargeSpeechNotification: DeathHandMissilePrepping
 		EndChargeSpeechNotification: DeathHandMissileReady
 		LaunchSpeechNotification: MissileLaunchDetected
-		MissileWeapon: atomic
+		MissileWeapon: deathhand
 		MissileDelay: 18
 		SpawnOffset: 32,816,0
+		DetonationAltitude: 3c0
+		RemoveMissileOnDetonation: False
 		DisplayBeacon: True
 		DisplayRadarPing: True
 		CameraRange: 10c0
@@ -1162,6 +1164,7 @@ palace:
 		FlightVelocity: 384
 		TrailInterval: 0
 		TrailImage: large_trail
+		TrailSequences: idle
 	ProduceActorPower@fremen:
 		Description: Recruit Fremen
 		LongDesc: Elite infantry unit armed with assault rifles and rockets\n  Strong vs Infantry, Vehicles\n  Weak vs Artillery\n  Special Ability: Invisibility

@@ -22,15 +22,16 @@ namespace OpenRA.Mods.Common.Traits
 	[Desc("Provides access to the attack-move command, which will make the actor automatically engage viable targets while moving to the destination.")]
 	class AttackMoveInfo : ITraitInfo, Requires<IMoveInfo>
 	{
-		[VoiceReference] public readonly string Voice = "Action";
+		[VoiceReference]
+		public readonly string Voice = "Action";
 
 		[GrantedConditionReference]
-		[Desc("The condition to grant to self while scanning for targets during an attack-move.")]
-		public readonly string AttackMoveScanCondition = null;
+		[Desc("The condition to grant to self while an attack-move is active.")]
+		public readonly string AttackMoveCondition = null;
 
 		[GrantedConditionReference]
-		[Desc("The condition to grant to self while scanning for targets during an assault-move.")]
-		public readonly string AssaultMoveScanCondition = null;
+		[Desc("The condition to grant to self while an assault-move is active.")]
+		public readonly string AssaultMoveCondition = null;
 
 		[Desc("Can the actor be ordered to move in to shroud?")]
 		public readonly bool MoveIntoShroud = true;
@@ -38,44 +39,15 @@ namespace OpenRA.Mods.Common.Traits
 		public object Create(ActorInitializer init) { return new AttackMove(init.Self, this); }
 	}
 
-	class AttackMove : INotifyCreated, ITick, IResolveOrder, IOrderVoice
+	class AttackMove : IResolveOrder, IOrderVoice
 	{
 		public readonly AttackMoveInfo Info;
 		readonly IMove move;
-
-		ConditionManager conditionManager;
-		int attackMoveToken = ConditionManager.InvalidConditionToken;
-		int assaultMoveToken = ConditionManager.InvalidConditionToken;
 
 		public AttackMove(Actor self, AttackMoveInfo info)
 		{
 			move = self.Trait<IMove>();
 			Info = info;
-		}
-
-		void INotifyCreated.Created(Actor self)
-		{
-			conditionManager = self.TraitOrDefault<ConditionManager>();
-		}
-
-		void ITick.Tick(Actor self)
-		{
-			if (conditionManager == null)
-				return;
-
-			var activity = self.CurrentActivity as AttackMoveActivity;
-			var attackActive = activity != null && !activity.IsAssaultMove;
-			var assaultActive = activity != null && activity.IsAssaultMove;
-
-			if (attackActive && attackMoveToken == ConditionManager.InvalidConditionToken && !string.IsNullOrEmpty(Info.AttackMoveScanCondition))
-				attackMoveToken = conditionManager.GrantCondition(self, Info.AttackMoveScanCondition);
-			else if (!attackActive && attackMoveToken != ConditionManager.InvalidConditionToken)
-				attackMoveToken = conditionManager.RevokeCondition(self, attackMoveToken);
-
-			if (assaultActive && assaultMoveToken == ConditionManager.InvalidConditionToken && !string.IsNullOrEmpty(Info.AssaultMoveScanCondition))
-				assaultMoveToken = conditionManager.GrantCondition(self, Info.AssaultMoveScanCondition);
-			else if (!assaultActive && assaultMoveToken != ConditionManager.InvalidConditionToken)
-				assaultMoveToken = conditionManager.RevokeCondition(self, assaultMoveToken);
 		}
 
 		string IOrderVoice.VoicePhraseForOrder(Actor self, Order order)

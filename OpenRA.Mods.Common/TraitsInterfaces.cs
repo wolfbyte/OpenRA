@@ -141,6 +141,9 @@ namespace OpenRA.Mods.Common.Traits
 	public interface INotifyOtherProduction { void UnitProducedByOther(Actor self, Actor producer, Actor produced, string productionType, TypeDictionary init); }
 	public interface INotifyDelivery { void IncomingDelivery(Actor self); void Delivered(Actor self); }
 	public interface INotifyDocking { void Docked(Actor self, Actor harvester); void Undocked(Actor self, Actor harvester); }
+
+	[RequireExplicitImplementation]
+	public interface INotifyResourceAccepted { void OnResourceAccepted(Actor self, Actor refinery, int amount); }
 	public interface INotifyParachute { void OnParachute(Actor self); void OnLanded(Actor self, Actor ignore); }
 
 	[RequireExplicitImplementation]
@@ -297,9 +300,16 @@ namespace OpenRA.Mods.Common.Traits
 		void ModifyTransformActorInit(Actor self, TypeDictionary init);
 	}
 
-	public interface IPreventsAutoTarget
+	[RequireExplicitImplementation]
+	public interface IDisableEnemyAutoTarget
 	{
-		bool PreventsAutoTarget(Actor self, Actor attacker);
+		bool DisableEnemyAutoTarget(Actor self, Actor attacker);
+	}
+
+	[RequireExplicitImplementation]
+	public interface IDisableAutoTarget
+	{
+		bool DisableAutoTarget(Actor self);
 	}
 
 	[RequireExplicitImplementation]
@@ -582,5 +592,11 @@ namespace OpenRA.Mods.Common.Traits
 	public interface INotifyMoving
 	{
 		void MovementTypeChanged(Actor self, MovementType type);
+	}
+
+	[RequireExplicitImplementation]
+	public interface INotifyTimeLimit
+	{
+		void NotifyTimerExpired(Actor self);
 	}
 }

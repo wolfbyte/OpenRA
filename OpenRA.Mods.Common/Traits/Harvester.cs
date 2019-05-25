@@ -78,8 +78,11 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Condition to grant while empty.")]
 		public readonly string EmptyCondition = null;
 
-		[VoiceReference] public readonly string HarvestVoice = "Action";
-		[VoiceReference] public readonly string DeliverVoice = "Action";
+		[VoiceReference]
+		public readonly string HarvestVoice = "Action";
+
+		[VoiceReference]
+		public readonly string DeliverVoice = "Action";
 
 		public object Create(ActorInitializer init) { return new Harvester(init.Self, this); }
 	}
@@ -95,12 +98,22 @@ namespace OpenRA.Mods.Common.Traits
 		INotifyHarvesterAction[] notifyHarvesterAction;
 		ConditionManager conditionManager;
 		int conditionToken = ConditionManager.InvalidConditionToken;
+		HarvesterResourceMultiplier[] resourceMultipliers;
 
-		[Sync] public bool LastSearchFailed;
-		[Sync] public Actor OwnerLinkedProc = null;
-		[Sync] public Actor LastLinkedProc = null;
-		[Sync] public Actor LinkedProc = null;
-		[Sync] int currentUnloadTicks;
+		[Sync]
+		public bool LastSearchFailed;
+
+		[Sync]
+		public Actor OwnerLinkedProc = null;
+
+		[Sync]
+		public Actor LastLinkedProc = null;
+
+		[Sync]
+		public Actor LinkedProc = null;
+
+		[Sync]
+		int currentUnloadTicks;
 
 		[Sync]
 		public int ContentValue
@@ -127,6 +140,7 @@ namespace OpenRA.Mods.Common.Traits
 		void INotifyCreated.Created(Actor self)
 		{
 			notifyHarvesterAction = self.TraitsImplementing<INotifyHarvesterAction>().ToArray();
+			resourceMultipliers = self.TraitsImplementing<HarvesterResourceMultiplier>().ToArray();
 			conditionManager = self.TraitOrDefault<ConditionManager>();
 			UpdateCondition(self);
 
@@ -249,7 +263,7 @@ namespace OpenRA.Mods.Common.Traits
 				var type = contents.First().Key;
 				var iao = proc.Trait<IAcceptResources>();
 				var count = Math.Min(contents[type], Info.BaleUnloadAmount);
-				var value = type.ValuePerUnit * count;
+				var value = Util.ApplyPercentageModifiers(type.ValuePerUnit * count, resourceMultipliers.Select(m => m.GetModifier()));
 
 				if (!iao.CanGiveResource(value))
 					return false;

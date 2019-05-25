@@ -150,7 +150,7 @@
 	AutoTargetPriority@ATTACKANYTHING:
 		RequiresCondition: stance-attackanything || assault-move
 	AttackMove:
-		AssaultMoveScanCondition: assault-move
+		AssaultMoveCondition: assault-move
 
 ^AutoTargetAir:
 	AutoTarget:
@@ -177,7 +177,7 @@
 	AutoTargetPriority@ATTACKANYTHING:
 		RequiresCondition: stance-attackanything || assault-move
 	AttackMove:
-		AssaultMoveScanCondition: assault-move
+		AssaultMoveCondition: assault-move
 
 ^2x1Shape:
 	HitShape:
@@ -876,7 +876,8 @@
 ^Helicopter:
 	Inherits: ^Aircraft
 	Aircraft:
-		CruiseAltitude: 2048
+		CruiseAltitude: 4c704
+		AltitudeVelocity: 96
 		CanHover: True
 		CruisingCondition: cruising
 		TakeOffOnResupply: true

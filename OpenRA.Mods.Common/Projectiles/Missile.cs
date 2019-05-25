@@ -26,11 +26,13 @@ namespace OpenRA.Mods.Common.Projectiles
 		[Desc("Name of the image containing the projectile sequence.")]
 		public readonly string Image = null;
 
+		[SequenceReference("Image")]
 		[Desc("Loop a randomly chosen sequence of Image from this list while this projectile is moving.")]
-		[SequenceReference("Image")] public readonly string[] Sequences = { "idle" };
+		public readonly string[] Sequences = { "idle" };
 
+		[PaletteReference]
 		[Desc("Palette used to render the projectile sequence.")]
-		[PaletteReference] public readonly string Palette = "effect";
+		public readonly string Palette = "effect";
 
 		[Desc("Palette is a player palette BaseName")]
 		public readonly bool IsPlayerPalette = false;
@@ -101,11 +103,13 @@ namespace OpenRA.Mods.Common.Projectiles
 		[Desc("Image that contains the trail animation.")]
 		public readonly string TrailImage = null;
 
+		[SequenceReference("TrailImage")]
 		[Desc("Loop a randomly chosen sequence of TrailImage from this list while this projectile is moving.")]
-		[SequenceReference("TrailImage")] public readonly string[] TrailSequences = { "idle" };
+		public readonly string[] TrailSequences = { "idle" };
 
+		[PaletteReference("TrailUsePlayerPalette")]
 		[Desc("Palette used to render the trail sequence.")]
-		[PaletteReference("TrailUsePlayerPalette")] public readonly string TrailPalette = "effect";
+		public readonly string TrailPalette = "effect";
 
 		[Desc("Use the Player Palette to render the trail sequence.")]
 		public readonly bool TrailUsePlayerPalette = false;
@@ -178,7 +182,7 @@ namespace OpenRA.Mods.Common.Projectiles
 
 		States state;
 		bool targetPassedBy;
-		bool lockOn = false;
+		bool lockOn;
 		bool allowPassBy; // TODO: use this also with high minimum launch angle settings
 
 		WPos targetPosition;
@@ -187,7 +191,9 @@ namespace OpenRA.Mods.Common.Projectiles
 		WVec tarVel;
 		WVec predVel;
 
-		[Sync] WPos pos;
+		[Sync]
+		WPos pos;
+
 		WVec velocity;
 		int speed;
 		int loopRadius;
@@ -195,11 +201,12 @@ namespace OpenRA.Mods.Common.Projectiles
 		WDist rangeLimit;
 
 		int renderFacing;
-		[Sync] int hFacing;
-		[Sync] int vFacing;
 
-		public Actor SourceActor { get { return args.SourceActor; } }
-		public Target GuidedTarget { get { return args.GuidedTarget; } }
+		[Sync]
+		int hFacing;
+
+		[Sync]
+		int vFacing;
 
 		public Missile(MissileInfo info, ProjectileArgs args)
 		{
@@ -441,7 +448,7 @@ namespace OpenRA.Mods.Common.Projectiles
 		}
 
 		// NOTE: It might be desirable to make lookahead more intelligent by outputting more information
-		//		 than just the highest point in the lookahead distance
+		// than just the highest point in the lookahead distance
 		void InclineLookahead(World world, int distCheck, out int predClfHgt, out int predClfDist, out int lastHtChg, out int lastHt)
 		{
 			predClfHgt = 0; // Highest probed terrain height

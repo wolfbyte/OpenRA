@@ -31,8 +31,12 @@ namespace OpenRA.Mods.Common.Traits
 		public readonly string DeploySound = null;
 
 		public readonly string EffectImage = null;
-		[SequenceReference("EffectImage")] public readonly string EffectSequence = "idle";
-		[PaletteReference] public readonly string EffectPalette = null;
+
+		[SequenceReference("EffectImage")]
+		public readonly string EffectSequence = "idle";
+
+		[PaletteReference]
+		public readonly string EffectPalette = null;
 
 		public override object Create(ActorInitializer init) { return new SpawnActorPower(init.Self, this); }
 	}

@@ -11,12 +11,25 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using OpenRA.Activities;
 using OpenRA.Primitives;
 using OpenRA.Traits;
 
 namespace OpenRA.Mods.Common.Traits
 {
 	public enum UnitStance { HoldFire, ReturnFire, Defend, AttackAnything }
+
+	[RequireExplicitImplementation]
+	public interface IActivityNotifyStanceChanged : IActivityInterface
+	{
+		void StanceChanged(Actor self, AutoTarget autoTarget, UnitStance oldStance, UnitStance newStance);
+	}
+
+	[RequireExplicitImplementation]
+	public interface INotifyStanceChanged
+	{
+		void StanceChanged(Actor self, AutoTarget autoTarget, UnitStance oldStance, UnitStance newStance);
+	}
 
 	[Desc("The actor will automatically engage the enemy when it is in range.")]
 	public class AutoTargetInfo : ConditionalTraitInfo, Requires<AttackBaseInfo>, IEditorActorOptions
@@ -114,17 +127,21 @@ namespace OpenRA.Mods.Common.Traits
 	public class AutoTarget : ConditionalTrait<AutoTargetInfo>, INotifyIdle, INotifyDamage, ITick, IResolveOrder, ISync, INotifyCreated, INotifyOwnerChanged
 	{
 		public readonly IEnumerable<AttackBase> ActiveAttackBases;
-		[Sync] int nextScanTime = 0;
+		[Sync]
+		int nextScanTime = 0;
 
 		public UnitStance Stance { get { return stance; } }
 
-		[Sync] public Actor Aggressor;
+		[Sync]
+		public Actor Aggressor;
 
 		// NOT SYNCED: do not refer to this anywhere other than UI code
 		public UnitStance PredictedStance;
 
 		UnitStance stance;
 		ConditionManager conditionManager;
+		IDisableAutoTarget[] disableAutoTarget;
+		INotifyStanceChanged[] notifyStanceChanged;
 		IEnumerable<AutoTargetPriorityInfo> activeTargetPriorities;
 		int conditionToken = ConditionManager.InvalidConditionToken;
 
@@ -133,8 +150,16 @@ namespace OpenRA.Mods.Common.Traits
 			if (stance == value)
 				return;
 
+			var oldStance = stance;
 			stance = value;
 			ApplyStanceCondition(self);
+
+			foreach (var nsc in notifyStanceChanged)
+				nsc.StanceChanged(self, this, oldStance, stance);
+
+			if (self.CurrentActivity != null)
+				foreach (var a in self.CurrentActivity.ActivitiesImplementing<IActivityNotifyStanceChanged>())
+					a.StanceChanged(self, this, oldStance, stance);
 		}
 
 		void ApplyStanceCondition(Actor self)
@@ -174,6 +199,8 @@ namespace OpenRA.Mods.Common.Traits
 				.Where(Exts.IsTraitEnabled).Select(atp => atp.Info);
 
 			conditionManager = self.TraitOrDefault<ConditionManager>();
+			disableAutoTarget = self.TraitsImplementing<IDisableAutoTarget>().ToArray();
+			notifyStanceChanged = self.TraitsImplementing<INotifyStanceChanged>().ToArray();
 			ApplyStanceCondition(self);
 		}
 
@@ -201,6 +228,10 @@ namespace OpenRA.Mods.Common.Traits
 			var attacker = e.Attacker;
 			if (attacker.Disposed)
 				return;
+
+			foreach (var dat in disableAutoTarget)
+				if (dat.DisableAutoTarget(self))
+					return;
 
 			if (!attacker.IsInWorld)
 			{
@@ -250,6 +281,10 @@ namespace OpenRA.Mods.Common.Traits
 			{
 				nextScanTime = self.World.SharedRandom.Next(Info.MinimumScanTimeInterval, Info.MaximumScanTimeInterval);
 
+				foreach (var dat in disableAutoTarget)
+					if (dat.DisableAutoTarget(self))
+						return Target.Invalid;
+
 				foreach (var ab in ActiveAttackBases)
 				{
 					// If we can't attack right now, there's no need to try and find a target.
@@ -278,6 +313,25 @@ namespace OpenRA.Mods.Common.Traits
 
 			foreach (var ab in ActiveAttackBases)
 				ab.AttackTarget(target, false, allowMove);
+		}
+
+		public bool HasValidTargetPriority(Actor self, Player owner, BitSet<TargetableType> targetTypes)
+		{
+			if (Stance <= UnitStance.ReturnFire)
+				return false;
+
+			return activeTargetPriorities.Any(ati =>
+			{
+				// Incompatible stances
+				if (!ati.ValidStances.HasStance(self.Owner.Stances[owner]))
+					return false;
+
+				// Incompatible target types
+				if (!ati.ValidTargets.Overlaps(targetTypes) || ati.InvalidTargets.Overlaps(targetTypes))
+					return false;
+
+				return true;
+			});
 		}
 
 		Target ChooseTarget(Actor self, AttackBase ab, Stance attackStances, WDist scanRange, bool allowMove, bool allowTurn)
@@ -379,8 +433,8 @@ namespace OpenRA.Mods.Common.Traits
 
 		bool PreventsAutoTarget(Actor attacker, Actor target)
 		{
-			foreach (var pat in target.TraitsImplementing<IPreventsAutoTarget>())
-				if (pat.PreventsAutoTarget(target, attacker))
+			foreach (var deat in target.TraitsImplementing<IDisableEnemyAutoTarget>())
+				if (deat.DisableEnemyAutoTarget(target, attacker))
 					return true;
 
 			return false;
@@ -389,7 +443,9 @@ namespace OpenRA.Mods.Common.Traits
 
 	public class StanceInit : IActorInit<UnitStance>
 	{
-		[FieldFromYamlKey] readonly UnitStance value = UnitStance.AttackAnything;
+		[FieldFromYamlKey]
+		readonly UnitStance value = UnitStance.AttackAnything;
+
 		public StanceInit() { }
 		public StanceInit(UnitStance init) { value = init; }
 		public UnitStance Value(World world) { return value; }

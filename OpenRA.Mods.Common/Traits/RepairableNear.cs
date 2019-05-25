@@ -20,11 +20,14 @@ namespace OpenRA.Mods.Common.Traits
 {
 	class RepairableNearInfo : ITraitInfo, Requires<IHealthInfo>, Requires<IMoveInfo>
 	{
+		[ActorReference]
 		[FieldLoader.Require]
-		[ActorReference] public readonly HashSet<string> RepairActors = new HashSet<string> { };
+		public readonly HashSet<string> RepairActors = new HashSet<string> { };
 
 		public readonly WDist CloseEnough = WDist.FromCells(4);
-		[VoiceReference] public readonly string Voice = "Action";
+
+		[VoiceReference]
+		public readonly string Voice = "Action";
 
 		public object Create(ActorInitializer init) { return new RepairableNear(init.Self, this); }
 	}
@@ -99,7 +102,8 @@ namespace OpenRA.Mods.Common.Traits
 				.Where(a => !a.Actor.IsDead && a.Actor.IsInWorld
 					&& a.Actor.Owner.IsAlliedWith(self.Owner) &&
 					Info.RepairActors.Contains(a.Actor.Info.Name))
-				.OrderBy(p => (self.Location - p.Actor.Location).LengthSquared);
+				.OrderBy(a => a.Actor.Owner == self.Owner ? 0 : 1)
+				.ThenBy(p => (self.Location - p.Actor.Location).LengthSquared);
 
 			// Worst case FirstOrDefault() will return a TraitPair<null, null>, which is OK.
 			return repairBuilding.FirstOrDefault().Actor;

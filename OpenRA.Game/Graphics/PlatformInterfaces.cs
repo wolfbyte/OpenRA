@@ -136,7 +136,9 @@ namespace OpenRA
 
 	public interface IFont : IDisposable
 	{
-		FontGlyph CreateGlyph(char c, int size, float deviceScale);
+		FontGlyph CreateGlyph(char c);
+		void SetSize(int size, float deviceScale);
+		int Height { get; }
 	}
 
 	public struct FontGlyph

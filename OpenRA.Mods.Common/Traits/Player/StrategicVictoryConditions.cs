@@ -11,6 +11,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using OpenRA.Network;
 using OpenRA.Primitives;
 using OpenRA.Traits;
 
@@ -35,8 +36,9 @@ namespace OpenRA.Mods.Common.Traits
 		[Desc("Delay for the end game notification in milliseconds.")]
 		public readonly int NotificationDelay = 1500;
 
+		[Translate]
 		[Desc("Description of the objective")]
-		[Translate] public readonly string Objective = "Hold all the strategic positions!";
+		public readonly string Objective = "Hold all the strategic positions!";
 
 		[Desc("Disable the win/loss messages and audio notifications?")]
 		public readonly bool SuppressNotifications = false;
@@ -44,11 +46,13 @@ namespace OpenRA.Mods.Common.Traits
 		public object Create(ActorInitializer init) { return new StrategicVictoryConditions(init.Self, this); }
 	}
 
-	public class StrategicVictoryConditions : ITick, ISync, INotifyWinStateChanged
+	public class StrategicVictoryConditions : ITick, ISync, INotifyWinStateChanged, INotifyTimeLimit
 	{
 		readonly StrategicVictoryConditionsInfo info;
 
-		[Sync] public int TicksLeft;
+		[Sync]
+		public int TicksLeft;
+
 		readonly Player player;
 		readonly MissionObjectives mo;
 		readonly bool shortGame;
@@ -106,6 +110,27 @@ namespace OpenRA.Mods.Common.Traits
 					if (info.ResetOnHoldLost)
 						TicksLeft = info.HoldDuration; // Reset the time hold
 			}
+		}
+
+		void INotifyTimeLimit.NotifyTimerExpired(Actor self)
+		{
+			if (objectiveID < 0)
+				return;
+
+			var myTeam = self.World.LobbyInfo.ClientWithIndex(self.Owner.ClientIndex).Team;
+			var teams = self.World.Players.Where(p => !p.NonCombatant && p.Playable)
+				.Select(p => new Pair<Player, PlayerStatistics>(p, p.PlayerActor.TraitOrDefault<PlayerStatistics>()))
+				.OrderByDescending(p => p.Second != null ? p.Second.Experience : 0)
+				.GroupBy(p => (self.World.LobbyInfo.ClientWithIndex(p.First.ClientIndex) ?? new Session.Client()).Team)
+				.OrderByDescending(g => g.Sum(gg => gg.Second != null ? gg.Second.Experience : 0));
+
+			if (teams.First().Key == myTeam && (myTeam != 0 || teams.First().First().First == self.Owner))
+			{
+				mo.MarkCompleted(self.Owner, objectiveID);
+				return;
+			}
+
+			mo.MarkFailed(self.Owner, objectiveID);
 		}
 
 		void INotifyWinStateChanged.OnPlayerLost(Player player)

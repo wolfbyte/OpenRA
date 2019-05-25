@@ -115,10 +115,13 @@ namespace OpenRA.Mods.Common.Traits
 
 		public Actor Actor { get { return self; } }
 
-		[Sync] public bool Enabled { get; protected set; }
+		[Sync]
+		public bool Enabled { get; protected set; }
 
 		public string Faction { get; private set; }
-		[Sync] public bool IsValidFaction { get; private set; }
+
+		[Sync]
+		public bool IsValidFaction { get; private set; }
 
 		public ProductionQueue(ActorInitializer init, Actor playerActor, ProductionQueueInfo info)
 		{
@@ -234,6 +237,11 @@ namespace OpenRA.Mods.Common.Traits
 		public virtual bool IsProducing(ProductionItem item)
 		{
 			return Queue.Count > 0 && Queue[0] == item;
+		}
+
+		public ProductionItem CurrentItem()
+		{
+			return Queue.ElementAtOrDefault(0);
 		}
 
 		public virtual IEnumerable<ProductionItem> AllQueued()
