@@ -12,12 +12,11 @@
     <RootNamespace>OpenRA</RootNamespace>
     <OutputPath>..</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <Platforms>x86</Platforms>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <ExternalConsole>false</ExternalConsole>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <CodeAnalysisRuleSet>..\OpenRA.ruleset</CodeAnalysisRuleSet>
-    <Configurations>Release;Debug</Configurations>
+    <Configurations>Release;Debug;Release-x86</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <!-- Work around an issue where Rider does not detect files in the project root using the default glob -->
@@ -27,19 +26,22 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <Optimize>false</Optimize>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Red Alert' ">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release-x86'">
+    <Prefer32bit>true</Prefer32bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RunConfiguration)' == 'Red Alert'">
     <StartAction>Project</StartAction>
     <StartArguments>Game.Mod=ra</StartArguments>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Dune 2000' ">
+  <PropertyGroup Condition="'$(RunConfiguration)' == 'Dune 2000'">
     <StartAction>Project</StartAction>
     <StartArguments>Game.Mod=d2k</StartArguments>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Tiberian Dawn' ">
+  <PropertyGroup Condition="'$(RunConfiguration)' == 'Tiberian Dawn'">
     <StartAction>Project</StartAction>
     <StartArguments>Game.Mod=cnc</StartArguments>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(RunConfiguration)' == 'Tiberian Sun' ">
+  <PropertyGroup Condition="'$(RunConfiguration)' == 'Tiberian Sun'">
     <StartAction>Project</StartAction>
     <StartArguments>Game.Mod=ts</StartArguments>
   </PropertyGroup>

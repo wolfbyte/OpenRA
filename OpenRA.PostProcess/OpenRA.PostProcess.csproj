@@ -10,19 +10,22 @@
     <LangVersion>5</LangVersion>
     <DebugSymbols>true</DebugSymbols>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <Platforms>x86</Platforms>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <ExternalConsole>false</ExternalConsole>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <CodeAnalysisRuleSet>..\OpenRA.ruleset</CodeAnalysisRuleSet>
+    <Configurations>Debug;Release;Release-x86</Configurations>
   </PropertyGroup>
   <ItemGroup>
     <!-- Work around an issue where Rider does not detect files in the project root using the default glob -->
-    <Compile Include="**/*.cs" Exclude="$(DefaultItemExcludes)"/>
+    <Compile Include="**/*.cs" Exclude="$(DefaultItemExcludes)" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <Optimize>false</Optimize>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Release-x86'">
+    <Prefer32bit>true</Prefer32bit>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" />
@@ -31,7 +34,7 @@
   <Target Name="DisableAnalyzers" BeforeTargets="CoreCompile" Condition="'$(Configuration)'=='Release'">
     <!-- Disable code style analysis on Release builds to improve compile-time performance -->
     <ItemGroup Condition="'$(Configuration)'=='Release'">
-      <Analyzer Remove="@(Analyzer)"/>
+      <Analyzer Remove="@(Analyzer)" />
     </ItemGroup>
   </Target>
 </Project>
