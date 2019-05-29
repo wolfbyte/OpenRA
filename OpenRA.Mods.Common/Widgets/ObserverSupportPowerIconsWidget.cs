@@ -102,7 +102,7 @@ namespace OpenRA.Mods.Common.Widgets
 				return;
 
 			var powers = player.PlayerActor.Trait<SupportPowerManager>().Powers
-				.Where(x => !x.Value.Disabled && x.Value.GetLevel() != 0).Select((a, i) => new { a, i });
+				.Where(x => !x.Value.Disabled && x.Value.GetLevel() != 0).Select((a, i) => new { a, i })
 				.ToList();
 
 			foreach (var power in powers)
